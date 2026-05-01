@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel-0x0 | Universal Downloader</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --down-bg: #08020d;
+            --neon-purple: #bc13fe;
+            --deep-violet: #2d004d;
+            --text-gray: #b0b0b0;
+            --success-cyan: #00f2ff;
+        }
+
+        body {
+            background-color: var(--down-bg);
+            color: #fff;
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar integration */
+        .sidebar {
+            width: 280px;
+            background: #050108;
+            border-right: 1px solid var(--neon-purple);
+            box-shadow: 2px 0 20px rgba(188, 19, 254, 0.2);
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            color: var(--text-gray);
+            text-decoration: none;
+            border-bottom: 1px solid #1a052e;
+            transition: 0.4s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            color: var(--neon-purple);
+            background: rgba(188, 19, 254, 0.05);
+            text-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        /* Downloader Interface */
+        .main-engine {
+            flex: 1;
+            padding: 60px;
+            overflow-y: auto;
+            text-align: center;
+        }
+
+        .hero-section i {
+            font-size: 80px;
+            color: var(--neon-purple);
+            filter: drop-shadow(0 0 15px var(--neon-purple));
+            margin-bottom: 20px;
+        }
+
+        .input-box {
+            max-width: 800px;
+            margin: 40px auto;
+            position: relative;
+        }
+
+        input[type="url"] {
+            width: 100%;
+            padding: 20px 30px;
+            background: #11011a;
+            border: 2px solid var(--neon-purple);
+            border-radius: 50px;
+            color: #fff;
+            font-size: 18px;
+            outline: none;
+            box-shadow: inset 0 0 10px rgba(188, 19, 254, 0.3);
+        }
+
+        .btn-fetch {
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            bottom: 10px;
+            background: var(--neon-purple);
+            color: #fff;
+            border: none;
+            padding: 0 30px;
+            border-radius: 40px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn-fetch:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--neon-purple); }
+
+        /* Results Panel */
+        .results-card {
+            max-width: 700px;
+            margin: 30px auto;
+            background: var(--deep-violet);
+            border-radius: 20px;
+            padding: 30px;
+            display: none; /* hidden until fetch */
+            border: 1px solid var(--neon-purple);
+        }
+
+        .video-info { display: flex; gap: 20px; text-align: left; }
+        .thumbnail { width: 200px; border-radius: 10px; border: 1px solid var(--neon-purple); }
+        
+        .format-list { margin-top: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+        .download-option {
+            background: rgba(0,0,0,0.4);
+            padding: 12px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #444;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .download-option:hover { border-color: var(--success-cyan); color: var(--success-cyan); }
+
+        /* Loader Animation */
+        .loader {
+            display: none;
+            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            border: 5px solid var(--deep-violet);
+            border-top: 5px solid var(--neon-purple);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div style="padding: 35px; text-align: center;">
+            <i class="fas fa-cloud-download-alt" style="font-size: 45px; color: var(--neon-purple);"></i>
+            <h3 style="margin-top: 15px; letter-spacing: 2px;">V-DOWNLOADER</h3>
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="editor.html"><i class="fas fa-magic"></i> Image Studio</a>
+        <a href="exif.html"><i class="fas fa-microscope"></i> EXIF Lab</a>
+        <a href="downloader.html" class="active"><i class="fas fa-video"></i> Media Downloader</a>
+        <a href="scanner.html"><i class="fas fa-user-secret"></i> Security Scanner</a>
+        <a href="contact.html"><i class="fas fa-headset"></i> Support</a>
+    </div>
+
+    <div class="main-engine">
+        <div class="hero-section">
+            <i class="fab fa-youtube"></i>
+            <h1>Universal Media Extractor</h1>
+            <p style="color: var(--text-gray);">Supported: YouTube, TikTok, Facebook, Instagram & more.</p>
+        </div>
+
+        <div class="input-box">
+            <input type="url" id="videoUrl" placeholder="Paste video link here (e.g. https://tiktok.com/...)">
+            <button class="btn-fetch" onclick="analyzeVideo()">ANALYZE</button>
+        </div>
+
+        <div class="loader" id="loader"></div>
+
+        <div class="results-card" id="results">
+            <div class="video-info">
+                <img src="https://via.placeholder.com/200x120/111/bc13fe?text=VIDEO+THUMB" class="thumbnail" alt="thumb">
+                <div>
+                    <h3 id="videoTitle">Processing Media Stream...</h3>
+                    <p style="font-size: 14px; color: var(--text-gray);">Status: <span style="color: var(--success-cyan);">Link Verified</span></p>
+                </div>
+            </div>
+            
+            <div class="format-list">
+                <div class="download-option" onclick="startDownload('720p')">
+                    <span>MP4 Video (720p)</span>
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="download-option" onclick="startDownload('1080p')">
+                    <span>MP4 Video (1080p)</span>
+                    <i class="fas fa-download"></i>
+                </div>
+                <div class="download-option" onclick="startDownload('mp3')">
+                    <span>MP3 Audio (320kbps)</span>
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="download-option" onclick="startDownload('4k')">
+                    <span>4K Ultra HD</span>
+                    <i class="fas fa-crown"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function analyzeVideo() {
+            const url = document.getElementById('videoUrl').value;
+            if(!url) return alert("Please enter a valid URL");
+
+            document.getElementById('loader').style.display = "block";
+            document.getElementById('results').style.display = "none";
+
+            // Simulating API Fetching
+            setTimeout(() => {
+                document.getElementById('loader').style.display = "none";
+                document.getElementById('results').style.display = "block";
+                document.getElementById('videoTitle').innerText = "Media Found: " + url.split('/')[2];
+            }, 2000);
+        }
+
+        function startDownload(quality) {
+            alert("Kernel-0x0 System: Initiating " + quality + " download sequence. Please wait...");
+            // Note: In static hosting, this triggers a redirect to a downloader API.
+        }
+
+        // Disable Inspect Element
+        document.onkeydown = (e) => {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel-0x0 | Contact VIP_ARM</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --contact-bg: #030303;
+            --gold-glow: #ffcc00;
+            --soft-white: #e0e0e0;
+            --panel-hex: #111111;
+        }
+
+        body {
+            background-color: var(--contact-bg);
+            color: var(--soft-white);
+            font-family: 'Segoe UI', sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar integration */
+        .sidebar {
+            width: 280px;
+            background: #000;
+            border-right: 1px solid var(--gold-glow);
+            box-shadow: 2px 0 20px rgba(255, 204, 0, 0.1);
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            color: #777;
+            text-decoration: none;
+            border-bottom: 1px solid #111;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            color: var(--gold-glow);
+            background: rgba(255, 204, 0, 0.05);
+            text-shadow: 0 0 8px var(--gold-glow);
+        }
+
+        /* Profile Card Area */
+        .content-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+            background-image: radial-gradient(circle at center, #111 0%, #030303 100%);
+        }
+
+        .profile-card {
+            background: var(--panel-hex);
+            border: 1px solid var(--gold-glow);
+            width: 100%;
+            max-width: 500px;
+            border-radius: 20px;
+            padding: 40px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0,0,0,0.8);
+        }
+
+        .profile-img {
+            width: 120px;
+            height: 120px;
+            background: #000;
+            border: 3px solid var(--gold-glow);
+            border-radius: 50%;
+            margin: -100px auto 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            color: var(--gold-glow);
+            box-shadow: 0 0 20px var(--gold-glow);
+        }
+
+        .badge {
+            background: var(--gold-glow);
+            color: #000;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .social-links {
+            margin-top: 30px;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+        }
+
+        .social-btn {
+            background: #000;
+            border: 1px solid #333;
+            color: var(--soft-white);
+            padding: 15px;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .social-btn:hover {
+            border-color: var(--gold-glow);
+            color: var(--gold-glow);
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.1);
+        }
+
+        .footer-note {
+            margin-top: 30px;
+            font-size: 11px;
+            color: #555;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div style="padding: 35px; text-align: center;">
+            <i class="fas fa-satellite-dish" style="font-size: 45px; color: var(--gold-glow);"></i>
+            <h3 style="margin-top: 15px; color: #fff;">LINK-UP</h3>
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="editor.html"><i class="fas fa-paint-brush"></i> Designer</a>
+        <a href="exif.html"><i class="fas fa-search"></i> Forensic</a>
+        <a href="downloader.html"><i class="fas fa-download"></i> Downloader</a>
+        <a href="scanner.html"><i class="fas fa-shield"></i> Scanner</a>
+        <a href="contact.html" class="active"><i class="fas fa-id-card"></i> Contact Team</a>
+    </div>
+
+    <div class="content-area">
+        <div class="profile-card">
+            <div class="profile-img">
+                <i class="fas fa-user-shield"></i>
+            </div>
+            <span class="badge">Official Account</span>
+            <h1 style="margin: 15px 0 5px; color: var(--gold-glow);">VIP_ARM</h1>
+            <p style="color: #aaa; margin-bottom: 25px;">Lead of Kernel-0x0 Security Research Team</p>
+            
+            <div style="text-align: left; padding: 10px; background: rgba(255,255,255,0.02); border-radius: 10px; font-size: 14px;">
+                <p><i class="fas fa-code-branch" style="color: var(--gold-glow);"></i> Expertise: Python / Security / Web</p>
+                <p><i class="fas fa-map-marker-alt" style="color: var(--gold-glow);"></i> Operations: Cloud / NetHunter</p>
+            </div>
+
+            <div class="social-links">
+                <a href="https://t.me/YOUR_TELEGRAM" class="social-btn"><i class="fab fa-telegram-plane"></i> Telegram</a>
+                <a href="https://github.com/sylith17-tech" class="social-btn"><i class="fab fa-github"></i> GitHub</a>
+                <a href="#" class="social-btn"><i class="fab fa-facebook"></i> Facebook</a>
+                <a href="#" class="social-btn"><i class="fab fa-instagram"></i> Instagram</a>
+            </div>
+
+            <p class="footer-note">ENCRYPTED COMMUNICATION ESTABLISHED // 2026</p>
+        </div>
+    </div>
+
+    <script>
+        // Disable Developer Tools
+        document.onkeydown = (e) => {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel-0x0 | Security Scanner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --scan-bg: #050a14;
+            --neon-blue: #00f2ff;
+            --dark-blue: #003d4d;
+            --text-cyan: #7fffd4;
+            --danger: #ff0055;
+        }
+
+        body {
+            background-color: var(--scan-bg);
+            color: var(--text-cyan);
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            display: flex;
+        }
+
+        /* Sidebar Re-integration */
+        .sidebar {
+            height: 100vh;
+            width: 280px;
+            position: fixed;
+            background: #02050a;
+            border-right: 1px solid var(--neon-blue);
+        }
+
+        .sidebar a {
+            padding: 15px 25px;
+            text-decoration: none;
+            color: var(--text-cyan);
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #111;
+        }
+
+        .sidebar a:hover {
+            background: var(--dark-blue);
+            color: var(--neon-blue);
+        }
+
+        /* Main Scanner Content */
+        .container {
+            margin-left: 280px;
+            padding: 50px;
+            width: 100%;
+        }
+
+        .scanner-card {
+            background: rgba(0, 61, 77, 0.1);
+            border: 2px solid var(--neon-blue);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--neon-blue);
+            padding: 15px;
+            color: var(--neon-blue);
+            font-size: 16px;
+            outline: none;
+        }
+
+        .scan-btn {
+            background: var(--neon-blue);
+            color: #000;
+            border: none;
+            padding: 0 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .scan-btn:hover {
+            box-shadow: 0 0 20px var(--neon-blue);
+            transform: scale(1.05);
+        }
+
+        /* Output Terminal */
+        #log-window {
+            margin-top: 30px;
+            background: #000;
+            border-left: 4px solid var(--neon-blue);
+            padding: 20px;
+            height: 350px;
+            overflow-y: auto;
+            font-size: 14px;
+            display: none;
+        }
+
+        .log-entry { margin-bottom: 10px; border-bottom: 1px solid #111; padding-bottom: 5px; }
+        .success { color: #00ff00; }
+        .warning { color: #ffff00; }
+        .critical { color: var(--danger); font-weight: bold; }
+
+        /* Animation for Progress */
+        .scanning-bar {
+            width: 0%;
+            height: 2px;
+            background: var(--neon-blue);
+            margin-top: 10px;
+            transition: width 0.5s;
+        }
+
+        .back-home {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: var(--neon-blue);
+            text-decoration: none;
+            border: 1px solid var(--neon-blue);
+            padding: 10px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div style="padding: 20px; text-align: center;">
+            <i class="fas fa-shield-alt" style="font-size: 40px; color: var(--neon-blue);"></i>
+            <h4 style="margin-top: 10px;">VIP_ARM SECURITY</h4>
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="editor.html"><i class="fas fa-image"></i> Image Editor</a>
+        <a href="exif.html"><i class="fas fa-search"></i> EXIF Forensics</a>
+        <a href="downloader.html"><i class="fas fa-download"></i> Downloader</a>
+        <a href="scanner.html" style="background: var(--dark-blue);"><i class="fas fa-bug"></i> Scanner</a>
+        <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Return Home</a>
+        
+        <div class="scanner-card">
+            <h1><i class="fas fa-satellite"></i> Web Intelligence Scanner</h1>
+            <p>> Enter target URL to analyze infrastructure and security headers.</p>
+            
+            <div class="input-group">
+                <input type="text" id="targetUrl" placeholder="https://example.com">
+                <button class="scan-btn" onclick="startScan()">INITIATE SCAN</button>
+            </div>
+            <div id="progress" class="scanning-bar"></div>
+        </div>
+
+        <div id="log-window">
+            <!-- Scan Results will appear here -->
+        </div>
+    </div>
+
+    <script>
+        function startScan() {
+            const url = document.getElementById('targetUrl').value;
+            if(!url) return alert("Please enter a target URL");
+
+            const log = document.getElementById('log-window');
+            const progress = document.getElementById('progress');
+            log.innerHTML = "";
+            log.style.display = "block";
+            
+            const tasks = [
+                { msg: "> Establishing connection to target...", class: "" },
+                { msg: "> Bypassing CDN firewalls...", class: "warning" },
+                { msg: "> Fetching HTTP Response Headers...", class: "success" },
+                { msg: `> Target IP: ${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.1.1`, class: "success" },
+                { msg: "> Analyzing SSL Certificate...", class: "" },
+                { msg: "> CRITICAL: X-Frame-Options Header Missing!", class: "critical" },
+                { msg: "> Protection: Cloudflare WAF Detected.", class: "success" },
+                { msg: "> Scan Complete. No open SQLi ports found.", class: "success" }
+            ];
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if(i < tasks.length) {
+                    const div = document.createElement('div');
+                    div.className = "log-entry " + tasks[i].class;
+                    div.innerHTML = tasks[i].msg;
+                    log.appendChild(div);
+                    log.scrollTop = log.scrollHeight;
+                    progress.style.width = ((i+1) / tasks.length * 100) + "%";
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 800);
+        }
+
+        // Disable Inspect Element for Security
+        document.onkeydown = (e) => {
+            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
+        };
+    </script>
+</body>
+</html>

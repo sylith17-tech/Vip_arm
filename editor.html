@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel-0x0 | Pro Image Editor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --editor-bg: #121212;
+            --panel-bg: #1e1e1e;
+            --accent-green: #00ff41;
+            --border-color: #333;
+        }
+
+        body {
+            background-color: var(--editor-bg);
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Sidebar Re-integration */
+        .sidebar {
+            width: 260px;
+            background: #000;
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar a {
+            padding: 15px 20px;
+            color: #888;
+            text-decoration: none;
+            border-bottom: 1px solid #111;
+            transition: 0.3s;
+        }
+
+        .sidebar a:hover, .sidebar a.active {
+            color: var(--accent-green);
+            background: rgba(0, 255, 65, 0.05);
+        }
+
+        /* Editor Workspace */
+        .workspace {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #000;
+            position: relative;
+        }
+
+        .top-bar {
+            height: 60px;
+            background: var(--panel-bg);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            background-image: linear-gradient(45deg, #222 25%, transparent 25%), 
+                              linear-gradient(-45deg, #222 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #222 75%), 
+                              linear-gradient(-45deg, transparent 75%, #222 75%);
+            background-size: 20px 20px;
+        }
+
+        /* Control Panel */
+        .controls {
+            width: 300px;
+            background: var(--panel-bg);
+            border-left: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .control-group { margin-bottom: 25px; }
+        .control-group label { display: block; margin-bottom: 10px; font-size: 13px; color: #aaa; }
+        
+        input[type="range"] {
+            width: 100%;
+            accent-color: var(--accent-green);
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .filter-btn {
+            background: #2a2a2a;
+            border: 1px solid #444;
+            color: #fff;
+            padding: 10px;
+            cursor: pointer;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .filter-btn:hover { border-color: var(--accent-green); }
+
+        .btn-main {
+            background: var(--accent-green);
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #upload-input { display: none; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div style="padding: 25px; text-align: center; border-bottom: 1px solid #222;">
+            <i class="fas fa-edit" style="font-size: 30px; color: var(--accent-green);"></i>
+            <p style="font-weight: bold; margin-top: 10px;">VIP_ARM EDITOR</p>
+        </div>
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="editor.html" class="active"><i class="fas fa-image"></i> Image Editor</a>
+        <a href="exif.html"><i class="fas fa-fingerprint"></i> EXIF Data</a>
+        <a href="downloader.html"><i class="fas fa-download"></i> Downloader</a>
+        <a href="scanner.html"><i class="fas fa-bug"></i> Scanner</a>
+    </div>
+
+    <div class="workspace">
+        <div class="top-bar">
+            <div>
+                <button class="btn-main" onclick="document.getElementById('upload-input').click()">
+                    <i class="fas fa-upload"></i> Upload Image
+                </button>
+                <input type="file" id="upload-input" accept="image/*">
+            </div>
+            <button class="btn-main" onclick="downloadImage()">
+                <i class="fas fa-save"></i> Save Image
+            </button>
+        </div>
+
+        <div class="canvas-area">
+            <canvas id="mainCanvas"></canvas>
+        </div>
+    </div>
+
+    <div class="controls">
+        <h3>Adjustments</h3>
+        <div class="control-group">
+            <label>Brightness</label>
+            <input type="range" id="brightness" min="0" max="200" value="100">
+        </div>
+        <div class="control-group">
+            <label>Contrast</label>
+            <input type="range" id="contrast" min="0" max="200" value="100">
+        </div>
+        <div class="control-group">
+            <label>Saturation</label>
+            <input type="range" id="saturation" min="0" max="200" value="100">
+        </div>
+        <div class="control-group">
+            <label>Blur</label>
+            <input type="range" id="blur" min="0" max="10" value="0">
+        </div>
+
+        <h3>Quick Filters</h3>
+        <div class="filter-grid">
+            <button class="filter-btn" onclick="applyPreset('grayscale(100%)')">B&W</button>
+            <button class="filter-btn" onclick="applyPreset('sepia(100%)')">Sepia</button>
+            <button class="filter-btn" onclick="applyPreset('invert(100%)')">Invert</button>
+            <button class="filter-btn" onclick="resetFilters()">Reset</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const upload = document.getElementById('upload-input');
+        const sliders = document.querySelectorAll('input[type="range"]');
+        let originalImage = null;
+
+        upload.onchange = function(e) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+                    originalImage = img;
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        function updateFilters() {
+            if(!originalImage) return;
+            const b = document.getElementById('brightness').value;
+            const c = document.getElementById('contrast').value;
+            const s = document.getElementById('saturation').value;
+            const bl = document.getElementById('blur').value;
+
+            ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) blur(${bl}px)`;
+            ctx.drawImage(originalImage, 0, 0);
+        }
+
+        sliders.forEach(slider => slider.addEventListener('input', updateFilters));
+
+        function applyPreset(filterStr) {
+            if(!originalImage) return;
+            ctx.filter = filterStr;
+            ctx.drawImage(originalImage, 0, 0);
+        }
+
+        function resetFilters() {
+            sliders.forEach(s => s.value = s.min == "0" && s.max == "10" ? 0 : 100);
+            applyPreset('none');
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.download = 'Kernel0x0_Edited.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+    </script>
+</body>
+</html>
