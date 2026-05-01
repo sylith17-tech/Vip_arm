@@ -1,1 +1,33 @@
-<h1>Welcome to VIP_ARM Site</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VIP_ARM | Kernel-0x0 Security</title>
+    <style>
+        body { background-color: #000; color: #0f0; font-family: 'Courier New', monospace; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .box { border: 1px solid #0f0; padding: 30px; box-shadow: 0 0 20px #0f0; background: rgba(0, 20, 0, 0.9); text-align: left; width: 80%; }
+        .cursor { display: inline-block; width: 10px; height: 20px; background: #0f0; animation: blink 1s infinite; }
+        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+        h1 { color: #f00; text-transform: uppercase; }
+    </style>
+</head>
+<body oncontextmenu="return false;"> <!-- منع الزر الأيمن -->
+    <div class="box">
+        <h1>[ SYSTEM SECURED ]</h1>
+        <p>> DISCOVERING TARGETS... DONE</p>
+        <p>> ENCRYPTING DATA... DONE</p>
+        <p>> WELCOME: VIP_ARM <span class="cursor"></span></p>
+        <hr color="#0f0">
+        <p style="color: #555;">Kernel-0x0 Security Research Team © 2026</p>
+    </div>
+
+    <script>
+        // منع F12 و Ctrl+U (رؤية السورس كود)
+        document.onkeydown = function(e) {
+            if (e.keyCode == 123 || (e.ctrlKey && (e.keyCode == 'U'.charCodeAt(0) || e.keyCode == 'I'.charCodeAt(0)))) {
+                return false;
+            }
+        };
+    </script>
+</body>
+</html>
