@@ -3,133 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | EXIF Forensic Lab</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Kernel-0x0 | Digital Forensic Lab</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
     <style>
         :root {
-            --forensic-bg: #050505;
+            --forensic-bg: #030712;
             --matrix-green: #00ff41;
-            --data-blue: #00d4ff;
-            --panel-gray: #1a1a1a;
+            --data-blue: #0ea5e9;
+            --panel-gray: #111827;
+            --danger: #ef4444;
         }
 
         body {
             background-color: var(--forensic-bg);
-            color: #eee;
-            font-family: 'Consolas', 'Courier New', monospace;
+            color: #d1d5db;
+            font-family: 'JetBrains Mono', 'Consolas', monospace;
             margin: 0;
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
 
-        /* Sidebar Sidebar integration */
+        /* Sidebar - Integrated with System Identity */
         .sidebar {
-            width: 280px;
+            width: 260px;
             background: #000;
-            border-right: 1px solid var(--matrix-green);
+            border-right: 1px solid #1f2937;
             display: flex;
             flex-direction: column;
-            box-shadow: 2px 0 10px rgba(0, 255, 65, 0.2);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid #111;
         }
 
         .sidebar a {
             padding: 15px 25px;
-            color: #666;
             text-decoration: none;
-            border-bottom: 1px solid #111;
+            color: #4b5563;
+            display: flex;
+            align-items: center;
             transition: 0.3s;
+            border-left: 4px solid transparent;
         }
 
         .sidebar a:hover, .sidebar a.active {
             color: var(--matrix-green);
             background: rgba(0, 255, 65, 0.05);
-            text-shadow: 0 0 5px var(--matrix-green);
+            border-left: 4px solid var(--matrix-green);
         }
+
+        .sidebar a i { margin-right: 15px; width: 20px; text-align: center; }
 
         /* Lab Workspace */
         .lab-container {
             flex: 1;
             padding: 40px;
             overflow-y: auto;
+            background: radial-gradient(circle at top right, #0f172a, transparent);
         }
 
         .drop-zone {
             width: 100%;
-            height: 200px;
-            border: 2px dashed var(--data-blue);
-            border-radius: 10px;
+            height: 180px;
+            border: 2px dashed #1e293b;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 212, 255, 0.05);
+            background: rgba(17, 24, 39, 0.5);
             cursor: pointer;
             transition: 0.3s;
+            margin-bottom: 30px;
         }
 
-        .drop-zone:hover { background: rgba(0, 212, 255, 0.1); border-color: var(--matrix-green); }
+        .drop-zone:hover { border-color: var(--matrix-green); background: rgba(0, 255, 65, 0.02); }
 
         .analysis-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-top: 30px;
-            display: none; /* hidden until upload */
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 25px;
+            display: none; /* Triggered on upload */
         }
 
         .data-panel {
             background: var(--panel-gray);
-            border: 1px solid #333;
-            padding: 20px;
-            border-radius: 8px;
+            border: 1px solid #1f2937;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
         }
 
         .panel-title {
             color: var(--matrix-green);
-            border-bottom: 1px solid #333;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
-            font-size: 18px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            border-bottom: 1px solid #1f2937;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .info-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #222;
-            font-size: 14px;
+            padding: 10px 0;
+            border-bottom: 1px solid #1e293b;
+            font-size: 13px;
         }
 
-        .info-label { color: #888; }
-        .info-value { color: var(--data-blue); }
+        .info-label { color: #6b7280; }
+        .info-value { color: var(--data-blue); font-weight: bold; }
 
-        .action-btns {
-            margin-top: 20px;
-            display: flex;
-            gap: 15px;
+        #preview-img {
+            width: 100%;
+            border-radius: 8px;
+            border: 1px solid #374151;
+            margin-bottom: 15px;
         }
 
-        .btn {
-            flex: 1;
-            padding: 12px;
+        .btn-action {
+            width: 100%;
+            padding: 14px;
+            background: var(--danger);
+            color: #fff;
             border: none;
-            border-radius: 4px;
-            font-weight: bold;
+            border-radius: 6px;
+            font-weight: 800;
             cursor: pointer;
             transition: 0.3s;
+            text-transform: uppercase;
         }
 
-        .btn-clean { background: #ff4444; color: #fff; }
-        .btn-clean:hover { background: #cc0000; box-shadow: 0 0 15px #ff4444; }
-        
-        #preview-img {
-            max-width: 100%;
-            border-radius: 4px;
-            border: 1px solid #444;
+        .btn-action:hover {
+            filter: brightness(1.2);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .gps-alert {
+            background: rgba(234, 179, 8, 0.1);
+            border: 1px solid #eab308;
+            padding: 15px;
+            border-radius: 6px;
+            color: #eab308;
+            margin-top: 10px;
+            font-size: 12px;
         }
 
         input[type="file"] { display: none; }
@@ -137,48 +160,46 @@
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="padding: 30px; text-align: center;">
-            <i class="fas fa-fingerprint" style="font-size: 40px; color: var(--matrix-green);"></i>
-            <h3 style="margin-top: 15px; color: #fff;">EXIF LAB</h3>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-fingerprint" style="font-size: 50px; color: var(--matrix-green);"></i>
+            <h3 style="color: #fff; margin-top: 15px;">KERNEL-0x0</h3>
         </div>
-        <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="editor.html"><i class="fas fa-image"></i> Image Editor</a>
+        <a href="index.html"><i class="fas fa-terminal"></i> Dashboard</a>
+        <a href="editor.html"><i class="fas fa-eye-dropper"></i> Image Lab</a>
         <a href="exif.html" class="active"><i class="fas fa-search-location"></i> EXIF Forensic</a>
-        <a href="downloader.html"><i class="fas fa-cloud-download-alt"></i> Downloader</a>
-        <a href="scanner.html"><i class="fas fa-shield-virus"></i> Scanner</a>
-        <a href="contact.html"><i class="fas fa-id-badge"></i> Contact</a>
-    </div>
+        <a href="downloader.html"><i class="fas fa-cloud-arrow-down"></i> Downloader</a>
+        <a href="scanner.html"><i class="fas fa-shield-virus"></i> Security Scanner</a>
+        <a href="contact.html"><i class="fas fa-user-shield"></i> HQ Contact</a>
+    </nav>
 
     <div class="lab-container">
-        <h1 style="color: var(--matrix-green);"><i class="fas fa-microscope"></i> Forensic Analysis Engine</h1>
-        <p>> Upload an image to extract hidden metadata and GPS coordinates.</p>
+        <header style="margin-bottom: 40px;">
+            <h1 style="color: #fff; margin: 0;"><i class="fas fa-microscope" style="color: var(--matrix-green);"></i> Metadata Investigation</h1>
+            <p style="color: #6b7280;">Extract deep-level metadata and identify geolocation footprints.</p>
+        </header>
 
-        <div class="drop-zone" onclick="document.getElementById('file-input').click()">
-            <i class="fas fa-file-upload" style="font-size: 3rem; color: var(--data-blue);"></i>
-            <p>Click to Select or Drag Image Here</p>
+        <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+            <i class="fas fa-upload" style="font-size: 2.5rem; color: var(--matrix-green); margin-bottom: 15px;"></i>
+            <p style="margin: 0; font-weight: 600;">Ingest Media for Analysis</p>
+            <p style="font-size: 0.8rem; color: #4b5563;">Supports JPG, PNG, WEBP</p>
             <input type="file" id="file-input" accept="image/*">
         </div>
 
         <div class="analysis-grid" id="analysis-grid">
             <div class="data-panel">
-                <div class="panel-title">
-                    <span><i class="fas fa-info-circle"></i> Technical Metadata</span>
-                </div>
-                <div id="metadata-results">
-                    <!-- Data entries will appear here -->
-                </div>
-                <div class="action-btns">
-                    <button class="btn btn-clean" onclick="cleanMetadata()"><i class="fas fa-eraser"></i> Wipe EXIF Data</button>
+                <div class="panel-title"><i class="fas fa-database"></i> Metadata Extraction Ledger</div>
+                <div id="metadata-results"></div>
+                <div style="margin-top: 25px;">
+                    <button class="btn-action" onclick="sanitizeImage()"><i class="fas fa-shield-halved"></i> Execute Data Sanitization</button>
+                    <p style="font-size: 10px; color: #4b5563; margin-top: 10px; text-align: center;">* This will strip all EXIF tags and provide a clean copy.</p>
                 </div>
             </div>
 
             <div class="data-panel">
-                <div class="panel-title">
-                    <span><i class="fas fa-eye"></i> Visual Preview</span>
-                </div>
-                <img id="preview-img" src="" alt="Preview">
-                <div id="location-info" style="margin-top: 15px; color: #ffff00; font-size: 13px;"></div>
+                <div class="panel-title"><i class="fas fa-image"></i> Source Preview</div>
+                <img id="preview-img" src="" alt="Forensic Source">
+                <div id="gps-container"></div>
             </div>
         </div>
     </div>
@@ -186,14 +207,15 @@
     <script>
         const fileInput = document.getElementById('file-input');
         const grid = document.getElementById('analysis-grid');
-        const metaList = document.getElementById('metadata-results');
+        const metaResults = document.getElementById('metadata-results');
         const preview = document.getElementById('preview-img');
+        const gpsContainer = document.getElementById('gps-container');
 
         fileInput.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
 
-            // Preview
+            // Preview Setup
             const reader = new FileReader();
             reader.onload = (event) => {
                 preview.src = event.target.result;
@@ -201,45 +223,60 @@
             };
             reader.readAsDataURL(file);
 
-            // EXIF Extraction
+            // Forensic Analysis
             EXIF.getData(file, function() {
-                const allData = EXIF.getAllTags(this);
-                metaList.innerHTML = "";
-                
-                if (Object.keys(allData).length === 0) {
-                    metaList.innerHTML = "<p style='color: #888;'>No EXIF tags found in this image.</p>";
-                    return;
-                }
+                const tags = EXIF.getAllTags(this);
+                metaResults.innerHTML = "";
+                gpsContainer.innerHTML = "";
 
-                for (let tag in allData) {
-                    if (typeof allData[tag] !== 'function' && typeof allData[tag] !== 'object') {
-                        const row = `
-                            <div class="info-row">
-                                <span class="info-label">${tag}</span>
-                                <span class="info-value">${allData[tag]}</span>
-                            </div>`;
-                        metaList.innerHTML += row;
+                if (Object.keys(tags).length === 0) {
+                    metaResults.innerHTML = "<p style='color: #ef4444;'>[!] No metadata signatures found.</p>";
+                } else {
+                    for (let tag in tags) {
+                        if (typeof tags[tag] !== 'function' && typeof tags[tag] !== 'object') {
+                            metaResults.innerHTML += `
+                                <div class="info-row">
+                                    <span class="info-label">${tag}</span>
+                                    <span class="info-value">${tags[tag]}</span>
+                                </div>`;
+                        }
                     }
                 }
 
-                // Check for GPS
-                if (allData.GPSLatitude) {
-                    const lat = allData.GPSLatitude;
-                    const lon = allData.GPSLongitude;
-                    document.getElementById('location-info').innerHTML = 
-                        `<i class="fas fa-map-marker-alt"></i> GPS COORDS DETECTED: ${lat[0]}°${lat[1]}' , ${lon[0]}°${lon[1]}'`;
+                // Geolocation Identification
+                if (tags.GPSLatitude) {
+                    const lat = tags.GPSLatitude[0] + tags.GPSLatitude[1]/60 + tags.GPSLatitude[2]/3600;
+                    const lon = tags.GPSLongitude[0] + tags.GPSLongitude[1]/60 + tags.GPSLongitude[2]/3600;
+                    gpsContainer.innerHTML = `
+                        <div class="gps-alert">
+                            <strong><i class="fas fa-location-crosshairs"></i> GEO-LOCATION FOUND:</strong><br>
+                            Coordinates: ${lat.toFixed(6)}, ${lon.toFixed(6)}<br>
+                            <a href="https://www.google.com/maps?q=${lat},${lon}" target="_blank" style="color:#fff; text-decoration: underline;">Open in Tracking Map</a>
+                        </div>`;
                 }
             });
         });
 
-        function cleanMetadata() {
-            alert("Security Protocol: Metadata is being stripped... Image is now sanitized for sharing.");
-            // Note: In a real static site, cleaning happens by drawing to canvas and re-saving.
-            // This simulation confirms the team's action.
+        function sanitizeImage() {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = document.getElementById('preview-img');
+            
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            ctx.drawImage(img, 0, 0);
+            
+            const cleanData = canvas.toDataURL('image/jpeg', 0.9);
+            const link = document.createElement('a');
+            link.download = 'VIP_ARM_Sanitized.jpg';
+            link.href = cleanData;
+            link.click();
+            
+            alert("SUCCESS: Forensic traces wiped. Clean image exported.");
         }
 
-        // Security: Disable right click
-        document.addEventListener('contextmenu', event => event.preventDefault());
+        // System Lockdown
+        document.addEventListener('contextmenu', e => e.preventDefault());
     </script>
 </body>
 </html>

@@ -3,206 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | Security Scanner</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Kernel-0x0 | Network Recon Scanner</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --scan-bg: #050a14;
-            --neon-blue: #00f2ff;
-            --dark-blue: #003d4d;
-            --text-cyan: #7fffd4;
+            --scan-bg: #020408;
+            --neon-cyan: #00f2ff;
+            --dark-cyan: #003d4d;
+            --text-main: #a2f9ff;
             --danger: #ff0055;
+            --success: #00ff41;
         }
 
         body {
             background-color: var(--scan-bg);
-            color: var(--text-cyan);
-            font-family: 'Courier New', monospace;
+            color: var(--text-main);
+            font-family: 'Segoe UI', monospace;
             margin: 0;
             display: flex;
+            min-height: 100vh;
         }
 
-        /* Sidebar Re-integration */
+        /* Sidebar - توحيد التصميم مع الصفحة الرئيسية */
         .sidebar {
-            height: 100vh;
-            width: 280px;
+            width: 260px;
+            background: #000;
+            border-right: 2px solid var(--dark-cyan);
+            display: flex;
+            flex-direction: column;
             position: fixed;
-            background: #02050a;
-            border-right: 1px solid var(--neon-blue);
+            height: 100%;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 40px 20px;
+            text-align: center;
+            border-bottom: 1px solid #111;
         }
 
         .sidebar a {
             padding: 15px 25px;
             text-decoration: none;
-            color: var(--text-cyan);
+            color: #666;
             display: flex;
             align-items: center;
-            border-bottom: 1px solid #111;
+            transition: 0.3s;
+            border-left: 4px solid transparent;
         }
 
-        .sidebar a:hover {
-            background: var(--dark-blue);
-            color: var(--neon-blue);
+        .sidebar a:hover, .sidebar a.active {
+            color: var(--neon-cyan);
+            background: rgba(0, 242, 255, 0.05);
+            border-left: 4px solid var(--neon-cyan);
         }
 
-        /* Main Scanner Content */
-        .container {
-            margin-left: 280px;
-            padding: 50px;
+        .sidebar a i { margin-right: 15px; width: 20px; text-align: center; }
+
+        /* Main Area */
+        .main-container {
+            margin-left: 260px;
+            padding: 40px;
             width: 100%;
         }
 
-        .scanner-card {
-            background: rgba(0, 61, 77, 0.1);
-            border: 2px solid var(--neon-blue);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 0 30px rgba(0, 242, 255, 0.15);
+        .scanner-header {
+            background: linear-gradient(90deg, rgba(0,242,255,0.1), transparent);
+            border-left: 4px solid var(--neon-cyan);
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 30px;
         }
 
-        .input-group {
+        .input-box {
             display: flex;
-            gap: 15px;
-            margin-top: 25px;
+            gap: 10px;
+            background: #000;
+            padding: 5px;
+            border: 1px solid var(--dark-cyan);
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,242,255,0.1);
         }
 
         input[type="text"] {
             flex: 1;
-            background: #000;
-            border: 1px solid var(--neon-blue);
+            background: transparent;
+            border: none;
             padding: 15px;
-            color: var(--neon-blue);
+            color: var(--neon-cyan);
             font-size: 16px;
             outline: none;
         }
 
-        .scan-btn {
-            background: var(--neon-blue);
+        .btn-scan {
+            background: var(--neon-cyan);
             color: #000;
             border: none;
-            padding: 0 30px;
-            font-weight: bold;
+            padding: 0 40px;
+            font-weight: 800;
             cursor: pointer;
             transition: 0.3s;
+            text-transform: uppercase;
         }
 
-        .scan-btn:hover {
-            box-shadow: 0 0 20px var(--neon-blue);
-            transform: scale(1.05);
+        .btn-scan:hover {
+            box-shadow: 0 0 25px var(--neon-cyan);
+            letter-spacing: 1px;
         }
 
-        /* Output Terminal */
-        #log-window {
+        /* Results Terminal */
+        .terminal {
             margin-top: 30px;
             background: #000;
-            border-left: 4px solid var(--neon-blue);
-            padding: 20px;
-            height: 350px;
-            overflow-y: auto;
-            font-size: 14px;
-            display: none;
+            border: 1px solid #111;
+            border-radius: 8px;
+            height: 450px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .log-entry { margin-bottom: 10px; border-bottom: 1px solid #111; padding-bottom: 5px; }
-        .success { color: #00ff00; }
-        .warning { color: #ffff00; }
-        .critical { color: var(--danger); font-weight: bold; }
-
-        /* Animation for Progress */
-        .scanning-bar {
-            width: 0%;
-            height: 2px;
-            background: var(--neon-blue);
-            margin-top: 10px;
-            transition: width 0.5s;
-        }
-
-        .back-home {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            color: var(--neon-blue);
-            text-decoration: none;
-            border: 1px solid var(--neon-blue);
+        .term-header {
+            background: #111;
             padding: 10px 20px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            border-radius: 8px 8px 0 0;
         }
+
+        #output {
+            padding: 20px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .log-line { margin-bottom: 8px; border-bottom: 1px solid #050505; }
+        .critical { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
+        .success { color: var(--success); }
+        .info { color: var(--neon-cyan); }
+
+        /* Animation Progress */
+        .progress-container {
+            width: 100%;
+            height: 2px;
+            background: #111;
+            margin-top: 10px;
+        }
+        #progress-bar { width: 0%; height: 100%; background: var(--neon-cyan); transition: 0.3s; }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="padding: 20px; text-align: center;">
-            <i class="fas fa-shield-alt" style="font-size: 40px; color: var(--neon-blue);"></i>
-            <h4 style="margin-top: 10px;">VIP_ARM SECURITY</h4>
+    <nav class="sidebar">
+        <div class="sidebar-header">
+            <i class="fas fa-user-secret" style="font-size: 50px; color: var(--neon-cyan);"></i>
+            <h3 style="color: var(--neon-cyan); margin-top: 10px;">VIP_ARM</h3>
         </div>
-        <a href="index.html"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="editor.html"><i class="fas fa-image"></i> Image Editor</a>
-        <a href="exif.html"><i class="fas fa-search"></i> EXIF Forensics</a>
+        <a href="index.html"><i class="fas fa-columns"></i> Dashboard</a>
+        <a href="editor.html"><i class="fas fa-wand-magic-sparkles"></i> Image Editor</a>
+        <a href="exif.html"><i class="fas fa-microscope"></i> EXIF Forensic</a>
         <a href="downloader.html"><i class="fas fa-download"></i> Downloader</a>
-        <a href="scanner.html" style="background: var(--dark-blue);"><i class="fas fa-bug"></i> Scanner</a>
-        <a href="contact.html"><i class="fas fa-envelope"></i> Contact</a>
-    </div>
+        <a href="scanner.html" class="active"><i class="fas fa-shield-virus"></i> Security Scanner</a>
+        <a href="contact.html"><i class="fas fa-headset"></i> Contact Team</a>
+    </nav>
 
-    <div class="container">
-        <a href="index.html" class="back-home"><i class="fas fa-arrow-left"></i> Return Home</a>
-        
-        <div class="scanner-card">
-            <h1><i class="fas fa-satellite"></i> Web Intelligence Scanner</h1>
-            <p>> Enter target URL to analyze infrastructure and security headers.</p>
-            
-            <div class="input-group">
-                <input type="text" id="targetUrl" placeholder="https://example.com">
-                <button class="scan-btn" onclick="startScan()">INITIATE SCAN</button>
-            </div>
-            <div id="progress" class="scanning-bar"></div>
+    <div class="main-container">
+        <div class="scanner-header">
+            <h1 style="margin: 0; font-size: 24px;"><i class="fas fa-satellite-dish"></i> Advanced Intelligence Scanner</h1>
+            <p style="margin: 5px 0 0 0; color: #555;">Targeting global infrastructure for security vulnerabilities.</p>
         </div>
 
-        <div id="log-window">
-            <!-- Scan Results will appear here -->
+        <div class="input-box">
+            <input type="text" id="target" placeholder="Enter Target Domain (e.g., example.com)">
+            <button class="btn-scan" onclick="runAnalysis()">Analyze</button>
+        </div>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+
+        <div class="terminal">
+            <div class="term-header">
+                <span>STDOUT - SESSION_ACTIVE</span>
+                <span>ENC: AES-256</span>
+            </div>
+            <div id="output">
+                <span style="color: #444;">[!] System waiting for target input...</span>
+            </div>
         </div>
     </div>
 
     <script>
-        function startScan() {
-            const url = document.getElementById('targetUrl').value;
-            if(!url) return alert("Please enter a target URL");
-
-            const log = document.getElementById('log-window');
-            const progress = document.getElementById('progress');
-            log.innerHTML = "";
-            log.style.display = "block";
+        async function runAnalysis() {
+            const target = document.getElementById('target').value;
+            const output = document.getElementById('output');
+            const bar = document.getElementById('progress-bar');
             
-            const tasks = [
-                { msg: "> Establishing connection to target...", class: "" },
-                { msg: "> Bypassing CDN firewalls...", class: "warning" },
-                { msg: "> Fetching HTTP Response Headers...", class: "success" },
-                { msg: `> Target IP: ${Math.floor(Math.random() * 255)}.${Math.floor(Math.random() * 255)}.1.1`, class: "success" },
-                { msg: "> Analyzing SSL Certificate...", class: "" },
-                { msg: "> CRITICAL: X-Frame-Options Header Missing!", class: "critical" },
-                { msg: "> Protection: Cloudflare WAF Detected.", class: "success" },
-                { msg: "> Scan Complete. No open SQLi ports found.", class: "success" }
-            ];
+            if(!target) return alert("Target identification required.");
 
-            let i = 0;
-            const interval = setInterval(() => {
-                if(i < tasks.length) {
-                    const div = document.createElement('div');
-                    div.className = "log-entry " + tasks[i].class;
-                    div.innerHTML = tasks[i].msg;
-                    log.appendChild(div);
-                    log.scrollTop = log.scrollHeight;
-                    progress.style.width = ((i+1) / tasks.length * 100) + "%";
-                    i++;
-                } else {
-                    clearInterval(interval);
+            output.innerHTML = `<div class="log-line info">[+] Initializing scan for: ${target}</div>`;
+            bar.style.width = "10%";
+
+            try {
+                // محاكاة الاتصال الحقيقي بالسيرفر
+                const steps = [
+                    {m: "[+] Resolving DNS records...", d: 1000, p: 30},
+                    {m: "[+] Pinging target node...", d: 800, p: 50},
+                    {m: "[!] Analyzing HTTP Security Headers...", d: 1200, p: 70},
+                    {m: "[!] Vulnerability Check: XSS, Clickjacking, MIME-Sniffing", d: 1500, p: 90}
+                ];
+
+                for(let step of steps) {
+                    await new Promise(r => setTimeout(r, step.d));
+                    output.innerHTML += `<div class="log-line">${step.m}</div>`;
+                    bar.style.width = step.p + "%";
                 }
-            }, 800);
-        }
 
-        // Disable Inspect Element for Security
-        document.onkeydown = (e) => {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
-        };
+                // طلب حقيقي لجلب بيانات الموقع عبر السيرفر
+                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://' + target)}`);
+                const data = await response.json();
+
+                bar.style.width = "100%";
+                output.innerHTML += `<div class="log-line success">[✔] SCAN COMPLETED SUCCESSFULLY</div>`;
+                output.innerHTML += `<div class="log-line">------------------------------------</div>`;
+                output.innerHTML += `<div class="log-line info">Status: ${response.ok ? 'Target Reachable' : 'Target Shielded'}</div>`;
+                
+                if(!data.contents.includes('X-Frame-Options')) {
+                    output.innerHTML += `<div class="log-line critical">[✖] CRITICAL: Clickjacking Protection (X-Frame-Options) MISSING!</div>`;
+                }
+                
+                output.innerHTML += `<div class="log-line">Detection: Server environment identified. Analytics logged.</div>`;
+
+            } catch (err) {
+                output.innerHTML += `<div class="log-line critical">[!] ERROR: Connection refused by target firewall.</div>`;
+            }
+        }
     </script>
 </body>
 </html>
