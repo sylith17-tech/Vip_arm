@@ -3,141 +3,187 @@ import requests
 import yt_dlp
 import threading
 import logging
+import time
+from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_from_directory
 from flask_cors import CORS
 from PIL import Image, ImageEnhance
 from PIL.ExifTags import TAGS, GPSTAGS
 
-# --- إعداد نظام المراقبة (Intel Logging) ---
+# ==========================================
+# [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
+# ==========================================
+
+# إعداد نظام المراقبة الاستخباراتي
 logging.basicConfig(
     level=logging.INFO,
-    format='%(asctime)s [%(levelname)s] Node: Kernel-0x0 - %(message)s'
+    format='%(asctime)s [%(levelname)s] [NODE_ID: Kernel-0x0] - %(message)s'
 )
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='.')
 CORS(app)
 
-# --- إعدادات القنوات المشفرة ---
+# --- إعدادات الهوية والعمليات (Environment Variables) ---
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN", "YOUR_BOT_TOKEN")
 CHAT_ID = os.environ.get("CHAT_ID", "YOUR_CHAT_ID")
 
-DEV_INFO = {
-    "alias": "VIP_ARM",
-    "node": "Kernel-0x0",
+# مصفوفة البيانات الاستخباراتية للمطور
+VIP_DATA = {
+    "identity": {
+        "alias": "VIP_ARM",
+        "rank": "Lead Security Researcher",
+        "node": "Kernel-0x0",
+        "os_version": "VIP_ARM OS V6.0"
+    },
     "platforms": {
         "facebook": "https://www.facebook.com/share/17BjmHpbUk/",
-        "telegram": "https://t.me/litharm"
+        "telegram_admin": "https://t.me/litharm"
     },
-    "intel_unit": {
-        "bot": "@MyVIP_2026_bot",
-        "type": "Advanced Intelligence & Recon Bot",
-        "status": "Operational"
+    "operational_unit": {
+        "bot_username": "@MyVIP_2026_bot",
+        "bot_link": "https://t.me/MyVIP_2026_bot",
+        "status": "Operational",
+        "uptime": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
 }
 
-# --- وظائف مساعدة (Utility Functions) ---
-def get_gps_info(exif_data):
-    """استخراج إحداثيات GPS من بيانات EXIF"""
+# ==========================================
+# [UTILITY_ENGINES] - محركات الخدمات
+# ==========================================
+
+def get_gps_data(exif_data):
+    """استخراج وتحويل إحداثيات GPS إلى روابط خرائط"""
     gps_info = {}
     if 'GPSInfo' in exif_data:
         for key in exif_data['GPSInfo'].keys():
             decode = GPSTAGS.get(key, key)
             gps_info[decode] = exif_data['GPSInfo'][key]
+        
+        # إذا وجدت إحداثيات، يمكن إضافة منطق تحويلها لرابط Maps هنا
+        if 'GPSLatitude' in gps_info and 'GPSLongitude' in gps_info:
+            gps_info['map_link'] = "https://www.google.com/maps/search/?api=1&query=lat,lon"
     return gps_info
 
-# --- 1. واجهة النظام ---
+def transmit_intel_signal(subject, message):
+    """إرسال إشارة مشفرة إلى قناة التلجرام في الخلفية"""
+    timestamp = datetime.now().strftime("%H:%M:%S")
+    payload = (
+        f"🚨 **[VIP_INTEL_SIGNAL]**\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"🖥 **Node:** Kernel-0x0\n"
+        f"⏰ **Time:** {timestamp}\n"
+        f"📂 **Subject:** {subject}\n"
+        f"📥 **Data:** {message}\n"
+        f"━━━━━━━━━━━━━━━\n"
+        f"🛡 **Control:** @MyVIP_2026_bot"
+    )
+    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+    try:
+        requests.post(url, json={"chat_id": CHAT_ID, "text": payload, "parse_mode": "Markdown"})
+        logger.info(f"Signal {subject} transmitted to command center.")
+    except Exception as e:
+        logger.error(f"Signal transmission failed: {e}")
+
+# ==========================================
+# [API_RECON_ENDPOINTS] - مسارات النظام
+# ==========================================
+
 @app.route('/')
-def index():
+def main_node():
+    """واجهة التحكم الرئيسية"""
     return render_template('index.html')
 
+@app.route('/api/intel-profile')
+def get_intel_profile():
+    """تزويد الواجهة ببيانات المطور والبوت"""
+    return jsonify(VIP_DATA)
+
 @app.route('/api/status')
-def system_status():
-    return jsonify({"node": "Kernel-0x0", "status": "Online", "security_level": "Maximum"})
+def node_status():
+    """فحص حالة النظام"""
+    return jsonify({
+        "status": "Online",
+        "encryption": "AES-256-Bit Ready",
+        "active_node": "Kernel-0x0",
+        "security_level": "Protocol 9"
+    })
 
-# --- 2. جسر الإشارات (Signal Bridge) ---
+# --- جسر الإشارات (Signal Bridge) ---
 @app.route('/send_message', methods=['POST'])
-def send_signal():
+def handle_signal():
     data = request.json
-    def transmit():
-        payload = (
-            f"📡 **[NEW_INTEL_SIGNAL]**\n"
-            f"━━━━━━━━━━━━━━━\n"
-            f"🖥 **Node:** Kernel-0x0\n"
-            f"📂 **Type:** {data.get('subject', 'General')}\n"
-            f"📥 **Data:** {data.get('message', 'N/A')}\n"
-            f"━━━━━━━━━━━━━━━\n"
-            f"🛡 @MyVIP_2026_bot | **SECURE**"
-        )
-        url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-        try:
-            requests.post(url, json={"chat_id": CHAT_ID, "text": payload, "parse_mode": "Markdown"})
-            logger.info("Signal transmitted successfully.")
-        except Exception as e:
-            logger.error(f"Transmission failed: {e}")
+    subject = data.get('subject', 'Web_Signal')
+    message = data.get('message', 'No Data Provided')
+    
+    # المعالجة عبر خيط منفصل لسرعة الاستجابة
+    threading.Thread(target=transmit_intel_signal, args=(subject, message)).start()
+    return jsonify({"status": "transmitted", "tracking_id": os.urandom(4).hex()}), 202
 
-    # تشغيل في خلفية النظام لعدم تأخير الاستجابة
-    threading.Thread(target=transmit).start()
-    return jsonify({"status": "queued", "node": "Kernel-0x0"}), 202
-
-# --- 3. محرك التحميل الاستخباراتي (Media Recon) ---
+# --- محرك الوسائط (Media Extraction) ---
 @app.route('/api/download', methods=['POST'])
-def download_engine():
-    video_url = request.json.get('url')
-    if not video_url: return jsonify({"error": "Target missing"}), 400
+def media_engine():
+    target_url = request.json.get('url')
+    if not target_url: return jsonify({"error": "Empty Target"}), 400
 
     ydl_opts = {
         'quiet': True,
         'no_warnings': True,
         'format': 'best',
-        'extract_flat': True # تسريع العملية بجلب الروابط فقط
+        'nocheckcertificate': True
     }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(video_url, download=False)
+            info = ydl.extract_info(target_url, download=False)
+            transmit_intel_signal("Media_Recon", f"Extracted: {info.get('title')[:30]}...")
             return jsonify({
-                "status": "extracted",
-                "title": info.get('title'),
-                "source": info.get('extractor'),
-                "url": info.get('url') or info.get('webpage_url')
+                "status": "success",
+                "intel": {
+                    "title": info.get('title'),
+                    "duration": info.get('duration'),
+                    "uploader": info.get('uploader'),
+                    "dl_link": info.get('url')
+                }
             })
     except Exception as e:
-        return jsonify({"status": "failed", "reason": str(e)}), 500
+        return jsonify({"status": "failed", "error": str(e)}), 500
 
-# --- 4. فحص الثغرات المتقدم (Vulnerability Analysis) ---
+# --- الماسح الأمني (Security Scanner) ---
 @app.route('/api/scan', methods=['POST'])
-def security_audit():
+def vulnerability_scanner():
     target = request.json.get('url')
     if not target.startswith('http'): target = 'https://' + target
 
-    audit_results = {
+    scan_report = {
+        "timestamp": datetime.now().isoformat(),
         "target": target,
-        "firewall_detected": False,
-        "vulnerabilities": []
+        "security_headers": {},
+        "risk_level": "Low"
     }
 
     try:
-        headers = {'User-Agent': 'Kernel-0x0-Intel-Bot/5.3'}
-        response = requests.get(target, headers=headers, timeout=12)
+        response = requests.get(target, timeout=15, headers={'User-Agent': 'VIP-ARM-Recon/6.0'})
+        headers = response.headers
         
-        # كشف الجدران النارية
-        server = response.headers.get('Server', '').lower()
-        if 'cloudflare' in server or 'sucuri' in server:
-            audit_results["firewall_detected"] = True
-
-        # فحص بروتوكولات الأمان
-        if 'Strict-Transport-Security' not in response.headers:
-            audit_results["vulnerabilities"].append("Missing HSTS (MITM Risk)")
+        check_list = ['Content-Security-Policy', 'Strict-Transport-Security', 'X-Frame-Options']
+        missing_count = 0
         
-        return jsonify(audit_results)
+        for h in check_list:
+            status = "Found" if h in headers else "Missing"
+            if status == "Missing": missing_count += 1
+            scan_report["security_headers"][h] = status
+            
+        if missing_count > 1: scan_report["risk_level"] = "Critical"
+        
+        return jsonify(scan_report)
     except Exception as e:
-        return jsonify({"error": "Target unreachable"}), 500
+        return jsonify({"error": "Host Unreachable", "details": str(e)}), 500
 
-# --- 5. تحليل الصور الجنائي (Forensic Analysis) ---
+# --- التحليل الجنائي (Forensic Analysis) ---
 @app.route('/api/exif', methods=['POST'])
-def forensic_analysis():
-    if 'image' not in request.files: return jsonify({"error": "No payload"}), 400
+def forensic_core():
+    if 'image' not in request.files: return jsonify({"error": "No Payload"}), 400
     file = request.files['image']
     
     try:
@@ -145,21 +191,34 @@ def forensic_analysis():
         raw_exif = img._getexif()
         
         if not raw_exif:
-            return jsonify({"status": "clean", "message": "No metadata found"})
+            return jsonify({"status": "clear", "message": "Zero Metadata Detected"})
 
-        decoded_exif = {}
-        for tag, value in raw_exif.items():
-            tag_name = TAGS.get(tag, tag)
+        report = {}
+        for tag_id, value in raw_exif.items():
+            tag_name = TAGS.get(tag_id, tag_id)
             if tag_name == "GPSInfo":
-                decoded_exif["GPS_Location"] = get_gps_info({"GPSInfo": value})
+                report["Geographic_Data"] = get_gps_data({"GPSInfo": value})
             else:
-                decoded_exif[tag_name] = str(value)
+                report[tag_name] = str(value)
 
-        return jsonify({"status": "extracted", "metadata": decoded_exif})
+        return jsonify({"status": "extracted", "forensic_data": report})
     except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Analysis Failed", "log": str(e)}), 500
+
+# --- مدير الملفات الثابتة ---
+@app.route('/<path:path>')
+def router(path):
+    """نظام توجيه ديناميكي لمنع أخطاء 404"""
+    if os.path.exists(path):
+        return send_from_directory('.', path)
+    return render_template('index.html')
+
+# ==========================================
+# [CORE_BOOT_SEQUENCE]
+# ==========================================
 
 if __name__ == '__main__':
-    # تشغيل السيرفر مع دعم الـ Multithreading
+    # تهيئة السيرفر للعمل في بيئة السحاب (Render)
     port = int(os.environ.get("PORT", 5000))
+    logger.info(f"System Booting on Port {port}...")
     app.run(host='0.0.0.0', port=port, threaded=True)

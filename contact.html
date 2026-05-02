@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kernel-0x0 | Secure Contact HQ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- ربط الملفات الخارجية التي سنعتمد عليها في المشروع كاملاً -->
     <link rel="stylesheet" href="style.css">
     <style>
         :root {
             --contact-bg: #050505;
             --gold-glow: #ffcc00;
             --deep-gold: #b8860b;
-            --panel-hex: rgba(17, 17, 17, 0.9);
+            --panel-hex: rgba(10, 10, 10, 0.85);
             --text-gray: #a0a0a0;
-            --input-bg: #0a0a0a;
+            --input-bg: #0d0d0d;
+            --scan-line: rgba(255, 204, 0, 0.1);
         }
 
         body {
@@ -27,21 +27,17 @@
             overflow: hidden;
         }
 
-        /* Sidebar Identity */
+        /* --- Sidebar Logic --- */
         .sidebar {
             width: 260px;
             background: #000;
-            border-left: 1px solid #1a1a1a; /* تعديل ليتناسب مع الاتجاه العربي */
+            border-left: 1px solid #1a1a1a;
             display: flex;
             flex-direction: column;
             z-index: 100;
         }
 
-        .sidebar-header {
-            padding: 40px 20px;
-            text-align: center;
-        }
-
+        .sidebar-header { padding: 40px 20px; text-align: center; }
         .sidebar a {
             padding: 15px 25px;
             text-decoration: none;
@@ -51,49 +47,71 @@
             transition: 0.3s;
             border-right: 4px solid transparent;
         }
-
         .sidebar a:hover, .sidebar a.active {
             color: var(--gold-glow);
-            background: rgba(255, 204, 0, 0.03);
+            background: rgba(255, 204, 0, 0.05);
             border-right: 4px solid var(--gold-glow);
         }
-
         .sidebar a i { margin-left: 15px; width: 20px; text-align: center; }
 
-        /* Content Area */
+        /* --- Main Content & Matrix Background --- */
         .content-area {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            background: radial-gradient(circle at center, #0f0f0f 0%, #000 100%);
+            background: #000;
         }
 
         #bg-canvas {
             position: absolute;
             top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0.3;
+            z-index: 1;
         }
 
-        /* Profile Card Mapped to VIP_ARM Identity */
+        /* --- Profile Card (The Core) --- */
         .profile-card {
             background: var(--panel-hex);
-            border: 1px solid rgba(255, 204, 0, 0.2);
+            border: 1px solid rgba(255, 204, 0, 0.15);
             width: 90%;
-            max-width: 500px;
-            border-radius: 24px;
-            padding: 50px 40px;
+            max-width: 480px;
+            border-radius: 30px;
+            padding: 60px 40px 40px;
             text-align: center;
             position: relative;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 0 50px rgba(0,0,0,1);
             z-index: 10;
+            overflow: hidden; /* لإخفاء خط المسح الليزري */
+            animation: cardEntrance 1s ease-out;
+        }
+
+        /* خط المسح الليزري المتحرك */
+        .profile-card::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, transparent, var(--scan-line), transparent);
+            animation: scanLine 4s linear infinite;
+        }
+
+        @keyframes scanLine {
+            0% { top: -100%; }
+            100% { top: 100%; }
+        }
+
+        @keyframes cardEntrance {
+            from { opacity: 0; transform: translateY(30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
         }
 
         .profile-img-wrap {
             position: absolute;
-            top: -60px;
+            top: -55px;
             left: 50%;
             transform: translateX(-50%);
         }
@@ -101,7 +119,7 @@
         .profile-img {
             width: 110px;
             height: 110px;
-            background: #000;
+            background: #050505;
             border: 2px solid var(--gold-glow);
             border-radius: 50%;
             display: flex;
@@ -109,80 +127,118 @@
             align-items: center;
             font-size: 45px;
             color: var(--gold-glow);
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.3);
+            box-shadow: 0 0 30px rgba(255, 204, 0, 0.4);
+            animation: pulseGlow 2s infinite alternate;
         }
 
-        /* Message Box UI */
+        @keyframes pulseGlow {
+            from { box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
+            to { box-shadow: 0 0 40px rgba(255, 204, 0, 0.5); }
+        }
+
+        /* --- Form Elements --- */
         .secure-form {
-            margin: 25px 0;
-            background: rgba(0,0,0,0.3);
-            padding: 20px;
-            border-radius: 15px;
-            border: 1px solid #222;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 15px;
+        }
+
+        .input-group i {
+            position: absolute;
+            right: 15px;
+            top: 15px;
+            color: var(--gold-glow);
+            opacity: 0.6;
         }
 
         .secure-form input, .secure-form textarea {
             width: 100%;
             background: var(--input-bg);
-            border: 1px solid #333;
-            color: #fff;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 8px;
+            border: 1px solid #1a1a1a;
+            color: #ffcc00;
+            padding: 12px 45px 12px 15px;
+            border-radius: 12px;
             font-family: 'Consolas', monospace;
             box-sizing: border-box;
+            transition: 0.3s;
         }
 
-        .secure-form input:focus { border-color: var(--gold-glow); outline: none; }
+        .secure-form input:focus, .secure-form textarea:focus {
+            border-color: var(--gold-glow);
+            background: #000;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
+            outline: none;
+        }
 
         .btn-send {
             width: 100%;
             background: var(--gold-glow);
             color: #000;
             border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-weight: bold;
+            padding: 15px;
+            border-radius: 12px;
+            font-weight: 900;
             cursor: pointer;
-            transition: 0.3s;
+            transition: 0.4s;
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
-        .btn-send:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4); }
+        .btn-send:hover {
+            letter-spacing: 3px;
+            background: #fff;
+            box-shadow: 0 0 30px var(--gold-glow);
+        }
 
+        /* --- Social & Footer --- */
         .social-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
+            gap: 15px;
         }
 
         .social-link {
-            background: #111;
+            background: rgba(255, 255, 255, 0.03);
             padding: 12px;
-            border-radius: 10px;
+            border-radius: 12px;
             text-decoration: none;
-            color: #fff;
-            font-size: 13px;
-            border: 1px solid #222;
+            color: #eee;
+            font-size: 14px;
+            border: 1px solid #1a1a1a;
             transition: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 10px;
         }
 
-        .social-link:hover { border-color: var(--gold-glow); color: var(--gold-glow); }
+        .social-link:hover {
+            border-color: var(--gold-glow);
+            color: var(--gold-glow);
+            background: rgba(255, 204, 0, 0.05);
+            transform: translateY(-3px);
+        }
 
         .terminal-footer {
-            margin-top: 30px;
+            margin-top: 35px;
             font-family: 'Courier New', monospace;
-            font-size: 10px;
-            color: #444;
-            border-top: 1px solid #222;
-            padding-top: 15px;
+            font-size: 11px;
+            color: #333;
+            letter-spacing: 1px;
+        }
+
+        /* تألق النص */
+        .glitch-text {
+            color: var(--gold-glow);
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
         }
     </style>
 </head>
@@ -212,34 +268,39 @@
             </div>
 
             <div style="margin-top: 20px;">
-                <span style="color: var(--gold-glow); font-size: 11px; letter-spacing: 2px;">SECURED IDENTITY // VIP_ARM</span>
-                <h1 style="margin: 10px 0; font-size: 2.2rem; letter-spacing: -1px;">Kernel-0x0 HQ</h1>
+                <span class="glitch-text" id="typing-sub" style="font-size: 10px; letter-spacing: 3px; font-weight: bold;"></span>
+                <h1 style="margin: 10px 0; font-size: 2.5rem; letter-spacing: -1px;">Kernel-0x0 HQ</h1>
             </div>
 
             <!-- Secure Message Injector -->
             <div class="secure-form">
-                <input type="text" id="subject" placeholder="[Subject_Header]">
-                <textarea id="message" rows="4" placeholder="[Enter_Encrypted_Payload_Here]"></textarea>
+                <div class="input-group">
+                    <i class="fas fa-tag"></i>
+                    <input type="text" id="subject" placeholder="[عنوان المهمة]">
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-terminal"></i>
+                    <textarea id="message" rows="4" placeholder="[أدخل الحمولة المشفرة هنا...]"></textarea>
+                </div>
                 <button class="btn-send" onclick="sendToBridge()">
-                    <i class="fas fa-bolt"></i> تنفيذ الإرسال الآمن
+                    <i class="fas fa-satellite-dish"></i> إرسال عبر النفق الآمن
                 </button>
             </div>
 
             <div class="social-grid">
-                <a href="https://t.me/YOUR_TELEGRAM" class="social-link"><i class="fab fa-telegram"></i> Telegram</a>
+                <a href="https://t.me/litharm" class="social-link"><i class="fab fa-telegram"></i> Telegram</a>
                 <a href="https://github.com/sylith17-tech" class="social-link"><i class="fab fa-github"></i> GitHub</a>
             </div>
 
-            <div class="terminal-footer" id="terminal-status">
-                STATUS: ENCRYPTED // NODE: KERNEL-0X0 // 2026
+            <div class="terminal-footer">
+                <span id="live-time"></span> // ENCRYPTED_NODE // VIP_ARM_OS_V6
             </div>
         </div>
     </div>
 
-    <!-- ربط ملف JavaScript الخارجي -->
     <script src="script.js"></script>
     <script>
-        // Particle Background Logic
+        // --- Matrix Particles Logic ---
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -247,58 +308,87 @@
         function init() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            for(let i=0; i<60; i++) {
+            for(let i=0; i<80; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: Math.random() * 2,
-                    speed: Math.random() * 0.5 + 0.1
+                    size: Math.random() * 1.5,
+                    speed: Math.random() * 0.8 + 0.2,
+                    opacity: Math.random()
                 });
             }
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#ffcc0033';
             particles.forEach(p => {
+                ctx.fillStyle = `rgba(255, 204, 0, ${p.opacity})`;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
                 ctx.fill();
+                
                 p.y -= p.speed;
-                if(p.y < 0) p.y = canvas.height;
+                if(p.y < 0) {
+                    p.y = canvas.height;
+                    p.x = Math.random() * canvas.width;
+                }
             });
             requestAnimationFrame(animate);
         }
 
-        init();
-        animate();
+        init(); animate();
 
-        // Secure Bridge Function (سيتم ربطه بـ app.py لاحقاً)
+        // --- Typing Effect ---
+        const subTitle = "SECURED_IDENTITY // NODE_ACCESS_GRANTED";
+        let i = 0;
+        function typeEffect() {
+            if (i < subTitle.length) {
+                document.getElementById("typing-sub").innerHTML += subTitle.charAt(i);
+                i++;
+                setTimeout(typeEffect, 50);
+            }
+        }
+        typeEffect();
+
+        // --- Live Clock ---
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById("live-time").innerText = `STATUS: ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+        }, 1000);
+
+        // --- Logic Bridge ---
         async function sendToBridge() {
+            const btn = document.querySelector('.btn-send');
             const subject = document.getElementById('subject').value;
             const message = document.getElementById('message').value;
 
             if(!subject || !message) {
-                alert("CRITICAL ERROR: NULL_PAYLOAD_DETECTED");
+                alert("🔴 ERROR: NULL_PAYLOAD_DETECTED");
                 return;
             }
 
-            // إرسال البيانات إلى app.py
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التشفير...';
+            btn.style.opacity = "0.7";
+
             try {
                 const response = await fetch('/send_message', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ subject, message })
                 });
-                
+
                 if(response.ok) {
-                    alert("SUCCESS: Data transmitted to VIP_ARM via secure tunnel.");
+                    alert("✅ SUCCESS: تمت العملية بنجاح عبر بروتوكول Kernel-0x0");
+                    document.getElementById('subject').value = "";
+                    document.getElementById('message').value = "";
                 } else {
-                    alert("ERROR: Transmission failed. Check Backend.");
+                    alert("⚠️ ERROR: فشل في الاتصال بالبوابة السحابية");
                 }
             } catch (e) {
-                console.log("Offline Mode: Message queued locally.");
-                alert("SYSTEM: Bridge not found. Are we running on Render yet?");
+                alert("📡 OFFLINE: السيرفر المحلي غير مستجيب. تأكد من تشغيل app.py");
+            } finally {
+                btn.innerHTML = '<i class="fas fa-satellite-dish"></i> إرسال عبر النفق الآمن';
+                btn.style.opacity = "1";
             }
         }
     </script>
