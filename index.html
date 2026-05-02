@@ -16,10 +16,11 @@
             --surface: #0d0d0d;
             --terminal-bg: rgba(0, 20, 0, 0.9);
             --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --sidebar-width: 280px;
         }
 
-        /* الأساسيات */
-        * { box-sizing: border-box; outline: none; }
+        /* الأساسيات وتحسين العرض على الجوال */
+        * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: var(--dark-core);
             color: var(--glow-green);
@@ -30,7 +31,6 @@
             overflow-x: hidden;
         }
 
-        /* خلفية مصفوفة متطورة */
         canvas#matrix {
             position: fixed;
             top: 0; left: 0;
@@ -38,270 +38,294 @@
             opacity: 0.15;
         }
 
-        /* Sidebar المطور */
+        /* Sidebar المطور - يدعم السحب والإخفاء */
         .sidebar {
-            width: 280px;
+            width: var(--sidebar-width);
             background: var(--surface);
-            border-left: 1px solid rgba(0, 255, 65, 0.3);
+            border-left: 1px solid rgba(0, 255, 65, 0.2);
             display: flex;
             flex-direction: column;
             position: fixed;
             height: 100%;
             right: 0;
-            z-index: 1000;
-            box-shadow: -10px 0 30px rgba(0,0,0,0.5);
+            z-index: 1001;
+            box-shadow: -10px 0 30px rgba(0,0,0,0.8);
+            transition: var(--transition);
+        }
+
+        /* زر القائمة للجوال فقط */
+        .menu-toggle {
+            display: none;
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+            background: var(--glow-green);
+            color: black;
+            border-radius: 50%;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem;
+            z-index: 1002;
+            box-shadow: 0 0 20px rgba(0, 255, 65, 0.4);
+            cursor: pointer;
         }
 
         .sidebar-header {
-            padding: 40px 20px;
+            padding: 30px 20px;
             text-align: center;
-            background: linear-gradient(to bottom, #111, transparent);
+            border-bottom: 1px solid #1a1a1a;
         }
 
         .node-id {
             font-family: 'Fira Code', monospace;
-            font-size: 0.8rem;
+            font-size: 0.7rem;
             background: rgba(0, 255, 65, 0.1);
-            padding: 5px 10px;
+            padding: 4px 12px;
             border-radius: 4px;
             margin-top: 10px;
             display: inline-block;
+            border: 1px solid rgba(0, 255, 65, 0.2);
         }
 
+        .nav-links { padding: 10px 0; }
         .nav-links a {
-            padding: 18px 25px;
+            padding: 15px 25px;
             text-decoration: none;
-            color: #666;
+            color: #888;
             display: flex;
             align-items: center;
             gap: 15px;
             transition: var(--transition);
-            border-right: 3px solid transparent;
-            font-weight: bold;
+            border-right: 4px solid transparent;
+            font-weight: 600;
         }
 
         .nav-links a:hover, .nav-links a.active {
             color: var(--glow-green);
-            background: rgba(0, 255, 65, 0.03);
+            background: rgba(0, 255, 65, 0.05);
             border-right-color: var(--glow-green);
-            text-shadow: 0 0 8px var(--glow-green);
+            text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
 
-        /* قسم تواصل مع المطور في القائمة */
-        .dev-contact-section {
-            margin-top: auto;
-            padding: 20px;
-            border-top: 1px solid #1a1a1a;
-            background: rgba(0, 255, 65, 0.02);
-        }
-
-        .social-icons {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 10px;
-        }
-
-        .social-icons a {
-            font-size: 1.2rem;
-            transition: 0.3s;
-            color: #444;
-        }
-
-        .social-icons a:hover {
-            transform: translateY(-3px);
-        }
-
-        /* المحتوى */
+        /* المحتوى الرئيسي المتجاوب */
         .main-content {
-            margin-right: 280px;
-            width: calc(100% - 280px);
+            margin-right: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
             padding: 40px;
             transition: var(--transition);
         }
 
         .dashboard-header {
             display: grid;
-            grid-template-columns: 2fr 1fr;
+            grid-template-columns: 1.5fr 1fr;
             gap: 20px;
             margin-bottom: 30px;
         }
 
         .hero-card {
-            background: var(--surface);
-            padding: 30px;
-            border-radius: 12px;
+            background: linear-gradient(145deg, #0d0d0d, #151515);
+            padding: 35px;
+            border-radius: 15px;
             border: 1px solid #222;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        .hero-card::before {
+        .hero-card::after {
             content: "";
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 4px;
+            top: 0; right: 0; width: 100%; height: 2px;
             background: linear-gradient(90deg, transparent, var(--glow-green), transparent);
             animation: scan 3s linear infinite;
         }
 
         .mini-terminal {
             background: var(--terminal-bg);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 15px;
             font-family: 'Fira Code', monospace;
-            font-size: 0.75rem;
-            border: 1px solid #003300;
-            height: 180px;
-            overflow-y: hidden;
+            font-size: 0.8rem;
+            border: 1px solid rgba(0, 255, 65, 0.1);
+            height: 200px;
+            overflow-y: auto;
+            box-shadow: inset 0 0 20px black;
         }
 
-        .terminal-line { margin-bottom: 5px; }
-        .cmd-prefix { color: var(--glow-green); }
-        .cmd-output { color: #aaa; }
-
+        /* شبكة الأدوات */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 25px;
+            gap: 20px;
         }
 
         .tool-card {
             background: var(--surface);
-            padding: 30px;
-            border-radius: 15px;
+            padding: 25px;
+            border-radius: 12px;
             border: 1px solid #1a1a1a;
             transition: all 0.4s ease;
-            cursor: pointer;
             position: relative;
+            overflow: hidden;
         }
 
         .tool-card:hover {
-            transform: translateY(-10px);
+            transform: translateY(-5px);
             border-color: var(--glow-green);
-            box-shadow: 0 10px 40px rgba(0, 255, 65, 0.1);
+            background: rgba(0, 255, 65, 0.02);
+            box-shadow: 0 5px 25px rgba(0, 255, 65, 0.1);
         }
 
         .tool-card i {
-            font-size: 2.5rem;
-            margin-bottom: 20px;
-            transition: 0.3s;
+            font-size: 2rem;
+            margin-bottom: 15px;
+            display: block;
         }
 
         .btn-launch {
             background: transparent;
             border: 1px solid var(--glow-green);
             color: var(--glow-green);
-            padding: 10px 20px;
-            border-radius: 5px;
+            padding: 10px 25px;
+            border-radius: 6px;
             cursor: pointer;
-            font-family: 'Cairo';
-            margin-top: 15px;
+            font-weight: bold;
             transition: 0.3s;
             text-decoration: none;
             display: inline-block;
+            margin-top: 15px;
         }
 
         .btn-launch:hover {
             background: var(--glow-green);
             color: black;
+            box-shadow: 0 0 15px var(--glow-green);
         }
 
-        @media (max-width: 900px) {
-            .sidebar { width: 70px; }
-            .sidebar span, .sidebar-header h3, .node-id, .dev-contact-section { display: none; }
-            .main-content { margin-right: 70px; width: calc(100% - 70px); }
+        /* تحسينات الشاشات الصغيرة (الجوال والتابلت) */
+        @media (max-width: 1024px) {
             .dashboard-header { grid-template-columns: 1fr; }
         }
 
-        @keyframes scan {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(100%);
+                width: 250px;
+            }
+            .sidebar.active { transform: translateX(0); }
+            .main-content { margin-right: 0; width: 100%; padding: 20px; }
+            .menu-toggle { display: flex; }
+            .hero-card h1 { font-size: 1.5rem; }
+            .mini-terminal { height: 150px; }
         }
+
+        @keyframes scan {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* تخصيص السكرول بار */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: var(--dark-core); }
+        ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--glow-green); }
     </style>
 </head>
 <body>
     <canvas id="matrix"></canvas>
 
-    <nav class="sidebar">
+    <!-- زر القائمة للجوال -->
+    <div class="menu-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </div>
+
+    <nav class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <i class="fas fa-user-shield" style="font-size: 3rem; filter: drop-shadow(0 0 15px var(--glow-green));"></i>
-            <h3 style="margin: 15px 0 5px 0;">VIP_ARM</h3>
+            <i class="fas fa-user-shield" style="font-size: 2.5rem; color: var(--glow-green); filter: drop-shadow(0 0 10px var(--glow-green));"></i>
+            <h3 style="margin: 15px 0 5px 0; letter-spacing: 2px;">VIP_ARM</h3>
             <div class="node-id">NODE: Kernel-0x0</div>
         </div>
 
         <div class="nav-links">
-            <a href="index.html" class="active"><i class="fas fa-th-large"></i> <span>نظرة عامة</span></a>
-            <a href="downloader.html"><i class="fas fa-download"></i> <span>مركز التحميل</span></a>
-            <a href="scanner.html"><i class="fas fa-shield-virus"></i> <span>فحص الثغرات</span></a>
-            <a href="forensic.html"><i class="fas fa-fingerprint"></i> <span>التحقيق الرقمي</span></a>
-            <a href="contact.html"><i class="fas fa-id-card"></i> <span>ملف المطور</span></a>
+            <a href="index.html" class="active"><i class="fas fa-home"></i> <span>الرئيسية</span></a>
+            <a href="downloader.html"><i class="fas fa-cloud-download-alt"></i> <span>مركز التحميل</span></a>
+            <a href="scanner.html"><i class="fas fa-terminal"></i> <span>فحص الثغرات</span></a>
+            <a href="forensic.html"><i class="fas fa-microscope"></i> <span>التحليل الجنائي</span></a>
+            <a href="contact.html"><i class="fas fa-code-branch"></i> <span>سجل النظام</span></a>
         </div>
 
-        <!-- قسم اتصل بالمطور المُفعّل -->
         <div class="dev-contact-section">
-            <p style="font-size: 0.75rem; color: var(--glow-green); text-align: center; margin-bottom: 10px; font-family: 'Fira Code';">>> CONNECT_DEV</p>
+            <p style="font-size: 0.7rem; color: #444; text-align: center; margin-bottom: 10px;">SECURED COMMUNICATION</p>
             <div class="social-icons">
-                <!-- الفيسبوك -->
                 <a href="https://www.facebook.com/profile.php?id=61556942055610" target="_blank" style="color: #1877F2;"><i class="fab fa-facebook"></i></a>
-                <!-- التلغرام -->
                 <a href="https://t.me/MyVIP_2026_bot" target="_blank" style="color: #24A1DE;"><i class="fab fa-telegram"></i></a>
-                <!-- الواتساب (+963996273320) -->
-                <a href="https://wa.me/9639xxxxxxxx" target="_blank" style="color: #25D366;"><i class="fab fa-whatsapp"></i></a>
+                <a href="https://wa.me/963996273320" target="_blank" style="color: #25D366;"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <div style="font-size: 0.6rem; color: #444; text-align: center; margin-top: 15px;">SYSTEM v6.5.0-STABLE</div>
+            <div style="font-size: 0.6rem; color: #333; text-align: center; margin-top: 15px; font-family: monospace;">OS_BUILD: 7.2.0-STABLE</div>
         </div>
     </nav>
 
     <main class="main-content">
         <div class="dashboard-header">
             <section class="hero-card">
-                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                    <div style="width: 8px; height: 8px; background: var(--glow-green); border-radius: 50%; box-shadow: 0 0 10px var(--glow-green);"></div>
-                    <span style="font-size: 0.8rem; letter-spacing: 1px;">STATUS: OPERATIONAL</span>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                    <span style="width: 10px; height: 10px; background: #0f0; border-radius: 50%; box-shadow: 0 0 10px #0f0; animation: pulse 2s infinite;"></span>
+                    <span style="font-size: 0.75rem; letter-spacing: 2px; color: #888;">KERNEL_STATUS: ACTIVE</span>
                 </div>
-                <h1 style="font-size: 2.2rem; margin: 0 0 15px 0;">أهلاً بك في وحدة التحكم المركزية</h1>
-                <p style="color: #888; line-height: 1.6;">بصفتك <b>Security Researcher</b>، لديك الآن كامل الصلاحيات للوصول إلى أدوات الاختراق والتحليل السحابي.</p>
-                
-                <div style="display: flex; gap: 10px;">
-                    <button class="btn-launch" onclick="location.href='scanner.html'">ابدأ الفحص الشامل</button>
-                    <!-- زر صريح لعرض المعلومات -->
-                    <a href="contact.html" class="btn-launch" style="border-color: #555; color: #aaa;">معلومات المطور</a>
+                <h1 style="margin: 0 0 15px 0;">مركز العمليات الرئيسي</h1>
+                <p style="color: #777; font-size: 0.95rem; line-height: 1.6; max-width: 600px;">
+                    مرحباً بك <b>VIP_ARM</b>. تم تفعيل بروتوكولات الأمان. يمكنك الآن التحكم في الأدوات السحابية وإدارة العمليات من أي جهاز.
+                </p>
+
+                <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+                    <a href="downloader.html" class="btn-launch">ابدأ التحميل</a>
+                    <a href="scanner.html" class="btn-launch" style="border-color: #333; color: #666;">فحص سريع</a>
                 </div>
             </section>
 
             <div class="mini-terminal" id="term-log">
-                <!-- السجلات تظهر هنا تلقائياً -->
+                <!-- Log content will be injected by JS -->
             </div>
         </div>
 
         <div class="tools-grid">
             <div class="tool-card" onclick="location.href='downloader.html'">
-                <i class="fas fa-cloud-arrow-down" style="color: #3498db;"></i>
-                <h3>Universal Downloader</h3>
-                <p>سحب المحتوى من المنصات المحمية بدقة 4K.</p>
+                <i class="fas fa-video" style="color: #ff0050;"></i>
+                <h3 style="margin: 0 0 10px 0;">Video Studio AI</h3>
+                <p style="color: #555; font-size: 0.85rem;">قص المقاطع، الدبلجة الآلية، والتحميل بدقة 4K.</p>
+                <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> EXECUTE_MODULE</div>
             </div>
 
             <div class="tool-card" onclick="location.href='scanner.html'">
-                <i class="fas fa-microchip" style="color: var(--deep-red);"></i>
-                <h3>Vulnerability Lab</h3>
-                <p>تحليل الـ Headers ومسح المنافذ المفتوحة للأهداف.</p>
+                <i class="fas fa-bug" style="color: var(--glow-green);"></i>
+                <h3 style="margin: 0 0 10px 0;">Vulnerability Lab</h3>
+                <p style="color: #555; font-size: 0.85rem;">تحليل الثغرات البرمجية وفحص أمن المواقع.</p>
+                <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> START_SCAN</div>
             </div>
 
             <div class="tool-card" onclick="location.href='forensic.html'">
-                <i class="fas fa-search-location" style="color: #f1c40f;"></i>
-                <h3>Forensic Engine</h3>
-                <p>استخراج بيانات EXIF الجغرافية وتحليل الميتا-داتا.</p>
+                <i class="fas fa-fingerprint" style="color: #3498db;"></i>
+                <h3 style="margin: 0 0 10px 0;">Digital Forensic</h3>
+                <p style="color: #555; font-size: 0.85rem;">استخراج الميتا داتا والتحقيق في الأدلة الرقمية.</p>
+                <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> ANALYZE_PATH</div>
             </div>
         </div>
     </main>
 
     <script>
+        // Matrix Effect
         const canvas = document.getElementById('matrix');
         const ctx = canvas.getContext('2d');
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.onresize = resize;
+        resize();
 
-        const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^%";
+        const letters = "日ﾊﾐﾋｰｳｼﾅﾓﾆｻﾜﾂｵﾘｱﾎﾃﾏｹﾒｴｶｷﾑﾕﾗｾﾈｽﾀﾇﾍ0123456789";
         const fontSize = 16;
         const columns = canvas.width / fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
@@ -321,33 +345,40 @@
         }
         setInterval(drawMatrix, 50);
 
+        // Sidebar Toggle for Mobile
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('active');
+        }
+
+        // Terminal Logging System
         const logEntries = [
-            "[INFO] Connecting to Kernel-0x0...",
-            "[OK] Handshake established via TLS 1.3",
-            "[SYSTEM] Root access granted for VIP_ARM",
-            "[SCAN] Initializing background vulnerability scan...",
-            "[NETWORK] Render Node Alpha is active",
-            "[SEC] Firewall rules updated successfully",
-            "[MEDIA] engine updated to v2026.05.02"
+            "[INFO] Initialize Kernel-0x0...",
+            "[SYSTEM] Root authenticated: VIP_ARM",
+            "[NET] SSL Handshake: SUCCESS",
+            "[MODULE] AI Video Engine: LOADED",
+            "[STATUS] Cloud Sync: OPERATIONAL",
+            "[SEC] Firewall rules: UPDATED",
+            "[MEM] Usage: 12% - OK"
         ];
 
         let logIndex = 0;
         function addLog() {
             const container = document.getElementById('term-log');
             const line = document.createElement('div');
-            line.className = 'terminal-line';
-            line.innerHTML = `<span class="cmd-prefix">VIP_ARM@Kernel-0x0:~$</span> <span class="cmd-output">${logEntries[logIndex % logEntries.length]}</span>`;
+            line.style.marginBottom = "5px";
+            line.innerHTML = `<span style="color: var(--glow-green)">[${new Date().toLocaleTimeString()}]</span> <span style="color: #aaa">${logEntries[logIndex % logEntries.length]}</span>`;
             container.appendChild(line);
             container.scrollTop = container.scrollHeight;
             logIndex++;
-            if(container.children.length > 8) container.removeChild(container.firstChild);
+            if(container.children.length > 20) container.removeChild(container.firstChild);
         }
-        setInterval(addLog, 3000);
+        setInterval(addLog, 2500);
         addLog();
 
+        // Protection Logic
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => {
-            if(e.ctrlKey && (e.key === 'u' || e.key === 'i')) return false;
+            if(e.ctrlKey && (e.key === 'u' || e.key === 'i' || e.key === 'j')) return false;
         };
     </script>
 </body>

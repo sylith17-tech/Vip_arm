@@ -2,10 +2,12 @@ import os
 import yt_dlp
 import logging
 import uuid
-from flask import Flask, render_template, request, jsonify, send_from_directory, send_file, after_this_request
+from flask import Flask, render_template, request, jsonify, send_file, after_this_request
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
+from moviepy.editor import VideoFileClip, vfx
+from gtts import gTTS
 
 # [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
 logging.basicConfig(
@@ -15,104 +17,84 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='.', static_folder='.')
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app)
 
-# تكوين المسارات
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
 
-# --- محرك التحميل والدمج المطور ---
-def download_media(target_url):
-    unique_id = str(uuid.uuid4())[:8]
-    # قالب اسم الملف: downloads/filename.ext
-    out_tmpl = os.path.join(DOWNLOAD_FOLDER, f'VIP_ARM_{unique_id}_%(title)s.%(ext)s')
-    
-    ydl_opts = {
-        'format': 'bestvideo+bestaudio/best', # الدمج باستخدام ffmpeg
-        'outtmpl': out_tmpl,
-        'quiet': False,
-        'no_warnings': False,
+def get_ydl_opts(custom_out=None):
+    return {
+        'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+        'outtmpl': custom_out or os.path.join(DOWNLOAD_FOLDER, 'VIP_ARM_%(id)s.%(ext)s'),
+        'cookiefile': 'cookies.txt', # حل مشكلة الحظر 429
         'nocheckcertificate': True,
-        'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'restrictfilenames': True, # لتجنب المشاكل مع الأسماء العربية أو الرموز
+        'quiet': True
     }
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            info = ydl.extract_info(target_url, download=True)
-            file_path = ydl.prepare_filename(info)
-            
-            # في حال تم تغيير الامتداد بعد الدمج (مثلاً من mkv إلى mp4)
-            actual_filename = file_path
-            if not os.path.exists(file_path):
-                # بحث بسيط عن الملف في المجلد إذا اختلف الامتداد
-                base = os.path.splitext(file_path)[0]
-                for f in os.listdir(DOWNLOAD_FOLDER):
-                    if f.startswith(os.path.basename(base)):
-                        actual_filename = os.path.join(DOWNLOAD_FOLDER, f)
-                        break
+# --- ميزة 1: المخرج الآلي (Auto-Shorts) ---
+def create_shorts(input_path):
+    output_path = input_path.replace(".mp4", "_SHORTS.mp4")
+    with VideoFileClip(input_path) as video:
+        # قص أول 60 ثانية أو طول الفيديو أيهما أقصر
+        duration = min(video.duration, 60)
+        clip = video.subclip(0, duration)
+        
+        # تحويل الأبعاد إلى 9:16 (القص من المركز)
+        w, h = clip.size
+        target_ratio = 9/16
+        target_w = h * target_ratio
+        
+        final_clip = clip.crop(x_center=w/2, width=target_w)
+        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+    return output_path
 
-            return {
-                "status": "success",
-                "file_path": actual_filename,
-                "title": info.get('title', 'video'),
-                "filename": os.path.basename(actual_filename)
-            }
-    except Exception as e:
-        logger.error(f"Download Core Error: {str(e)}")
-        return {"status": "failed", "error": str(e)}
-
-# --- المسارات (Endpoints) ---
+# --- ميزة 2: الدبلجة العصبية المبسطة ---
+def dub_video(input_path, lang='ar'):
+    output_path = input_path.replace(".mp4", "_DUBBED.mp4")
+    with VideoFileClip(input_path) as video:
+        # محاكاة الدبلجة: استبدال الصوت بصوت آلي (يمكن تطويره بـ Whisper مستقبلاً)
+        tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
+        tts.save("temp_audio.mp3")
+        video.set_audio(VideoFileClip("temp_audio.mp3").audio).write_videofile(output_path)
+    return output_path
 
 @app.route('/')
-def index():
-    return render_template('index.html')
+def index(): return render_template('index.html')
 
-@app.route('/api/download', methods=['POST'])
-def handle_download():
+@app.route('/api/process', methods=['POST'])
+def handle_advanced_process():
     data = request.json
     url = data.get('url')
-    if not url:
-        return jsonify({"error": "No URL provided"}), 400
+    mode = data.get('mode') # 'shorts' or 'dub'
 
-    logger.info(f"Initiating Download Task for: {url}")
-    result = download_media(url)
+    try:
+        with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
+            info = ydl.extract_info(url, download=True)
+            raw_path = ydl.prepare_filename(info)
 
-    if result["status"] == "success":
-        file_path = result["file_path"]
-        
-        # وظيفة لحذف الملف بعد إرساله للمستخدم لتوفير المساحة
+        if mode == 'shorts':
+            final_path = create_shorts(raw_path)
+        elif mode == 'dub':
+            final_path = dub_video(raw_path)
+        else:
+            final_path = raw_path
+
         @after_this_request
         def cleanup(response):
-            try:
-                if os.path.exists(file_path):
-                    os.remove(file_path)
-                    logger.info(f"Cleanup: Removed temporary file {file_path}")
-            except Exception as e:
-                logger.error(f"Cleanup Error: {e}")
+            for f in [raw_path, final_path, "temp_audio.mp3"]:
+                if os.path.exists(f): os.remove(f)
             return response
 
-        return send_file(file_path, as_attachment=True)
-    else:
-        return jsonify({"status": "failed", "error": result["error"]}), 500
+        return send_file(final_path, as_attachment=True)
 
-@app.route('/api/info', methods=['POST'])
-def handle_info():
-    # هذا المسار فقط لعرض المعلومات قبل التحميل (اختياري)
-    data = request.json
-    url = data.get('url')
-    ydl_opts = {'quiet': True, 'nocheckcertificate': True}
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=False)
-        return jsonify({
-            "title": info.get('title'),
-            "thumbnail": info.get('thumbnail'),
-            "duration": info.get('duration')
-        })
+    except Exception as e:
+        logger.error(f"Kernel Error: {str(e)}")
+        return jsonify({"status": "failed", "error": str(e)}), 500
 
 @app.route('/api/exif', methods=['POST'])
 def forensic_core():
+    # كود الـ EXIF القديم يبقى كما هو لضمان الاستمرارية
     if 'image' not in request.files: return jsonify({"error": "No Payload"}), 400
     file = request.files['image']
     try:
@@ -121,14 +103,8 @@ def forensic_core():
         if not raw_exif: return jsonify({"status": "clear", "message": "Zero Metadata"})
         report = {TAGS.get(tid, tid): str(val) for tid, val in raw_exif.items() if not isinstance(val, bytes)}
         return jsonify({"status": "extracted", "forensic_data": report})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-@app.route('/<path:path>')
-def send_static(path):
-    return send_from_directory('.', path)
+    except Exception as e: return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    logger.info(f"Kernel-0x0 Deploying on Port: {port}")
     app.run(host='0.0.0.0', port=port)

@@ -1,31 +1,67 @@
-/* Kernel-0x0 Global Styles */
+/* Kernel-0x0 - Ultimate Responsive UI */
 :root {
     --main-bg: #050505;
     --panel-bg: #0d0d0d;
     --accent-gold: #ffcc00;
     --accent-cyan: #00f2ff;
-    --text-dim: #888;
     --border-color: #1a1a1a;
 }
 
 body {
     background-color: var(--main-bg);
     color: #fff;
-    font-family: 'Inter', 'Segoe UI', sans-serif;
+    font-family: 'Inter', sans-serif;
     margin: 0;
-    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
 }
 
-/* Scrollbar Customization */
-::-webkit-scrollbar { width: 5px; }
-::-webkit-scrollbar-track { background: #000; }
-::-webkit-scrollbar-thumb { background: var(--accent-gold); border-radius: 10px; }
-
-/* Global Animations */
-@keyframes glow {
-    0% { box-shadow: 0 0 5px var(--accent-gold); }
-    50% { box-shadow: 0 0 20px var(--accent-gold); }
-    100% { box-shadow: 0 0 5px var(--accent-gold); }
+/* Container للنظام لضمان التجاوب */
+.dashboard-container {
+    width: 100%;
+    max-width: 1200px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
 }
 
-.glow-hover:hover { animation: glow 1.5s infinite; }
+.panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    transition: 0.3s;
+}
+
+.panel:hover {
+    border-color: var(--accent-gold);
+    box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
+}
+
+/* Media Queries للهواتف */
+@media (max-width: 768px) {
+    body { padding: 10px; }
+    .dashboard-container { grid-template-columns: 1fr; }
+    h1 { font-size: 1.5rem; text-align: center; }
+}
+
+/* أزرار VIP_ARM الموحدة */
+.vip-btn {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid var(--accent-cyan);
+    color: var(--accent-cyan);
+    cursor: pointer;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+.vip-btn:hover {
+    background: var(--accent-cyan);
+    color: #000;
+}

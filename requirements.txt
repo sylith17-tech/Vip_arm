@@ -4,3 +4,5 @@ yt-dlp
 Pillow
 requests
 gunicorn
+requests
+
