@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify, send_file, after_thi
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-from moviepy.editor import VideoFileClip, vfx
+from moviepy import VideoFileClip, vfx
 from gtts import gTTS
 
 # [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
