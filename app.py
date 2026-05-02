@@ -6,7 +6,8 @@ from flask import Flask, render_template, request, jsonify, send_file, after_thi
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-from moviepy import VideoFileClip, vfx
+# تصحيح الاستدعاء ليتوافق مع MoviePy 2.2.1
+from moviepy import VideoFileClip, vfx 
 from gtts import gTTS
 
 # [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
@@ -16,6 +17,7 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# إعداد التطبيق ليعمل في المجلد الرئيسي مباشرة (بناءً على قائمة ls الخاصة بك)
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
@@ -27,7 +29,6 @@ def get_ydl_opts(custom_out=None):
     return {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': custom_out or os.path.join(DOWNLOAD_FOLDER, 'VIP_ARM_%(id)s.%(ext)s'),
-        'cookiefile': 'cookies.txt', # حل مشكلة الحظر 429
         'nocheckcertificate': True,
         'quiet': True
     }
@@ -36,15 +37,11 @@ def get_ydl_opts(custom_out=None):
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
-        # قص أول 60 ثانية أو طول الفيديو أيهما أقصر
         duration = min(video.duration, 60)
         clip = video.subclip(0, duration)
-        
-        # تحويل الأبعاد إلى 9:16 (القص من المركز)
         w, h = clip.size
         target_ratio = 9/16
         target_w = h * target_ratio
-        
         final_clip = clip.crop(x_center=w/2, width=target_w)
         final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
     return output_path
@@ -52,21 +49,37 @@ def create_shorts(input_path):
 # --- ميزة 2: الدبلجة العصبية المبسطة ---
 def dub_video(input_path, lang='ar'):
     output_path = input_path.replace(".mp4", "_DUBBED.mp4")
+    temp_audio = f"temp_{uuid.uuid4()}.mp3"
     with VideoFileClip(input_path) as video:
-        # محاكاة الدبلجة: استبدال الصوت بصوت آلي (يمكن تطويره بـ Whisper مستقبلاً)
         tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
-        tts.save("temp_audio.mp3")
-        video.set_audio(VideoFileClip("temp_audio.mp3").audio).write_videofile(output_path)
+        tts.save(temp_audio)
+        video.set_audio(VideoFileClip(temp_audio).audio).write_videofile(output_path)
+    if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
+# --- ربط الصفحات (Routes) لضمان عدم ظهور 404 ---
+
 @app.route('/')
-def index(): return render_template('index.html')
+def index(): 
+    return render_template('index.html')
+
+# ربط ديناميكي لكل ملفات HTML الموجودة في المجلد لتعمل تلقائياً
+@app.route('/<page>')
+def serve_pages(page):
+    if page.endswith('.html'):
+        return render_template(page)
+    # إذا طلب المستخدم /downloader مثلاً بدون .html
+    if os.path.exists(f"{page}.html"):
+        return render_template(f"{page}.html")
+    return render_template('index.html'), 404
+
+# --- API Endpoints ---
 
 @app.route('/api/process', methods=['POST'])
 def handle_advanced_process():
     data = request.json
     url = data.get('url')
-    mode = data.get('mode') # 'shorts' or 'dub'
+    mode = data.get('mode') 
 
     try:
         with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
@@ -82,8 +95,12 @@ def handle_advanced_process():
 
         @after_this_request
         def cleanup(response):
-            for f in [raw_path, final_path, "temp_audio.mp3"]:
-                if os.path.exists(f): os.remove(f)
+            # تنظيف الملفات بعد الإرسال لتوفير مساحة Kernel-0x0
+            try:
+                for f in [raw_path, final_path]:
+                    if f and os.path.exists(f): os.remove(f)
+            except Exception as e:
+                logger.error(f"Cleanup Error: {e}")
             return response
 
         return send_file(final_path, as_attachment=True)
@@ -94,7 +111,6 @@ def handle_advanced_process():
 
 @app.route('/api/exif', methods=['POST'])
 def forensic_core():
-    # كود الـ EXIF القديم يبقى كما هو لضمان الاستمرارية
     if 'image' not in request.files: return jsonify({"error": "No Payload"}), 400
     file = request.files['image']
     try:
