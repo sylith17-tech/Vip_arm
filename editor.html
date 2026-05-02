@@ -2,7 +2,7 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Kernel-0x0 | Neural Image Processor</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -25,7 +25,7 @@
             overflow: hidden;
         }
 
-        /* Sidebar - Integrated with Kernel Identity */
+        /* Sidebar */
         .sidebar {
             width: 70px;
             background: #000;
@@ -49,7 +49,7 @@
             justify-content: center;
             transition: 0.3s;
         }
-        .sidebar a span { display: none; margin-right: 15px; font-size: 14px; }
+        .sidebar a span { display: none; margin-right: 15px; font-size: 14px; white-space: nowrap; }
         .sidebar:hover a span { display: block; }
         .sidebar a.active { color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan); }
 
@@ -83,10 +83,11 @@
         }
 
         canvas {
-            max-width: 90%;
-            max-height: 90%;
+            max-width: 95%;
+            max-height: 95%;
             box-shadow: 0 0 50px rgba(0,0,0,0.8);
             cursor: crosshair;
+            touch-action: none; /* لمنع التمرير أثناء الرسم */
         }
 
         /* Control Panels */
@@ -112,7 +113,6 @@
             letter-spacing: 2px;
         }
 
-        /* Adjustment Sliders */
         .slider-box { margin-bottom: 15px; }
         .slider-box label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
         input[type="range"] {
@@ -124,7 +124,6 @@
             appearance: none;
         }
 
-        /* Tool Buttons */
         .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
         .btn-tool {
             background: #1a1a1a;
@@ -135,8 +134,8 @@
             font-size: 14px;
             transition: 0.2s;
         }
-        .btn-tool:hover, .btn-tool.active { 
-            border-color: var(--accent-cyan); 
+        .btn-tool:hover, .btn-tool.active {
+            border-color: var(--accent-cyan);
             color: var(--accent-cyan);
             background: rgba(0, 242, 255, 0.05);
         }
@@ -169,7 +168,7 @@
 
     <nav class="sidebar">
         <a href="index.html"><i class="fas fa-microchip"></i><span>الرئيسية</span></a>
-        <a href="editor.html" class="active"><i class="fas fa- wand-magic-sparkles"></i><span>المعالج العصبي</span></a>
+        <a href="editor.html" class="active"><i class="fas fa-wand-magic-sparkles"></i><span>المعالج العصبي</span></a>
         <a href="exif.html"><i class="fas fa-fingerprint"></i><span>التحقيق الجنائي</span></a>
         <a href="scanner.html"><i class="fas fa-radar"></i><span>الفحص الأمني</span></a>
     </nav>
@@ -179,19 +178,19 @@
             <h4><i class="fas fa-sliders"></i> التحكم بالألوان</h4>
             <div class="slider-box">
                 <label>السطوع <span id="v-bright">100</span>%</label>
-                <input type="range" id="brightness" min="0" max="200" value="100" oninput="applyFilters()">
+                <input type="range" id="brightness" min="0" max="200" value="100">
             </div>
             <div class="slider-box">
                 <label>التباين <span id="v-contrast">100</span>%</label>
-                <input type="range" id="contrast" min="0" max="200" value="100" oninput="applyFilters()">
+                <input type="range" id="contrast" min="0" max="200" value="100">
             </div>
             <div class="slider-box">
                 <label>التشبع <span id="v-saturate">100</span>%</label>
-                <input type="range" id="saturate" min="0" max="200" value="100" oninput="applyFilters()">
+                <input type="range" id="saturate" min="0" max="200" value="100">
             </div>
             <div class="slider-box">
                 <label>تدرج الألوان <span id="v-hue">0</span>°</label>
-                <input type="range" id="hue" min="0" max="360" value="0" oninput="applyFilters()">
+                <input type="range" id="hue" min="0" max="360" value="0">
             </div>
         </div>
 
@@ -214,9 +213,9 @@
         <div class="panel-section">
             <h4><i class="fas fa-bolt"></i> فلاتر النظام</h4>
             <div class="tool-grid">
-                <button class="btn-tool" onclick="setPreset('grayscale(1)')">B&W</button>
-                <button class="btn-tool" onclick="setPreset('invert(1)')">Negative</button>
-                <button class="btn-tool" onclick="setPreset('sepia(0.8)')">Sepia</button>
+                <button class="btn-tool" onclick="setPreset('grayscale(100%)')">B&W</button>
+                <button class="btn-tool" onclick="setPreset('invert(100%)')">Negative</button>
+                <button class="btn-tool" onclick="setPreset('sepia(100%)')">Sepia</button>
                 <button class="btn-tool" onclick="setPreset('blur(5px)')">Blur</button>
                 <button class="btn-tool" onclick="setPreset('none')">Normal</button>
             </div>
@@ -254,23 +253,32 @@
         let isDrawing = false;
         let currentTool = 'brush';
         let rotation = 0;
+        let scaleX = 1, scaleY = 1;
 
         // Load Image
         fileInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
             const reader = new FileReader();
             reader.onload = (event) => {
+                img = new Image();
                 img.onload = () => {
                     canvas.width = img.width;
                     canvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
+                    applyFilters(); // Draw initial image
                     document.getElementById('res-info').innerText = `الوضوح: ${img.width}x${img.height}`;
                 };
                 img.src = event.target.result;
             };
-            reader.readAsDataURL(e.target.files[0]);
+            reader.readAsDataURL(file);
         };
 
-        // Filters Engine
+        // Advanced Filters Engine
+        const sliders = ['brightness', 'contrast', 'saturate', 'hue'];
+        sliders.forEach(id => {
+            document.getElementById(id).addEventListener('input', applyFilters);
+        });
+
         function applyFilters() {
             if (!img.src) return;
             const b = document.getElementById('brightness').value;
@@ -284,41 +292,85 @@
             document.getElementById('v-hue').innerText = h;
 
             ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
-            ctx.drawImage(img, 0, 0);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(canvas.width/2, canvas.height/2);
+            ctx.scale(scaleX, scaleY);
+            ctx.translate(-canvas.width/2, -canvas.height/2);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
         }
 
         function setPreset(p) {
+            if (!img.src) return;
             ctx.filter = p;
-            ctx.drawImage(img, 0, 0);
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
         }
 
-        // Drawing Logic
-        canvas.onmousedown = (e) => {
+        // Drawing Logic (Mouse & Touch)
+        function getCoordinates(e) {
+            const rect = canvas.getBoundingClientRect();
+            let clientX, clientY;
+            if (e.touches) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
+        }
+
+        const startDrawing = (e) => {
+            if (!img.src) return;
             isDrawing = true;
+            const pos = getCoordinates(e);
             ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
             ctx.lineWidth = document.getElementById('brushSize').value;
             ctx.lineCap = 'round';
-            ctx.strokeStyle = currentTool === 'eraser' ? '#000' : var(--accent-cyan);
-            if (currentTool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
-            else ctx.globalCompositeOperation = 'source-over';
+            ctx.lineJoin = 'round';
+            
+            if (currentTool === 'eraser') {
+                ctx.globalCompositeOperation = 'destination-out';
+            } else {
+                ctx.globalCompositeOperation = 'source-over';
+                ctx.strokeStyle = '#00f2ff'; // VIP Cyan
+            }
         };
 
-        canvas.onmousemove = (e) => {
+        const draw = (e) => {
             if (!isDrawing) return;
-            const rect = canvas.getBoundingClientRect();
-            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-            ctx.lineTo(x, y);
+            e.preventDefault();
+            const pos = getCoordinates(e);
+            ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
         };
 
-        canvas.onmouseup = () => isDrawing = false;
+        const stopDrawing = () => {
+            isDrawing = false;
+            ctx.closePath();
+        };
+
+        // Desktop Events
+        canvas.onmousedown = startDrawing;
+        canvas.onmousemove = draw;
+        canvas.onmouseup = stopDrawing;
+
+        // Mobile/Touch Events (NetHunter Optimized)
+        canvas.ontouchstart = startDrawing;
+        canvas.ontouchmove = draw;
+        canvas.ontouchend = stopDrawing;
 
         function setTool(t) {
             currentTool = t;
             document.getElementById('tool-info').innerText = `الأداة الحالية: ${t === 'brush' ? 'الفرشاة' : 'الممحاة'}`;
             document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
-            event.currentTarget.classList.add('active');
+            const activeBtn = event.currentTarget;
+            if(activeBtn) activeBtn.classList.add('active');
         }
 
         // Transformations
@@ -327,18 +379,31 @@
             canvas.style.transform = `rotate(${rotation}deg)`;
         }
 
+        function flipImage(dir) {
+            if(dir === 'h') scaleX *= -1;
+            else scaleY *= -1;
+            applyFilters();
+        }
+
         function resetAll() {
+            if (!img.src) return;
+            document.getElementById('brightness').value = 100;
+            document.getElementById('contrast').value = 100;
+            document.getElementById('saturate').value = 100;
+            document.getElementById('hue').value = 0;
+            rotation = 0;
+            scaleX = 1; scaleY = 1;
+            canvas.style.transform = `rotate(0deg)`;
             ctx.filter = 'none';
             ctx.globalCompositeOperation = 'source-over';
-            ctx.drawImage(img, 0, 0);
-            rotation = 0;
-            canvas.style.transform = `rotate(0deg)`;
+            applyFilters();
         }
 
         function saveOutput() {
+            if (!img.src) return;
             const link = document.createElement('a');
-            link.download = 'KERNEL_PRO_EDIT.png';
-            link.href = canvas.toDataURL();
+            link.download = `KERNEL_EX_${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
             link.click();
         }
     </script>
