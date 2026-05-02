@@ -107,7 +107,7 @@ def unified_handler():
                     "title": info.get('title', 'Media Content'),
                     "thumbnail": info.get('thumbnail', ''),
                     "uploader": info.get('uploader', 'VIP_ARM_SOURCE'),
-                    "duration": f"{info.get('duration', 0)//60}:{info.get('duration', 0)%60:02d}",
+                    "duration": f"{int(info.get('duration', 0))//60}:{int(info.get('duration', 0))%60:02d}",
                     "formats": formats[::-1]
                 })
 
