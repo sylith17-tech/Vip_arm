@@ -1,32 +1,26 @@
 // ==========================================
-// [KERNEL-0x0] - CENTRAL CONTROL SCRIPT
+// [KERNEL-0x0] - ADVANCED CENTRAL CONTROL SCRIPT 
 // ==========================================
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("VIP_ARM Secure Engine: Initiated");
-    
-    // 1. نظام رفع ومعالجة الصور (Image Injection)
+
+    // 1. نظام معالجة الصور (Image Injection)
     const imageInput = document.getElementById('imageInput');
     const mainCanvas = document.getElementById('mainCanvas');
-    
+
     if (imageInput && mainCanvas) {
         const ctx = mainCanvas.getContext('2d');
-        
         imageInput.addEventListener('change', (e) => {
             const reader = new FileReader();
             reader.onload = (event) => {
                 const img = new Image();
                 img.onload = () => {
-                    // ضبط أبعاد الكانفاس لتناسب الصورة
                     mainCanvas.width = img.width;
                     mainCanvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-                    
-                    // تحديث الوضوح في الفوتر
-                    const resolutionDisplay = document.querySelector('.res-val');
-                    if(resolutionDisplay) resolutionDisplay.innerText = `${img.width}x${img.height}`;
-                    
-                    console.log("Image Injected Successfully into Kernel-0x0");
+                    const resDisplay = document.querySelector('.res-val');
+                    if(resDisplay) resDisplay.innerText = `${img.width}x${img.height}`;
                 };
                 img.src = event.target.result;
             };
@@ -34,66 +28,96 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. محرك التحميل (Media Downloader)
+    // 2. محرك التحميل المطور (The Fix for undefined)
     window.startDownload = async () => {
-        const url = document.getElementById('targetUrl').value;
+        const urlInput = document.getElementById('targetUrl');
         const btn = document.getElementById('dlBtn');
-        if(!url) return alert("Target URL Missing!");
+        const resultArea = document.getElementById('resultArea');
+        
+        if(!urlInput.value) return alert("Target URL Missing!");
 
-        btn.innerText = "EXTRACTING...";
+        btn.innerText = "BYPASSING...";
+        btn.disabled = true;
+
         try {
             const response = await fetch('/api/download', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({url: url})
+                body: JSON.stringify({url: urlInput.value})
             });
-            const data = await response.json();
-            if(data.status === "success") {
-                // عرض البيانات (تأكد من وجود هذه العناصر في downloader.html)
-                document.getElementById('videoTitle').innerText = data.intel.title;
-                document.getElementById('dlLink').href = data.intel.dl_link;
-                document.getElementById('resultArea').style.display = 'block';
-            } else {
-                alert("Extraction Failed: " + data.error);
+
+            // التحقق من نوع الاستجابة (هل هي JSON أم ملف؟)
+            const contentType = response.headers.get("content-type");
+
+            if (response.ok && contentType && contentType.includes("application/json")) {
+                const data = await response.json();
+                if(data.status === "success") {
+                    document.getElementById('videoTitle').innerText = data.intel.title;
+                    document.getElementById('dlLink').href = data.intel.dl_link;
+                    if(resultArea) resultArea.style.display = 'block';
+                } else {
+                    throw new Error(data.error || "Unknown Server Error");
+                }
+            } 
+            else if (response.ok) {
+                // إذا أرسل السيرفر ملفاً مباشرة (Blob)
+                const blob = await response.blob();
+                const downloadUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = downloadUrl;
+                a.download = `VIP_ARM_CONTENT_${Date.now()}.mp4`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                alert("Download Started Successfully!");
             }
+            else {
+                throw new Error(`HTTP Error: ${response.status}`);
+            }
+
         } catch (err) {
             console.error("Signal Lost:", err);
+            // حل مشكلة الصورة "تعذر الاتصال بالمحرك"
+            alert("Security Breach: " + err.message);
         } finally {
             btn.innerText = "START RECON";
+            btn.disabled = false;
         }
     };
 
-    // 3. الماسح الأمني (Security Scanner)
+    // 3. الماسح الأمني المحسن
     window.runScan = async () => {
         const target = document.getElementById('scanTarget').value;
-        if(!target) return;
-        
         const resDiv = document.getElementById('scanResults');
-        resDiv.innerHTML = "PROBING TARGET...";
-        
-        const response = await fetch('/api/scan', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({url: target})
-        });
-        const report = await response.json();
-        resDiv.innerHTML = `<pre>${JSON.stringify(report, null, 2)}</pre>`;
+        if(!target) return;
+
+        resDiv.innerHTML = "<span class='blink'>PROBING TARGET...</span>";
+
+        try {
+            const response = await fetch('/api/scan', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({url: target})
+            });
+            const report = await response.json();
+            resDiv.innerHTML = `<pre class="scan-report">${JSON.stringify(report, null, 2)}</pre>`;
+        } catch (e) {
+            resDiv.innerHTML = "Scan Failed: Connection Refused";
+        }
     };
 
-    // 4. تأثيرات الكتابة (Typewriter)
+    // 4. تأثيرات Typewriter (Kernel Aesthetic)
     const titles = document.querySelectorAll('.typewriter');
     titles.forEach(title => {
         let text = title.innerText;
         title.innerText = '';
         let i = 0;
-        function type() {
+        (function type() {
             if (i < text.length) {
-                title.innerText += text.charAt(i);
-                i++;
+                title.innerText += text.charAt(i++);
                 setTimeout(type, 50);
             }
-        }
-        type();
+        }());
     });
 });
 
