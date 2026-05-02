@@ -6,7 +6,7 @@ from flask import Flask, render_template, request, jsonify, send_file, after_thi
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-# تصحيح الاستدعاء ليتوافق مع MoviePy 2.2.1
+# التوافق مع MoviePy 2.2.1
 from moviepy import VideoFileClip, vfx 
 from gtts import gTTS
 
@@ -17,13 +17,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# إعداد التطبيق ليعمل في المجلد الرئيسي مباشرة (بناءً على قائمة ls الخاصة بك)
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
 if not os.path.exists(DOWNLOAD_FOLDER):
     os.makedirs(DOWNLOAD_FOLDER)
+
+# وظيفة مساعدة لتنسيق حجم الملفات
+def format_size(bytes):
+    if not bytes: return "--"
+    for unit in ['B', 'KB', 'MB', 'GB']:
+        if bytes < 1024: return f"{bytes:.1f} {unit}"
+        bytes /= 1024
 
 def get_ydl_opts(custom_out=None):
     return {
@@ -33,7 +39,7 @@ def get_ydl_opts(custom_out=None):
         'quiet': True
     }
 
-# --- ميزة 1: المخرج الآلي (Auto-Shorts) ---
+# --- ميزات المعالجة المتقدمة (AI Core) ---
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
@@ -46,7 +52,6 @@ def create_shorts(input_path):
         final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
     return output_path
 
-# --- ميزة 2: الدبلجة العصبية المبسطة ---
 def dub_video(input_path, lang='ar'):
     output_path = input_path.replace(".mp4", "_DUBBED.mp4")
     temp_audio = f"temp_{uuid.uuid4()}.mp3"
@@ -57,53 +62,78 @@ def dub_video(input_path, lang='ar'):
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
-# --- ربط الصفحات (Routes) لضمان عدم ظهور 404 ---
+# --- إدارة المسارات (Routing Control) ---
 
 @app.route('/')
-def index(): 
+def index():
     return render_template('index.html')
 
-# ربط ديناميكي لكل ملفات HTML الموجودة في المجلد لتعمل تلقائياً
 @app.route('/<page>')
 def serve_pages(page):
-    if page.endswith('.html'):
-        return render_template(page)
-    # إذا طلب المستخدم /downloader مثلاً بدون .html
-    if os.path.exists(f"{page}.html"):
-        return render_template(f"{page}.html")
+    if page.endswith('.html'): return render_template(page)
+    if os.path.exists(f"{page}.html"): return render_template(f"{page}.html")
     return render_template('index.html'), 404
 
-# --- API Endpoints ---
+# --- API Endpoints: الإصلاح الشامل للمشكلة ---
 
+@app.route('/api/download', methods=['POST'])
 @app.route('/api/process', methods=['POST'])
-def handle_advanced_process():
+def unified_handler():
     data = request.json
     url = data.get('url')
-    mode = data.get('mode') 
+    mode = data.get('mode') # يمكن أن يكون None لعملية الاستخراج العادية
+
+    if not url:
+        return jsonify({"status": "failed", "message": "No URL provided"}), 400
 
     try:
-        with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
-            info = ydl.extract_info(url, download=True)
-            raw_path = ydl.prepare_filename(info)
+        # الحالة الأولى: استخراج البيانات لعرضها في الجدول (Downloader UI)
+        if not mode:
+            ydl_opts = {'quiet': True, 'nocheckcertificate': True}
+            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                info = ydl.extract_info(url, download=False)
+                formats = []
+                for f in info.get('formats', [])[-8:]: # استخراج آخر 8 جودات (الأعلى غالباً)
+                    if f.get('url'):
+                        formats.append({
+                            "ext": f.get('ext', 'mp4'),
+                            "resolution": f.get('resolution', 'N/A'),
+                            "filesize": format_size(f.get('filesize') or f.get('filesize_approx')),
+                            "url": f.get('url'),
+                            "vcodec": f.get('vcodec', 'none')
+                        })
+                return jsonify({
+                    "status": "success",
+                    "title": info.get('title', 'Media Content'),
+                    "thumbnail": info.get('thumbnail', ''),
+                    "uploader": info.get('uploader', 'VIP_ARM_SOURCE'),
+                    "duration": f"{info.get('duration', 0)//60}:{info.get('duration', 0)%60:02d}",
+                    "formats": formats[::-1]
+                })
 
-        if mode == 'shorts':
-            final_path = create_shorts(raw_path)
-        elif mode == 'dub':
-            final_path = dub_video(raw_path)
+        # الحالة الثانية: معالجة الفيديو (Shorts / Dub)
         else:
-            final_path = raw_path
+            with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
+                info = ydl.extract_info(url, download=True)
+                raw_path = ydl.prepare_filename(info)
 
-        @after_this_request
-        def cleanup(response):
-            # تنظيف الملفات بعد الإرسال لتوفير مساحة Kernel-0x0
-            try:
-                for f in [raw_path, final_path]:
-                    if f and os.path.exists(f): os.remove(f)
-            except Exception as e:
-                logger.error(f"Cleanup Error: {e}")
-            return response
+            if mode == 'shorts':
+                final_path = create_shorts(raw_path)
+            elif mode == 'dub':
+                final_path = dub_video(raw_path)
+            else:
+                final_path = raw_path
 
-        return send_file(final_path, as_attachment=True)
+            @after_this_request
+            def cleanup(response):
+                try:
+                    for f in [raw_path, final_path]:
+                        if f and os.path.exists(f): os.remove(f)
+                except Exception as e:
+                    logger.error(f"Cleanup Error: {e}")
+                return response
+
+            return send_file(final_path, as_attachment=True)
 
     except Exception as e:
         logger.error(f"Kernel Error: {str(e)}")
