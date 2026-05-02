@@ -3,31 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | Secure Contact HQ</title>
+    <title>VIP_ARM | Developer Identity</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Fira+Code:wght@300;500&display=swap" rel="stylesheet">
     <style>
         :root {
-            --contact-bg: #050505;
-            --gold-glow: #ffcc00;
-            --deep-gold: #b8860b;
-            --panel-hex: rgba(10, 10, 10, 0.85);
-            --text-gray: #a0a0a0;
-            --input-bg: #0d0d0d;
-            --scan-line: rgba(255, 204, 0, 0.1);
+            --accent-gold: #ffcc00;
+            --deep-black: #050505;
+            --glass-bg: rgba(10, 10, 10, 0.9);
+            --border-glow: rgba(255, 204, 0, 0.2);
+            --text-dim: #888;
         }
 
         body {
-            background-color: var(--contact-bg);
+            background-color: var(--deep-black);
             color: #fff;
-            font-family: 'Inter', 'Segoe UI', 'Cairo', sans-serif;
+            font-family: 'Cairo', sans-serif;
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* --- Sidebar Logic --- */
+        /* --- Sidebar الاستمراري --- */
         .sidebar {
             width: 260px;
             background: #000;
@@ -48,349 +46,255 @@
             border-right: 4px solid transparent;
         }
         .sidebar a:hover, .sidebar a.active {
-            color: var(--gold-glow);
+            color: var(--accent-gold);
             background: rgba(255, 204, 0, 0.05);
-            border-right: 4px solid var(--gold-glow);
+            border-right-color: var(--accent-gold);
         }
         .sidebar a i { margin-left: 15px; width: 20px; text-align: center; }
 
-        /* --- Main Content & Matrix Background --- */
+        /* --- Main Content Area --- */
         .content-area {
             flex: 1;
             display: flex;
             justify-content: center;
             align-items: center;
             position: relative;
-            background: #000;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
 
-        #bg-canvas {
+        canvas#particle-canvas {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0; left: 0;
             z-index: 1;
         }
 
-        /* --- Profile Card (The Core) --- */
-        .profile-card {
-            background: var(--panel-hex);
-            border: 1px solid rgba(255, 204, 0, 0.15);
+        /* --- Professional Identity Card --- */
+        .id-card {
+            background: var(--glass-bg);
             width: 90%;
-            max-width: 480px;
-            border-radius: 30px;
-            padding: 60px 40px 40px;
-            text-align: center;
+            max-width: 500px;
+            border-radius: 20px;
+            border: 1px solid var(--border-glow);
+            padding: 40px;
             position: relative;
-            backdrop-filter: blur(15px);
-            box-shadow: 0 0 50px rgba(0,0,0,1);
             z-index: 10;
-            overflow: hidden; /* لإخفاء خط المسح الليزري */
-            animation: cardEntrance 1s ease-out;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            text-align: center;
         }
 
-        /* خط المسح الليزري المتحرك */
-        .profile-card::before {
-            content: "";
-            position: absolute;
-            top: -100%;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(to bottom, transparent, var(--scan-line), transparent);
-            animation: scanLine 4s linear infinite;
+        .profile-header {
+            position: relative;
+            margin-bottom: 30px;
         }
 
-        @keyframes scanLine {
-            0% { top: -100%; }
-            100% { top: 100%; }
-        }
-
-        @keyframes cardEntrance {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .profile-img-wrap {
-            position: absolute;
-            top: -55px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .profile-img {
-            width: 110px;
-            height: 110px;
-            background: #050505;
-            border: 2px solid var(--gold-glow);
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            margin: -90px auto 15px;
+            background: #000;
+            border: 2px solid var(--accent-gold);
             border-radius: 50%;
             display: flex;
-            justify-content: center;
             align-items: center;
-            font-size: 45px;
-            color: var(--gold-glow);
-            box-shadow: 0 0 30px rgba(255, 204, 0, 0.4);
-            animation: pulseGlow 2s infinite alternate;
-        }
-
-        @keyframes pulseGlow {
-            from { box-shadow: 0 0 20px rgba(255, 204, 0, 0.2); }
-            to { box-shadow: 0 0 40px rgba(255, 204, 0, 0.5); }
-        }
-
-        /* --- Form Elements --- */
-        .secure-form {
-            margin: 30px 0;
-            position: relative;
-        }
-
-        .input-group {
-            position: relative;
-            margin-bottom: 15px;
-        }
-
-        .input-group i {
-            position: absolute;
-            right: 15px;
-            top: 15px;
-            color: var(--gold-glow);
-            opacity: 0.6;
-        }
-
-        .secure-form input, .secure-form textarea {
-            width: 100%;
-            background: var(--input-bg);
-            border: 1px solid #1a1a1a;
-            color: #ffcc00;
-            padding: 12px 45px 12px 15px;
-            border-radius: 12px;
-            font-family: 'Consolas', monospace;
-            box-sizing: border-box;
-            transition: 0.3s;
-        }
-
-        .secure-form input:focus, .secure-form textarea:focus {
-            border-color: var(--gold-glow);
-            background: #000;
-            box-shadow: 0 0 15px rgba(255, 204, 0, 0.1);
-            outline: none;
-        }
-
-        .btn-send {
-            width: 100%;
-            background: var(--gold-glow);
-            color: #000;
-            border: none;
-            padding: 15px;
-            border-radius: 12px;
-            font-weight: 900;
-            cursor: pointer;
-            transition: 0.4s;
-            display: flex;
             justify-content: center;
-            align-items: center;
-            gap: 12px;
+            box-shadow: 0 0 30px var(--border-glow);
+        }
+
+        .avatar-container i {
+            font-size: 50px;
+            color: var(--accent-gold);
+        }
+
+        .glitch {
+            font-size: 2rem;
+            font-weight: bold;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            position: relative;
+            text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00;
+            animation: glitch 725ms infinite;
         }
 
-        .btn-send:hover {
-            letter-spacing: 3px;
-            background: #fff;
-            box-shadow: 0 0 30px var(--gold-glow);
+        @keyframes glitch {
+            0% { text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00; }
+            14% { text-shadow: 0.05em 0 0 #00fffc, -0.03em -0.04em 0 #fc00ff, 0.025em 0.04em 0 #fffc00; }
+            15% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+            49% { text-shadow: -0.05em -0.025em 0 #00fffc, 0.025em 0.035em 0 #fc00ff, -0.05em -0.05em 0 #fffc00; }
+            50% { text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff, 0 -0.04em 0 #fffc00; }
+            99% { text-shadow: 0.05em 0.035em 0 #00fffc, 0.03em 0 0 #fc00ff, 0 -0.04em 0 #fffc00; }
+            100% { text-shadow: -0.05em 0 0 #00fffc, -0.025em -0.04em 0 #fc00ff, -0.04em -0.025em 0 #fffc00; }
         }
 
-        /* --- Social & Footer --- */
-        .social-grid {
+        .status-badge {
+            display: inline-block;
+            background: rgba(0, 255, 65, 0.1);
+            color: #00ff41;
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-family: 'Fira Code';
+            margin-bottom: 20px;
+        }
+
+        /* --- Skills Matrix --- */
+        .skills-summary {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
         }
 
-        .social-link {
+        .skill-item {
             background: rgba(255, 255, 255, 0.03);
-            padding: 12px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+        }
+
+        /* --- Social & Contact Channels --- */
+        .contact-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .contact-btn {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #111;
+            border: 1px solid #222;
+            padding: 15px 20px;
             border-radius: 12px;
             text-decoration: none;
-            color: #eee;
-            font-size: 14px;
-            border: 1px solid #1a1a1a;
-            transition: 0.3s;
+            color: #fff;
+            transition: 0.4s;
+        }
+
+        .contact-btn:hover {
+            border-color: var(--accent-gold);
+            transform: scale(1.02);
+            background: #161616;
+        }
+
+        .contact-btn i { font-size: 1.2rem; }
+        .contact-btn.whatsapp:hover { color: #25D366; border-color: #25D366; }
+        .contact-btn.telegram:hover { color: #24A1DE; border-color: #24A1DE; }
+
+        .footer-metrics {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #1a1a1a;
             display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            justify-content: space-around;
+            font-family: 'Fira Code';
+            font-size: 0.8rem;
+            color: var(--text-dim);
         }
 
-        .social-link:hover {
-            border-color: var(--gold-glow);
-            color: var(--gold-glow);
-            background: rgba(255, 204, 0, 0.05);
-            transform: translateY(-3px);
-        }
+        .metric b { color: var(--accent-gold); }
 
-        .terminal-footer {
-            margin-top: 35px;
-            font-family: 'Courier New', monospace;
-            font-size: 11px;
-            color: #333;
-            letter-spacing: 1px;
-        }
-
-        /* تألق النص */
-        .glitch-text {
-            color: var(--gold-glow);
-            text-shadow: 0 0 10px rgba(255, 204, 0, 0.5);
-        }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
         <div class="sidebar-header">
-            <i class="fas fa-microchip" style="font-size: 40px; color: var(--gold-glow);"></i>
-            <h3 style="color: #fff; margin-top: 15px; font-size: 1.2rem;">VIP_ARM</h3>
+            <i class="fas fa-shield-halved" style="font-size: 40px; color: var(--accent-gold);"></i>
+            <h3 style="margin-top: 15px;">Kernel-0x0</h3>
         </div>
         <a href="index.html"><i class="fas fa-th-large"></i> لوحة التحكم</a>
-        <a href="editor.html"><i class="fas fa-brush"></i> استوديو الصور</a>
-        <a href="exif.html"><i class="fas fa-fingerprint"></i> التحقيق الجنائي</a>
         <a href="downloader.html"><i class="fas fa-cloud-download"></i> المحمل الذكي</a>
-        <a href="scanner.html"><i class="fas fa-shield-halved"></i> الفاحص الأمني</a>
-        <a href="contact.html" class="active"><i class="fas fa-user-secret"></i> التواصل المشفر</a>
+        <a href="scanner.html"><i class="fas fa-user-secret"></i> الفاحص الأمني</a>
+        <a href="contact.html" class="active"><i class="fas fa-id-card"></i> ملف المطور</a>
     </nav>
 
     <div class="content-area">
-        <canvas id="bg-canvas"></canvas>
+        <canvas id="particle-canvas"></canvas>
 
-        <div class="profile-card">
-            <div class="profile-img-wrap">
-                <div class="profile-img">
+        <div class="id-card">
+            <div class="profile-header">
+                <div class="avatar-container">
                     <i class="fas fa-user-ninja"></i>
                 </div>
+                <div class="status-badge">● ONLINE // VIP_ARM_OS_V6</div>
+                <h1 class="glitch">VIP_ARM</h1>
+                <p style="color: var(--text-dim); font-size: 0.9rem;">Independent Security Researcher & Developer</p>
             </div>
 
-            <div style="margin-top: 20px;">
-                <span class="glitch-text" id="typing-sub" style="font-size: 10px; letter-spacing: 3px; font-weight: bold;"></span>
-                <h1 style="margin: 10px 0; font-size: 2.5rem; letter-spacing: -1px;">Kernel-0x0 HQ</h1>
+            <div class="skills-summary">
+                <div class="skill-item"><i class="fab fa-python"></i><br>Python</div>
+                <div class="skill-item"><i class="fas fa-bug"></i><br>Pentesting</div>
+                <div class="skill-item"><i class="fas fa-code"></i><br>Full-Stack</div>
             </div>
 
-            <!-- Secure Message Injector -->
-            <div class="secure-form">
-                <div class="input-group">
-                    <i class="fas fa-tag"></i>
-                    <input type="text" id="subject" placeholder="[عنوان المهمة]">
+            <div class="contact-grid">
+                <!-- رابط واتساب مباشر برقمك -->
+                <a href="https://wa.me/963996273320?text=Hello%20VIP_ARM,%20I%20saw%20your%20portfolio" target="_blank" class="contact-btn whatsapp">
+                    <span><i class="fab fa-whatsapp"></i> واتساب المطور</span>
+                    <i class="fas fa-external-link-alt" style="font-size: 0.8rem;"></i>
+                </a>
+
+                <!-- رابط تلغرام -->
+                <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="contact-btn telegram">
+                    <span><i class="fab fa-telegram"></i> قناة العمليات (Telegram)</span>
+                    <i class="fas fa-robot" style="font-size: 0.8rem;"></i>
+                </a>
+
+                <!-- نموذج الرسالة السريعة -->
+                <div style="background: #000; padding: 15px; border-radius: 12px; border: 1px dashed #333;">
+                    <p style="font-size: 0.7rem; color: var(--accent-gold); margin-bottom: 10px;">إرسال طلب مشفر (Email)</p>
+                    <a href="mailto:contact@kernel0x0.me" style="color: #fff; text-decoration: none; font-size: 0.9rem;">VIP_ARM@Kernel0x0.me</a>
                 </div>
-                <div class="input-group">
-                    <i class="fas fa-terminal"></i>
-                    <textarea id="message" rows="4" placeholder="[أدخل الحمولة المشفرة هنا...]"></textarea>
-                </div>
-                <button class="btn-send" onclick="sendToBridge()">
-                    <i class="fas fa-satellite-dish"></i> إرسال عبر النفق الآمن
-                </button>
             </div>
 
-            <div class="social-grid">
-                <a href="https://t.me/litharm" class="social-link"><i class="fab fa-telegram"></i> Telegram</a>
-                <a href="https://github.com/sylith17-tech" class="social-link"><i class="fab fa-github"></i> GitHub</a>
-            </div>
-
-            <div class="terminal-footer">
-                <span id="live-time"></span> // ENCRYPTED_NODE // VIP_ARM_OS_V6
+            <div class="footer-metrics">
+                <div class="metric">Projects: <b>24+</b></div>
+                <div class="metric">Uptime: <b>99.9%</b></div>
+                <div class="metric">Security: <b>S+</b></div>
             </div>
         </div>
     </div>
 
-    <script src="script.js"></script>
     <script>
-        // --- Matrix Particles Logic ---
-        const canvas = document.getElementById('bg-canvas');
+        // --- Particle System ---
+        const canvas = document.getElementById('particle-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
 
         function init() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            for(let i=0; i<80; i++) {
+            particles = [];
+            for(let i=0; i<100; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
-                    size: Math.random() * 1.5,
-                    speed: Math.random() * 0.8 + 0.2,
-                    opacity: Math.random()
+                    vx: (Math.random() - 0.5) * 0.5,
+                    vy: (Math.random() - 0.5) * 0.5,
+                    size: Math.random() * 2
                 });
             }
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(255, 204, 0, 0.3)';
             particles.forEach(p => {
-                ctx.fillStyle = `rgba(255, 204, 0, ${p.opacity})`;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
                 ctx.fill();
-                
-                p.y -= p.speed;
-                if(p.y < 0) {
-                    p.y = canvas.height;
-                    p.x = Math.random() * canvas.width;
-                }
+                p.x += p.vx;
+                p.y += p.vy;
+                if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+                if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
             });
             requestAnimationFrame(animate);
         }
 
+        window.addEventListener('resize', init);
         init(); animate();
-
-        // --- Typing Effect ---
-        const subTitle = "SECURED_IDENTITY // NODE_ACCESS_GRANTED";
-        let i = 0;
-        function typeEffect() {
-            if (i < subTitle.length) {
-                document.getElementById("typing-sub").innerHTML += subTitle.charAt(i);
-                i++;
-                setTimeout(typeEffect, 50);
-            }
-        }
-        typeEffect();
-
-        // --- Live Clock ---
-        setInterval(() => {
-            const now = new Date();
-            document.getElementById("live-time").innerText = `STATUS: ${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
-        }, 1000);
-
-        // --- Logic Bridge ---
-        async function sendToBridge() {
-            const btn = document.querySelector('.btn-send');
-            const subject = document.getElementById('subject').value;
-            const message = document.getElementById('message').value;
-
-            if(!subject || !message) {
-                alert("🔴 ERROR: NULL_PAYLOAD_DETECTED");
-                return;
-            }
-
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري التشفير...';
-            btn.style.opacity = "0.7";
-
-            try {
-                const response = await fetch('/send_message', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ subject, message })
-                });
-
-                if(response.ok) {
-                    alert("✅ SUCCESS: تمت العملية بنجاح عبر بروتوكول Kernel-0x0");
-                    document.getElementById('subject').value = "";
-                    document.getElementById('message').value = "";
-                } else {
-                    alert("⚠️ ERROR: فشل في الاتصال بالبوابة السحابية");
-                }
-            } catch (e) {
-                alert("📡 OFFLINE: السيرفر المحلي غير مستجيب. تأكد من تشغيل app.py");
-            } finally {
-                btn.innerHTML = '<i class="fas fa-satellite-dish"></i> إرسال عبر النفق الآمن';
-                btn.style.opacity = "1";
-            }
-        }
     </script>
 </body>
 </html>
