@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kernel-0x0 | Media Extraction Engine</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
         :root {
             --down-bg: #05010a;
@@ -12,32 +13,31 @@
             --deep-violet: #1a052e;
             --text-dim: #94a3b8;
             --success: #00f2ff;
+            --danger: #ff3e3e;
         }
 
         body {
             background-color: var(--down-bg);
             color: #f8fafc;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Cairo', sans-serif;
             margin: 0;
             display: flex;
-            height: 100vh;
-            overflow: hidden;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
 
         /* Sidebar Identity */
         .sidebar {
             width: 260px;
             background: #000;
-            border-right: 1px solid var(--deep-violet);
+            border-left: 1px solid var(--deep-violet);
             display: flex;
             flex-direction: column;
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 1px solid #0a0a0a;
+            position: fixed;
+            height: 100%;
+            right: 0;
+            z-index: 1000;
+            transition: 0.3s;
         }
 
         .sidebar a {
@@ -46,275 +46,281 @@
             color: #475569;
             display: flex;
             align-items: center;
+            gap: 15px;
             transition: 0.3s;
-            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
         }
 
         .sidebar a:hover, .sidebar a.active {
             color: var(--neon-purple);
-            background: rgba(188, 19, 254, 0.03);
-            border-left: 4px solid var(--neon-purple);
+            background: rgba(188, 19, 254, 0.05);
+            border-right: 4px solid var(--neon-purple);
         }
-
-        .sidebar a i { margin-right: 15px; width: 20px; text-align: center; }
 
         /* Main Workspace */
         .main-engine {
+            margin-right: 260px;
             flex: 1;
-            padding: 50px;
-            overflow-y: auto;
-            background: radial-gradient(circle at center, #0f021a 0%, #05010a 100%);
+            padding: 40px;
+            background: radial-gradient(circle at 10% 20%, rgba(26, 5, 46, 0.3) 0%, rgba(5, 1, 10, 1) 90%);
         }
 
-        .hero {
-            text-align: center;
-            margin-bottom: 50px;
-        }
+        .hero { text-align: center; margin-bottom: 40px; }
+        .hero i { font-size: 50px; color: var(--neon-purple); margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--neon-purple)); }
 
-        .hero i {
-            font-size: 60px;
-            color: var(--neon-purple);
-            text-shadow: 0 0 20px rgba(188, 19, 254, 0.5);
-            margin-bottom: 15px;
-        }
-
+        /* Input Zone */
         .search-container {
-            max-width: 750px;
+            max-width: 800px;
             margin: 0 auto;
             position: relative;
         }
 
         input[type="url"] {
             width: 100%;
-            padding: 22px 35px;
+            padding: 20px 25px;
             background: #000;
             border: 1px solid var(--deep-violet);
-            border-radius: 15px;
+            border-radius: 12px;
             color: #fff;
             font-size: 16px;
             outline: none;
             transition: 0.3s;
+            padding-left: 140px; /* مساحة للزر */
         }
 
-        input[type="url"]:focus {
-            border-color: var(--neon-purple);
-            box-shadow: 0 0 15px rgba(188, 19, 254, 0.2);
-        }
+        input[type="url"]:focus { border-color: var(--neon-purple); box-shadow: 0 0 20px rgba(188, 19, 254, 0.15); }
 
         .btn-extract {
             position: absolute;
-            right: 10px;
-            top: 10px;
-            bottom: 10px;
+            left: 8px;
+            top: 8px;
+            bottom: 8px;
             background: var(--neon-purple);
             color: #fff;
             border: none;
-            padding: 0 35px;
-            border-radius: 10px;
-            font-weight: 700;
+            padding: 0 30px;
+            border-radius: 8px;
+            font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
         }
 
-        .btn-extract:hover { filter: brightness(1.2); }
-
-        /* Results Display */
+        /* Results Panel */
         .results-panel {
-            max-width: 800px;
-            margin: 40px auto;
-            background: #0a0a0a;
-            border: 1px solid #1a1a1a;
-            border-radius: 20px;
-            padding: 30px;
+            max-width: 850px;
+            margin: 30px auto;
+            background: rgba(15, 15, 15, 0.9);
+            border: 1px solid #222;
+            border-radius: 15px;
+            padding: 25px;
             display: none;
-            animation: fadeIn 0.5s ease-out;
+            animation: slideUp 0.4s ease-out;
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-        .media-meta {
+        .media-info {
             display: flex;
-            gap: 25px;
-            border-bottom: 1px solid #1a1a1a;
-            padding-bottom: 25px;
+            gap: 20px;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
         }
 
         .thumb-preview {
-            width: 240px;
-            height: 135px;
-            object-fit: cover;
-            border-radius: 12px;
-            border: 1px solid var(--deep-violet);
-        }
-
-        .meta-text h3 { margin: 0 0 10px 0; color: var(--neon-purple); }
-        .meta-text p { margin: 0; font-size: 14px; color: var(--text-dim); }
-
-        .format-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 15px;
-            margin-top: 25px;
-        }
-
-        .download-btn {
-            background: #111;
-            padding: 15px;
+            width: 220px;
             border-radius: 10px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid #222;
-            cursor: pointer;
-            transition: 0.2s;
+            border: 1px solid var(--neon-purple);
+        }
+
+        /* جدول الصيغ */
+        .format-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .format-table tr { border-bottom: 1px solid #1a1a1a; }
+        .format-table td { padding: 12px 10px; vertical-align: middle; }
+
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-video { background: #2980b9; color: white; }
+        .badge-audio { background: #27ae60; color: white; }
+
+        .dl-icon-btn {
+            background: #111;
+            color: var(--success);
+            border: 1px solid #333;
+            padding: 8px 15px;
+            border-radius: 6px;
             text-decoration: none;
-            color: #fff;
+            font-size: 14px;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .download-btn:hover {
-            border-color: var(--success);
-            background: rgba(0, 242, 255, 0.05);
+        .dl-icon-btn:hover { background: var(--success); color: #000; }
+
+        .cloud-btn {
+            background: #0088cc;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            margin-right: 5px;
         }
 
-        /* Loading Animation */
-        .shimmer {
-            display: none;
-            width: 60px;
-            height: 60px;
-            border: 4px solid var(--deep-violet);
-            border-left-color: var(--neon-purple);
-            border-radius: 50%;
-            margin: 30px auto;
-            animation: spin 1s linear infinite;
+        /* Mobile Optimization */
+        @media (max-width: 768px) {
+            .sidebar { width: 70px; }
+            .sidebar span { display: none; }
+            .main-engine { margin-right: 70px; padding: 20px; }
+            .media-info { flex-direction: column; align-items: center; text-align: center; }
+            input[type="url"] { padding-left: 100px; font-size: 14px; }
         }
-
-        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-cloud-arrow-down" style="font-size: 45px; color: var(--neon-purple);"></i>
-            <h3 style="color: #fff; margin-top: 15px; letter-spacing: 1px;">KERNEL-0x0</h3>
+        <div style="padding: 30px 10px; text-align: center;">
+            <i class="fas fa-biohazard" style="font-size: 30px; color: var(--neon-purple);"></i>
         </div>
-        <a href="index.html"><i class="fas fa-terminal"></i> Dashboard</a>
-        <a href="editor.html"><i class="fas fa-wand-magic-sparkles"></i> Image Studio</a>
-        <a href="exif.html"><i class="fas fa-search-location"></i> EXIF Forensic</a>
-        <a href="downloader.html" class="active"><i class="fas fa-play-circle"></i> Media Downloader</a>
-        <a href="scanner.html"><i class="fas fa-shield-virus"></i> Security Scanner</a>
-        <a href="contact.html"><i class="fas fa-headset"></i> HQ Support</a>
+        <a href="index.html"><i class="fas fa-home"></i> <span>الرئيسية</span></a>
+        <a href="downloader.html" class="active"><i class="fas fa-download"></i> <span>التحميل الذكي</span></a>
+        <a href="scanner.html"><i class="fas fa-search"></i> <span>الفحص الأمني</span></a>
+        <a href="editor.html"><i class="fas fa-image"></i> <span>المحرر</span></a>
     </nav>
 
-    <div class="main-engine">
+    <main class="main-engine">
         <div class="hero">
-            <i class="fas fa-bolt"></i>
-            <h1 style="font-size: 2.5rem; margin-bottom: 10px;">Media Stream Extractor</h1>
-            <p style="color: var(--text-dim);">Intercept and download media from bypass-restricted social platforms.</p>
+            <i class="fas fa-cloud-download-alt"></i>
+            <h1>محرك استخراج الميديا المتطور</h1>
+            <p style="color: var(--text-dim);">استخرج المحتوى من YouTube, TikTok, Instagram, Facebook وأكثر من 1000 موقع.</p>
         </div>
 
         <div class="search-container">
-            <input type="url" id="targetUrl" placeholder="Enter link: TikTok, YouTube, IG, FB...">
-            <button class="btn-extract" id="extractBtn" onclick="extractMedia()">EXTRACT</button>
+            <input type="url" id="targetUrl" placeholder="ضع رابط الفيديو هنا (يوتيوب، تيك توك، إلخ)...">
+            <button class="btn-extract" id="extractBtn" onclick="processExtraction()">استخراج</button>
         </div>
 
-        <div class="shimmer" id="shimmer"></div>
+        <!-- لودر احترافي -->
+        <div id="loader" style="display: none; text-align: center; margin: 30px;">
+            <i class="fas fa-sync fa-spin" style="font-size: 40px; color: var(--neon-purple);"></i>
+            <p id="loadingText" style="margin-top: 15px; font-family: 'Share Tech Mono';">BYPASSING RESTRICTIONS...</p>
+        </div>
 
         <div class="results-panel" id="results">
-            <div class="media-meta">
+            <div class="media-info">
                 <img src="" id="resThumb" class="thumb-preview" alt="Preview">
-                <div class="meta-text">
-                    <h3 id="resTitle">Fetching Stream...</h3>
-                    <p id="resSource">Source: Verified</p>
-                    <p id="resStatus" style="color: var(--success); margin-top: 5px;"><i class="fas fa-check-circle"></i> Ready for Extraction</p>
+                <div>
+                    <h3 id="resTitle" style="margin: 0 0 10px 0;">اسم الفيديو يظهر هنا</h3>
+                    <p id="resAuthor" style="color: var(--text-dim); font-size: 14px;">المصدر: --</p>
+                    <div style="margin-top: 15px;">
+                        <span id="resDuration" class="badge" style="background: #333;">00:00</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="format-grid">
-                <!-- الرابط المباشر سيتم وضعه هنا برمجياً -->
-                <a href="#" id="primaryDownload" class="download-btn" onclick="triggerDL('HD Video')">
-                    <span>MP4 High Quality</span>
-                    <i class="fas fa-video"></i>
-                </a>
-                <a href="#" class="download-btn" onclick="triggerDL('Audio Only')">
-                    <span>MP3 Audio (HQ)</span>
-                    <i class="fas fa-music"></i>
-                </a>
-                <a href="#" class="download-btn" onclick="triggerDL('No Watermark')">
-                    <span>No Watermark (TT)</span>
-                    <i class="fas fa-eye-slash"></i>
-                </a>
+            <div style="overflow-x: auto;">
+                <table class="format-table">
+                    <thead>
+                        <tr style="color: var(--text-dim); font-size: 12px; text-align: right;">
+                            <th>الصيغة والجودة</th>
+                            <th>الحجم التقديري</th>
+                            <th>خيارات التحميل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formatList">
+                        <!-- سيتم ملؤها برمجياً -->
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        // متغير عالمي لحفظ الرابط المستخرج
-        let currentStreamUrl = "";
+        async function processExtraction() {
+            const url = document.getElementById('targetUrl').value;
+            if(!url) return;
 
-        async function extractMedia() {
-            const urlInput = document.getElementById('targetUrl').value;
-            const resPanel = document.getElementById('results');
-            const shim = document.getElementById('shimmer');
-            const extractBtn = document.getElementById('extractBtn');
-
-            if(!urlInput) return alert("System requires a target URL.");
-
-            // تحضير الواجهة للتحميل
-            resPanel.style.display = 'none';
-            shim.style.display = 'block';
-            extractBtn.disabled = true;
-            extractBtn.innerText = "WAIT...";
+            // بدء الأنيكيشن
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('loader').style.display = 'block';
+            const btn = document.getElementById('extractBtn');
+            btn.disabled = true;
 
             try {
-                // إرسال الطلب إلى سيرفر Flask الخاص بك (app.py)
+                // إرسال الطلب للسيرفر (Back-end)
                 const response = await fetch('/api/download', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: urlInput })
+                    body: JSON.stringify({ url: url })
                 });
 
-                const result = await response.json();
+                const data = await response.json();
 
-                if (result.status === 'success') {
-                    // عرض النتائج الحقيقية
-                    shim.style.display = 'none';
-                    resPanel.style.display = 'block';
-                    
-                    document.getElementById('resTitle').innerText = result.title;
-                    document.getElementById('resSource').innerText = "Source Origin: " + new URL(urlInput).hostname;
-                    document.getElementById('resThumb').src = result.thumbnail || 'https://via.placeholder.com/240x135?text=Media+Found';
-                    
-                    // حفظ الرابط المباشر لاستخدامه عند الضغط على أزرار التحميل
-                    currentStreamUrl = result.download_link;
+                if(data.status === 'success') {
+                    displayResults(data);
                 } else {
-                    alert("Extraction Error: " + result.message);
-                    shim.style.display = 'none';
+                    alert("خطأ في الاستخراج: " + data.message);
                 }
-            } catch (error) {
-                console.error("Kernel-0x0 Connection Error:", error);
-                alert("Failed to connect to backend engine.");
-                shim.style.display = 'none';
+            } catch (e) {
+                alert("تعذر الاتصال بالمحرك. تأكد من تشغيل app.py");
             } finally {
-                extractBtn.disabled = false;
-                extractBtn.innerText = "EXTRACT";
+                document.getElementById('loader').style.display = 'none';
+                btn.disabled = false;
             }
         }
 
-        function triggerDL(type) {
-            if (!currentStreamUrl) {
-                return alert("No active stream captured. Please extract first.");
-            }
+        function displayResults(data) {
+            const panel = document.getElementById('results');
+            panel.style.display = 'block';
             
-            // فتح الرابط المباشر في تبويب جديد لبدء التحميل
-            window.open(currentStreamUrl, '_blank');
+            document.getElementById('resTitle').innerText = data.title;
+            document.getElementById('resThumb').src = data.thumbnail;
+            document.getElementById('resAuthor').innerText = "بواسطة: " + (data.uploader || "Unknown");
+            
+            const list = document.getElementById('formatList');
+            list.innerHTML = ''; // تنظيف القائمة القديمة
+
+            // توليد خيارات التحميل (تلقائياً بناءً على الرد من السيرفر)
+            data.formats.forEach(f => {
+                const tr = document.createElement('tr');
+                const isAudio = f.ext === 'mp3' || f.vcodec === 'none';
+                
+                tr.innerHTML = `
+                    <td>
+                        <span class="badge ${isAudio ? 'badge-audio' : 'badge-video'}">${f.ext}</span>
+                        <span style="margin-right: 10px;">${f.resolution || 'Audio'}</span>
+                    </td>
+                    <td style="color: var(--text-dim); font-size: 13px;">${f.filesize || '--'}</td>
+                    <td>
+                        <a href="${f.url}" target="_blank" class="dl-icon-btn">
+                            <i class="fas fa-download"></i> تحميل
+                        </a>
+                        <button class="cloud-btn" onclick="sendToCloud('${f.url}')">
+                            <i class="fab fa-telegram-plane"></i>
+                        </button>
+                    </td>
+                `;
+                list.appendChild(tr);
+            });
         }
 
-        // Security Lockdown (اختياري - لحماية الكود الخاص بك)
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = (e) => {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
-        };
+        function sendToCloud(url) {
+            alert("جاري إرسال الملف إلى Telegram Bot الخاص بك...");
+            // هنا يمكنك إضافة Fetch ليرسل الرابط للبوت الخاص بك
+        }
     </script>
 </body>
 </html>

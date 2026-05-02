@@ -1,246 +1,343 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | Pro Image Editor</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Kernel-0x0 | Neural Image Processor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --editor-bg: #121212;
-            --panel-bg: #1e1e1e;
+            --bg-darker: #080808;
+            --bg-panel: #121212;
+            --accent-cyan: #00f2ff;
             --accent-green: #00ff41;
-            --border-color: #333;
+            --danger-red: #ff003c;
+            --border-ui: #222;
         }
 
         body {
-            background-color: var(--editor-bg);
-            color: #fff;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-darker);
+            color: #eee;
+            font-family: 'Consolas', 'Cairo', monospace;
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Sidebar Re-integration */
+        /* Sidebar - Integrated with Kernel Identity */
         .sidebar {
-            width: 260px;
+            width: 70px;
             background: #000;
-            border-right: 1px solid var(--border-color);
+            border-left: 1px solid var(--border-ui);
             display: flex;
             flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            transition: 0.3s;
+            z-index: 1000;
         }
-
+        .sidebar:hover { width: 220px; }
         .sidebar a {
-            padding: 15px 20px;
-            color: #888;
+            width: 100%;
+            padding: 15px 0;
+            color: #444;
+            text-align: center;
             text-decoration: none;
-            border-bottom: 1px solid #111;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: 0.3s;
         }
+        .sidebar a span { display: none; margin-right: 15px; font-size: 14px; }
+        .sidebar:hover a span { display: block; }
+        .sidebar a.active { color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan); }
 
-        .sidebar a:hover, .sidebar a.active {
-            color: var(--accent-green);
-            background: rgba(0, 255, 65, 0.05);
-        }
-
-        /* Editor Workspace */
-        .workspace {
+        /* Main Lab Workspace */
+        .lab-space {
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: #000;
-            position: relative;
         }
 
-        .top-bar {
-            height: 60px;
-            background: var(--panel-bg);
+        .top-toolbar {
+            height: 50px;
+            background: var(--bg-panel);
+            border-bottom: 1px solid var(--border-ui);
             display: flex;
             align-items: center;
             padding: 0 20px;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--border-color);
+            gap: 15px;
         }
 
-        .canvas-area {
+        .canvas-container {
             flex: 1;
+            background-color: #050505;
+            background-image: radial-gradient(#111 1px, transparent 1px);
+            background-size: 20px 20px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
             overflow: auto;
+            position: relative;
         }
 
         canvas {
-            max-width: 100%;
-            max-height: 100%;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            background-image: linear-gradient(45deg, #222 25%, transparent 25%), 
-                              linear-gradient(-45deg, #222 25%, transparent 25%), 
-                              linear-gradient(45deg, transparent 75%, #222 75%), 
-                              linear-gradient(-45deg, transparent 75%, #222 75%);
-            background-size: 20px 20px;
+            max-width: 90%;
+            max-height: 90%;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            cursor: crosshair;
         }
 
-        /* Control Panel */
-        .controls {
-            width: 300px;
-            background: var(--panel-bg);
-            border-left: 1px solid var(--border-color);
-            padding: 20px;
+        /* Control Panels */
+        .side-panel {
+            width: 320px;
+            background: var(--bg-panel);
+            border-right: 1px solid var(--border-ui);
+            display: flex;
+            flex-direction: column;
             overflow-y: auto;
         }
 
-        .control-group { margin-bottom: 25px; }
-        .control-group label { display: block; margin-bottom: 10px; font-size: 13px; color: #aaa; }
-        
+        .panel-section {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-ui);
+        }
+
+        .panel-section h4 {
+            margin: 0 0 15px 0;
+            font-size: 11px;
+            color: var(--accent-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Adjustment Sliders */
+        .slider-box { margin-bottom: 15px; }
+        .slider-box label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
         input[type="range"] {
             width: 100%;
-            accent-color: var(--accent-green);
+            height: 4px;
+            accent-color: var(--accent-cyan);
+            background: #222;
+            border-radius: 2px;
+            appearance: none;
         }
 
-        .filter-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-
-        .filter-btn {
-            background: #2a2a2a;
-            border: 1px solid #444;
-            color: #fff;
+        /* Tool Buttons */
+        .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .btn-tool {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #ccc;
             padding: 10px;
             cursor: pointer;
-            font-size: 12px;
-            border-radius: 4px;
+            font-size: 14px;
+            transition: 0.2s;
+        }
+        .btn-tool:hover, .btn-tool.active { 
+            border-color: var(--accent-cyan); 
+            color: var(--accent-cyan);
+            background: rgba(0, 242, 255, 0.05);
         }
 
-        .filter-btn:hover { border-color: var(--accent-green); }
-
-        .btn-main {
-            background: var(--accent-green);
+        .btn-action {
+            background: var(--accent-cyan);
             color: #000;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 15px;
             font-weight: bold;
-            border-radius: 4px;
             cursor: pointer;
+            font-family: 'Consolas';
         }
+        .btn-action:hover { box-shadow: 0 0 15px var(--accent-cyan); }
 
-        #upload-input { display: none; }
+        .status-bar {
+            height: 25px;
+            background: #000;
+            border-top: 1px solid var(--border-ui);
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            color: #555;
+            justify-content: space-between;
+        }
     </style>
 </head>
 <body>
 
-    <div class="sidebar">
-        <div style="padding: 25px; text-align: center; border-bottom: 1px solid #222;">
-            <i class="fas fa-edit" style="font-size: 30px; color: var(--accent-green);"></i>
-            <p style="font-weight: bold; margin-top: 10px;">VIP_ARM EDITOR</p>
-        </div>
-        <a href="index.html"><i class="fas fa-home"></i> Home</a>
-        <a href="editor.html" class="active"><i class="fas fa-image"></i> Image Editor</a>
-        <a href="exif.html"><i class="fas fa-fingerprint"></i> EXIF Data</a>
-        <a href="downloader.html"><i class="fas fa-download"></i> Downloader</a>
-        <a href="scanner.html"><i class="fas fa-bug"></i> Scanner</a>
-    </div>
+    <nav class="sidebar">
+        <a href="index.html"><i class="fas fa-microchip"></i><span>الرئيسية</span></a>
+        <a href="editor.html" class="active"><i class="fas fa- wand-magic-sparkles"></i><span>المعالج العصبي</span></a>
+        <a href="exif.html"><i class="fas fa-fingerprint"></i><span>التحقيق الجنائي</span></a>
+        <a href="scanner.html"><i class="fas fa-radar"></i><span>الفحص الأمني</span></a>
+    </nav>
 
-    <div class="workspace">
-        <div class="top-bar">
-            <div>
-                <button class="btn-main" onclick="document.getElementById('upload-input').click()">
-                    <i class="fas fa-upload"></i> Upload Image
-                </button>
-                <input type="file" id="upload-input" accept="image/*">
+    <div class="side-panel">
+        <div class="panel-section">
+            <h4><i class="fas fa-sliders"></i> التحكم بالألوان</h4>
+            <div class="slider-box">
+                <label>السطوع <span id="v-bright">100</span>%</label>
+                <input type="range" id="brightness" min="0" max="200" value="100" oninput="applyFilters()">
             </div>
-            <button class="btn-main" onclick="downloadImage()">
-                <i class="fas fa-save"></i> Save Image
-            </button>
+            <div class="slider-box">
+                <label>التباين <span id="v-contrast">100</span>%</label>
+                <input type="range" id="contrast" min="0" max="200" value="100" oninput="applyFilters()">
+            </div>
+            <div class="slider-box">
+                <label>التشبع <span id="v-saturate">100</span>%</label>
+                <input type="range" id="saturate" min="0" max="200" value="100" oninput="applyFilters()">
+            </div>
+            <div class="slider-box">
+                <label>تدرج الألوان <span id="v-hue">0</span>°</label>
+                <input type="range" id="hue" min="0" max="360" value="0" oninput="applyFilters()">
+            </div>
         </div>
 
-        <div class="canvas-area">
-            <canvas id="mainCanvas"></canvas>
+        <div class="panel-section">
+            <h4><i class="fas fa-tools"></i> أدوات الرسم</h4>
+            <div class="tool-grid">
+                <button class="btn-tool active" onclick="setTool('brush')"><i class="fas fa-paint-brush"></i></button>
+                <button class="btn-tool" onclick="setTool('eraser')"><i class="fas fa-eraser"></i></button>
+                <button class="btn-tool" onclick="rotateImage()"><i class="fas fa-rotate-right"></i></button>
+                <button class="btn-tool" onclick="flipImage('h')"><i class="fas fa-arrows-left-right"></i></button>
+                <button class="btn-tool" onclick="flipImage('v')"><i class="fas fa-arrows-up-down"></i></button>
+                <button class="btn-tool" onclick="resetAll()"><i class="fas fa-undo"></i></button>
+            </div>
+            <div class="slider-box" style="margin-top: 15px;">
+                <label>حجم الفرشاة</label>
+                <input type="range" id="brushSize" min="1" max="50" value="5">
+            </div>
+        </div>
+
+        <div class="panel-section">
+            <h4><i class="fas fa-bolt"></i> فلاتر النظام</h4>
+            <div class="tool-grid">
+                <button class="btn-tool" onclick="setPreset('grayscale(1)')">B&W</button>
+                <button class="btn-tool" onclick="setPreset('invert(1)')">Negative</button>
+                <button class="btn-tool" onclick="setPreset('sepia(0.8)')">Sepia</button>
+                <button class="btn-tool" onclick="setPreset('blur(5px)')">Blur</button>
+                <button class="btn-tool" onclick="setPreset('none')">Normal</button>
+            </div>
         </div>
     </div>
 
-    <div class="controls">
-        <h3>Adjustments</h3>
-        <div class="control-group">
-            <label>Brightness</label>
-            <input type="range" id="brightness" min="0" max="200" value="100">
-        </div>
-        <div class="control-group">
-            <label>Contrast</label>
-            <input type="range" id="contrast" min="0" max="200" value="100">
-        </div>
-        <div class="control-group">
-            <label>Saturation</label>
-            <input type="range" id="saturation" min="0" max="200" value="100">
-        </div>
-        <div class="control-group">
-            <label>Blur</label>
-            <input type="range" id="blur" min="0" max="10" value="0">
+    <div class="lab-space">
+        <div class="top-toolbar">
+            <button class="btn-action" onclick="document.getElementById('file-input').click()">
+                <i class="fas fa-upload"></i> حقن صورة
+            </button>
+            <input type="file" id="file-input" hidden accept="image/*">
+            <button class="btn-action" style="background: var(--accent-green);" onclick="saveOutput()">
+                <i class="fas fa-download"></i> تصدير البيانات المعدلة
+            </button>
+            <span style="color: #444; margin-right: auto;">KERNEL_EDITOR_V2.0</span>
         </div>
 
-        <h3>Quick Filters</h3>
-        <div class="filter-grid">
-            <button class="filter-btn" onclick="applyPreset('grayscale(100%)')">B&W</button>
-            <button class="filter-btn" onclick="applyPreset('sepia(100%)')">Sepia</button>
-            <button class="filter-btn" onclick="applyPreset('invert(100%)')">Invert</button>
-            <button class="filter-btn" onclick="resetFilters()">Reset</button>
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <div class="status-bar">
+            <span id="res-info">الوضوح: 0x0</span>
+            <span id="tool-info">الأداة الحالية: الفرشاة</span>
+            <span id="zoom-info">VIP_ARM SECURE ENGINE</span>
         </div>
     </div>
 
     <script>
-        const canvas = document.getElementById('mainCanvas');
+        const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-        const upload = document.getElementById('upload-input');
-        const sliders = document.querySelectorAll('input[type="range"]');
-        let originalImage = null;
+        const fileInput = document.getElementById('file-input');
+        let img = new Image();
+        let isDrawing = false;
+        let currentTool = 'brush';
+        let rotation = 0;
 
-        upload.onchange = function(e) {
+        // Load Image
+        fileInput.onchange = (e) => {
             const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
+            reader.onload = (event) => {
+                img.onload = () => {
                     canvas.width = img.width;
                     canvas.height = img.height;
                     ctx.drawImage(img, 0, 0);
-                    originalImage = img;
-                }
+                    document.getElementById('res-info').innerText = `الوضوح: ${img.width}x${img.height}`;
+                };
                 img.src = event.target.result;
-            }
+            };
             reader.readAsDataURL(e.target.files[0]);
         };
 
-        function updateFilters() {
-            if(!originalImage) return;
+        // Filters Engine
+        function applyFilters() {
+            if (!img.src) return;
             const b = document.getElementById('brightness').value;
             const c = document.getElementById('contrast').value;
-            const s = document.getElementById('saturation').value;
-            const bl = document.getElementById('blur').value;
+            const s = document.getElementById('saturate').value;
+            const h = document.getElementById('hue').value;
 
-            ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) blur(${bl}px)`;
-            ctx.drawImage(originalImage, 0, 0);
+            document.getElementById('v-bright').innerText = b;
+            document.getElementById('v-contrast').innerText = c;
+            document.getElementById('v-saturate').innerText = s;
+            document.getElementById('v-hue').innerText = h;
+
+            ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
+            ctx.drawImage(img, 0, 0);
         }
 
-        sliders.forEach(slider => slider.addEventListener('input', updateFilters));
-
-        function applyPreset(filterStr) {
-            if(!originalImage) return;
-            ctx.filter = filterStr;
-            ctx.drawImage(originalImage, 0, 0);
+        function setPreset(p) {
+            ctx.filter = p;
+            ctx.drawImage(img, 0, 0);
         }
 
-        function resetFilters() {
-            sliders.forEach(s => s.value = s.min == "0" && s.max == "10" ? 0 : 100);
-            applyPreset('none');
+        // Drawing Logic
+        canvas.onmousedown = (e) => {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.lineWidth = document.getElementById('brushSize').value;
+            ctx.lineCap = 'round';
+            ctx.strokeStyle = currentTool === 'eraser' ? '#000' : var(--accent-cyan);
+            if (currentTool === 'eraser') ctx.globalCompositeOperation = 'destination-out';
+            else ctx.globalCompositeOperation = 'source-over';
+        };
+
+        canvas.onmousemove = (e) => {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const y = (e.clientY - rect.top) * (canvas.height / rect.height);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+        };
+
+        canvas.onmouseup = () => isDrawing = false;
+
+        function setTool(t) {
+            currentTool = t;
+            document.getElementById('tool-info').innerText = `الأداة الحالية: ${t === 'brush' ? 'الفرشاة' : 'الممحاة'}`;
+            document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
         }
 
-        function downloadImage() {
+        // Transformations
+        function rotateImage() {
+            rotation = (rotation + 90) % 360;
+            canvas.style.transform = `rotate(${rotation}deg)`;
+        }
+
+        function resetAll() {
+            ctx.filter = 'none';
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.drawImage(img, 0, 0);
+            rotation = 0;
+            canvas.style.transform = `rotate(0deg)`;
+        }
+
+        function saveOutput() {
             const link = document.createElement('a');
-            link.download = 'Kernel0x0_Edited.png';
+            link.download = 'KERNEL_PRO_EDIT.png';
             link.href = canvas.toDataURL();
             link.click();
         }

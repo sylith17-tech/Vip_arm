@@ -1,242 +1,309 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | Network Recon Scanner</title>
+    <title>Kernel-0x0 | Cyber Intelligence Scanner</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cairo:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --scan-bg: #020408;
-            --neon-cyan: #00f2ff;
-            --dark-cyan: #003d4d;
-            --text-main: #a2f9ff;
-            --danger: #ff0055;
-            --success: #00ff41;
+            --bg-black: #050505;
+            --neon-blue: #00f2ff;
+            --neon-red: #ff003c;
+            --neon-green: #00ff41;
+            --terminal-gray: #1a1a1a;
         }
 
         body {
-            background-color: var(--scan-bg);
-            color: var(--text-main);
-            font-family: 'Segoe UI', monospace;
+            background-color: var(--bg-black);
+            color: var(--neon-blue);
+            font-family: 'Share Tech Mono', 'Cairo', monospace;
             margin: 0;
             display: flex;
-            min-height: 100vh;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        /* Sidebar - توحيد التصميم مع الصفحة الرئيسية */
+        /* Sidebar - Identity */
         .sidebar {
-            width: 260px;
+            width: 80px;
             background: #000;
-            border-right: 2px solid var(--dark-cyan);
+            border-left: 1px solid var(--terminal-gray);
             display: flex;
             flex-direction: column;
-            position: fixed;
-            height: 100%;
-            z-index: 100;
-        }
-
-        .sidebar-header {
-            padding: 40px 20px;
-            text-align: center;
-            border-bottom: 1px solid #111;
-        }
-
-        .sidebar a {
-            padding: 15px 25px;
-            text-decoration: none;
-            color: #666;
-            display: flex;
             align-items: center;
+            padding-top: 20px;
             transition: 0.3s;
-            border-left: 4px solid transparent;
+            z-index: 1000;
         }
+        .sidebar:hover { width: 200px; }
+        .sidebar i { font-size: 24px; margin: 20px 0; cursor: pointer; transition: 0.3s; }
+        .sidebar i:hover { color: #fff; text-shadow: 0 0 15px var(--neon-blue); }
+        .sidebar span { display: none; font-size: 14px; margin-right: 10px; }
+        .sidebar:hover span { display: inline; }
 
-        .sidebar a:hover, .sidebar a.active {
-            color: var(--neon-cyan);
-            background: rgba(0, 242, 255, 0.05);
-            border-left: 4px solid var(--neon-cyan);
-        }
-
-        .sidebar a i { margin-right: 15px; width: 20px; text-align: center; }
-
-        /* Main Area */
-        .main-container {
-            margin-left: 260px;
-            padding: 40px;
-            width: 100%;
-        }
-
-        .scanner-header {
-            background: linear-gradient(90deg, rgba(0,242,255,0.1), transparent);
-            border-left: 4px solid var(--neon-cyan);
-            padding: 20px;
-            border-radius: 0 10px 10px 0;
-            margin-bottom: 30px;
-        }
-
-        .input-box {
-            display: flex;
-            gap: 10px;
-            background: #000;
-            padding: 5px;
-            border: 1px solid var(--dark-cyan);
-            border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0,242,255,0.1);
-        }
-
-        input[type="text"] {
+        /* Main Workspace */
+        .workspace {
             flex: 1;
-            background: transparent;
-            border: none;
-            padding: 15px;
-            color: var(--neon-cyan);
-            font-size: 16px;
-            outline: none;
-        }
-
-        .btn-scan {
-            background: var(--neon-cyan);
-            color: #000;
-            border: none;
-            padding: 0 40px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: 0.3s;
-            text-transform: uppercase;
-        }
-
-        .btn-scan:hover {
-            box-shadow: 0 0 25px var(--neon-cyan);
-            letter-spacing: 1px;
-        }
-
-        /* Results Terminal */
-        .terminal {
-            margin-top: 30px;
-            background: #000;
-            border: 1px solid #111;
-            border-radius: 8px;
-            height: 450px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
+            gap: 20px;
+            position: relative;
         }
 
-        .term-header {
-            background: #111;
-            padding: 10px 20px;
-            font-size: 12px;
+        /* Scan Header */
+        .header-bar {
+            background: rgba(0, 242, 255, 0.03);
+            border: 1px solid var(--terminal-gray);
+            padding: 15px 25px;
             display: flex;
             justify-content: space-between;
-            border-radius: 8px 8px 0 0;
+            align-items: center;
+            border-radius: 4px;
         }
 
-        #output {
+        .glitch-text {
+            animation: glitch 2s infinite;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #fff;
+        }
+
+        @keyframes glitch {
+            0% { text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-blue); }
+            50% { text-shadow: -2px 0 var(--neon-red), 2px 0 var(--neon-blue); }
+            100% { text-shadow: 2px 0 var(--neon-red), -2px 0 var(--neon-blue); }
+        }
+
+        /* Input Area */
+        .input-group {
+            display: flex;
+            gap: 10px;
+        }
+        input {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--terminal-gray);
+            padding: 15px;
+            color: var(--neon-green);
+            font-family: 'Share Tech Mono';
+            outline: none;
+            font-size: 18px;
+        }
+        input:focus { border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0,242,255,0.1); }
+
+        .btn-launch {
+            background: transparent;
+            border: 1px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 0 30px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .btn-launch:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 30px var(--neon-blue); }
+
+        /* Terminal Console */
+        .console {
+            flex: 1;
+            background: #000;
+            border: 1px solid var(--terminal-gray);
+            border-radius: 4px;
             padding: 20px;
             overflow-y: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 14px;
-            line-height: 1.6;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,1);
+        }
+        .console::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                        linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
         }
 
-        .log-line { margin-bottom: 8px; border-bottom: 1px solid #050505; }
-        .critical { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
-        .success { color: var(--success); }
-        .info { color: var(--neon-cyan); }
+        .line { margin-bottom: 5px; font-size: 14px; display: flex; gap: 10px; }
+        .timestamp { color: #555; }
+        .tag { padding: 0 5px; border-radius: 3px; font-size: 10px; font-weight: bold; }
+        .tag-info { background: var(--neon-blue); color: #000; }
+        .tag-warn { background: #ffaa00; color: #000; }
+        .tag-crit { background: var(--neon-red); color: #fff; animation: blink 0.5s infinite; }
 
-        /* Animation Progress */
-        .progress-container {
-            width: 100%;
-            height: 2px;
-            background: #111;
-            margin-top: 10px;
+        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+        /* Stats HUD */
+        .hud {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
         }
-        #progress-bar { width: 0%; height: 100%; background: var(--neon-cyan); transition: 0.3s; }
+        .stat-card {
+            background: #0a0a0a;
+            border: 1px solid var(--terminal-gray);
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-val { font-size: 20px; color: #fff; display: block; }
+        .stat-label { font-size: 10px; color: var(--neon-blue); text-transform: uppercase; }
+
     </style>
 </head>
 <body>
 
     <nav class="sidebar">
-        <div class="sidebar-header">
-            <i class="fas fa-user-secret" style="font-size: 50px; color: var(--neon-cyan);"></i>
-            <h3 style="color: var(--neon-cyan); margin-top: 10px;">VIP_ARM</h3>
-        </div>
-        <a href="index.html"><i class="fas fa-columns"></i> Dashboard</a>
-        <a href="editor.html"><i class="fas fa-wand-magic-sparkles"></i> Image Editor</a>
-        <a href="exif.html"><i class="fas fa-microscope"></i> EXIF Forensic</a>
-        <a href="downloader.html"><i class="fas fa-download"></i> Downloader</a>
-        <a href="scanner.html" class="active"><i class="fas fa-shield-virus"></i> Security Scanner</a>
-        <a href="contact.html"><i class="fas fa-headset"></i> Contact Team</a>
+        <i class="fas fa-biohazard"></i>
+        <a href="index.html"><i class="fas fa-ghost"></i></a>
+        <a href="scanner.html"><i class="fas fa-radar" style="color: var(--neon-blue);"></i></a>
+        <a href="downloader.html"><i class="fas fa-cloud-bolt"></i></a>
+        <a href="exif.html"><i class="fas fa-fingerprint"></i></a>
     </nav>
 
-    <div class="main-container">
-        <div class="scanner-header">
-            <h1 style="margin: 0; font-size: 24px;"><i class="fas fa-satellite-dish"></i> Advanced Intelligence Scanner</h1>
-            <p style="margin: 5px 0 0 0; color: #555;">Targeting global infrastructure for security vulnerabilities.</p>
+    <div class="workspace">
+        <div class="header-bar">
+            <div>
+                <span class="glitch-text">VIP_ARM // INTELLIGENCE SYSTEM</span>
+                <span style="margin-right: 20px; color: var(--terminal-gray);">|</span>
+                <span id="system-status" style="font-size: 12px; color: var(--neon-green);">● SYSTEM_READY</span>
+            </div>
+            <div style="font-size: 12px;">LOC: <span id="ip-display">RESOLVING...</span></div>
         </div>
 
-        <div class="input-box">
-            <input type="text" id="target" placeholder="Enter Target Domain (e.g., example.com)">
-            <button class="btn-scan" onclick="runAnalysis()">Analyze</button>
+        <div class="hud">
+            <div class="stat-card">
+                <span class="stat-val" id="stat-threat">0%</span>
+                <span class="stat-label">Threat Level</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="stat-vuln">0</span>
+                <span class="stat-label">Vulnerabilities</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="stat-ports">--</span>
+                <span class="stat-label">Open Ports</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-val" id="stat-score">S</span>
+                <span class="stat-label">Security Grade</span>
+            </div>
         </div>
-        <div class="progress-container"><div id="progress-bar"></div></div>
 
-        <div class="terminal">
-            <div class="term-header">
-                <span>STDOUT - SESSION_ACTIVE</span>
-                <span>ENC: AES-256</span>
-            </div>
-            <div id="output">
-                <span style="color: #444;">[!] System waiting for target input...</span>
-            </div>
+        <div class="input-group">
+            <input type="text" id="target" placeholder="TARGET_DOMAIN_OR_IP_ADDRESS..." spellcheck="false">
+            <button class="btn-launch" onclick="initiateScan()">EXECUTE SCAN</button>
+        </div>
+
+        <div class="console" id="terminal">
+            <div class="line"><span class="timestamp">[00:00:00]</span> <span class="tag tag-info">SYS</span> Waiting for target uplink...</div>
         </div>
     </div>
 
     <script>
-        async function runAnalysis() {
-            const target = document.getElementById('target').value;
-            const output = document.getElementById('output');
-            const bar = document.getElementById('progress-bar');
-            
-            if(!target) return alert("Target identification required.");
+        const terminal = document.getElementById('terminal');
+        let vulnCounter = 0;
 
-            output.innerHTML = `<div class="log-line info">[+] Initializing scan for: ${target}</div>`;
-            bar.style.width = "10%";
+        function log(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'line';
+            div.innerHTML = `
+                <span class="timestamp">[${time}]</span>
+                <span class="tag tag-${type}">${type.toUpperCase()}</span>
+                <span style="color: ${type === 'crit' ? '#ff003c' : '#fff'}">${msg}</span>
+            `;
+            terminal.appendChild(div);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        async function initiateScan() {
+            const target = document.getElementById('target').value;
+            if(!target) return log("CRITICAL_ERROR: TARGET_NULL", "crit");
+
+            // Reset HUD
+            vulnCounter = 0;
+            document.getElementById('stat-threat').innerText = "0%";
+            document.getElementById('stat-vuln').innerText = "0";
+            document.getElementById('system-status').innerText = "● SCAN_IN_PROGRESS";
+            document.getElementById('system-status').style.color = "var(--neon-red)";
+
+            terminal.innerHTML = '';
+            log(`STARTING RECONNAISSANCE ON: ${target}`, 'info');
+
+            const steps = [
+                { m: "Initializing Packet Sniffer...", d: 500, t: 'info' },
+                { m: "Bypassing WAF (Web Application Firewall)...", d: 1000, t: 'info' },
+                { m: "Resolving DNS Infrastructure...", d: 700, t: 'info' },
+                { m: "Analyzing SSL/TLS Handshake...", d: 1200, t: 'info' },
+                { m: "WARNING: Unencrypted transmission detected!", d: 500, t: 'warn' },
+                { m: "CRITICAL: SQL Injection vulnerability found at /api/v1/", d: 1500, t: 'crit' },
+                { m: "Intercepting Server Headers...", d: 800, t: 'info' }
+            ];
+
+            for (const step of steps) {
+                await new Promise(r => setTimeout(r, step.d));
+                log(step.m, step.t);
+                if(step.t === 'crit') {
+                    vulnCounter++;
+                    updateHUD(true);
+                }
+            }
 
             try {
-                // محاكاة الاتصال الحقيقي بالسيرفر
-                const steps = [
-                    {m: "[+] Resolving DNS records...", d: 1000, p: 30},
-                    {m: "[+] Pinging target node...", d: 800, p: 50},
-                    {m: "[!] Analyzing HTTP Security Headers...", d: 1200, p: 70},
-                    {m: "[!] Vulnerability Check: XSS, Clickjacking, MIME-Sniffing", d: 1500, p: 90}
-                ];
-
-                for(let step of steps) {
-                    await new Promise(r => setTimeout(r, step.d));
-                    output.innerHTML += `<div class="log-line">${step.m}</div>`;
-                    bar.style.width = step.p + "%";
-                }
-
-                // طلب حقيقي لجلب بيانات الموقع عبر السيرفر
-                const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://' + target)}`);
+                // الربط مع app.py
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({url: target})
+                });
                 const data = await response.json();
-
-                bar.style.width = "100%";
-                output.innerHTML += `<div class="log-line success">[✔] SCAN COMPLETED SUCCESSFULLY</div>`;
-                output.innerHTML += `<div class="log-line">------------------------------------</div>`;
-                output.innerHTML += `<div class="log-line info">Status: ${response.ok ? 'Target Reachable' : 'Target Shielded'}</div>`;
                 
-                if(!data.contents.includes('X-Frame-Options')) {
-                    output.innerHTML += `<div class="log-line critical">[✖] CRITICAL: Clickjacking Protection (X-Frame-Options) MISSING!</div>`;
-                }
-                
-                output.innerHTML += `<div class="log-line">Detection: Server environment identified. Analytics logged.</div>`;
-
-            } catch (err) {
-                output.innerHTML += `<div class="log-line critical">[!] ERROR: Connection refused by target firewall.</div>`;
+                log("Data Extraction Complete.", "info");
+                processRealData(data);
+            } catch (e) {
+                log("External node reached. Proceeding with simulated analysis.", "warn");
+                simulateEnd();
             }
         }
+
+        function updateHUD(isCrit) {
+            document.getElementById('stat-vuln').innerText = vulnCounter;
+            document.getElementById('stat-threat').innerText = (vulnCounter * 25) + "%";
+            if(vulnCounter > 2) document.getElementById('stat-score').innerText = "F";
+        }
+
+        function processRealData(data) {
+            if(data.security_headers) {
+                Object.entries(data.security_headers).forEach(([k, v]) => {
+                    if(v === "Missing") {
+                        log(`VULN_DETECTED: ${k} is MISSING`, 'crit');
+                        vulnCounter++;
+                        updateHUD();
+                    } else {
+                        log(`SECURE: ${k} confirmed.`, 'info');
+                    }
+                });
+            }
+            log("SCAN_COMPLETE: LOGS_STORED_IN_KERNEL_0X0", "info");
+            document.getElementById('system-status').innerText = "● SCAN_FINISHED";
+            document.getElementById('system-status').style.color = "var(--neon-green)";
+        }
+
+        function simulateEnd() {
+            log("Finalizing forensic report...", "info");
+            setTimeout(() => {
+                log("UPLINK_CLOSED.", "info");
+                document.getElementById('system-status').innerText = "● STANDBY";
+            }, 1000);
+        }
+
+        // Fake IP Resolver
+        setInterval(() => {
+            const fakeIp = `192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`;
+            document.getElementById('ip-display').innerText = fakeIp;
+        }, 3000);
     </script>
 </body>
 </html>

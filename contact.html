@@ -1,10 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | Secure Contact</title>
+    <title>Kernel-0x0 | Secure Contact HQ</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- ربط الملفات الخارجية التي سنعتمد عليها في المشروع كاملاً -->
+    <link rel="stylesheet" href="style.css">
     <style>
         :root {
             --contact-bg: #050505;
@@ -12,12 +14,13 @@
             --deep-gold: #b8860b;
             --panel-hex: rgba(17, 17, 17, 0.9);
             --text-gray: #a0a0a0;
+            --input-bg: #0a0a0a;
         }
 
         body {
             background-color: var(--contact-bg);
             color: #fff;
-            font-family: 'Inter', 'Segoe UI', sans-serif;
+            font-family: 'Inter', 'Segoe UI', 'Cairo', sans-serif;
             margin: 0;
             display: flex;
             height: 100vh;
@@ -28,7 +31,7 @@
         .sidebar {
             width: 260px;
             background: #000;
-            border-right: 1px solid #1a1a1a;
+            border-left: 1px solid #1a1a1a; /* تعديل ليتناسب مع الاتجاه العربي */
             display: flex;
             flex-direction: column;
             z-index: 100;
@@ -46,18 +49,18 @@
             display: flex;
             align-items: center;
             transition: 0.3s;
-            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
         }
 
         .sidebar a:hover, .sidebar a.active {
             color: var(--gold-glow);
             background: rgba(255, 204, 0, 0.03);
-            border-left: 4px solid var(--gold-glow);
+            border-right: 4px solid var(--gold-glow);
         }
 
-        .sidebar a i { margin-right: 15px; width: 20px; text-align: center; }
+        .sidebar a i { margin-left: 15px; width: 20px; text-align: center; }
 
-        /* Content Area & Background Animation */
+        /* Content Area */
         .content-area {
             flex: 1;
             display: flex;
@@ -73,12 +76,12 @@
             opacity: 0.3;
         }
 
-        /* Profile Card */
+        /* Profile Card Mapped to VIP_ARM Identity */
         .profile-card {
             background: var(--panel-hex);
             border: 1px solid rgba(255, 204, 0, 0.2);
             width: 90%;
-            max-width: 480px;
+            max-width: 500px;
             border-radius: 24px;
             padding: 50px 40px;
             text-align: center;
@@ -109,37 +112,46 @@
             box-shadow: 0 0 25px rgba(255, 204, 0, 0.3);
         }
 
-        .badge {
-            display: inline-block;
-            margin-top: 20px;
-            background: rgba(255, 204, 0, 0.1);
-            color: var(--gold-glow);
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 1px;
-            border: 1px solid rgba(255, 204, 0, 0.2);
-        }
-
-        .stats-box {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
+        /* Message Box UI */
+        .secure-form {
             margin: 25px 0;
-            text-align: left;
-        }
-
-        .stat-item {
-            background: rgba(0,0,0,0.4);
-            padding: 12px;
-            border-radius: 12px;
+            background: rgba(0,0,0,0.3);
+            padding: 20px;
+            border-radius: 15px;
             border: 1px solid #222;
         }
 
-        .stat-item i { color: var(--gold-glow); margin-bottom: 5px; }
-        .stat-item div { font-size: 11px; color: var(--text-gray); }
-        .stat-item span { font-size: 13px; font-weight: 600; }
+        .secure-form input, .secure-form textarea {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-family: 'Consolas', monospace;
+            box-sizing: border-box;
+        }
+
+        .secure-form input:focus { border-color: var(--gold-glow); outline: none; }
+
+        .btn-send {
+            width: 100%;
+            background: var(--gold-glow);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-send:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(255, 204, 0, 0.4); }
 
         .social-grid {
             display: grid;
@@ -149,26 +161,20 @@
 
         .social-link {
             background: #111;
-            padding: 14px;
-            border-radius: 12px;
+            padding: 12px;
+            border-radius: 10px;
             text-decoration: none;
             color: #fff;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 13px;
             border: 1px solid #222;
             transition: 0.3s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
         }
 
-        .social-link:hover {
-            border-color: var(--gold-glow);
-            color: var(--gold-glow);
-            background: rgba(255, 204, 0, 0.05);
-            transform: translateY(-3px);
-        }
+        .social-link:hover { border-color: var(--gold-glow); color: var(--gold-glow); }
 
         .terminal-footer {
             margin-top: 30px;
@@ -187,12 +193,12 @@
             <i class="fas fa-microchip" style="font-size: 40px; color: var(--gold-glow);"></i>
             <h3 style="color: #fff; margin-top: 15px; font-size: 1.2rem;">VIP_ARM</h3>
         </div>
-        <a href="index.html"><i class="fas fa-th-large"></i> Dashboard</a>
-        <a href="editor.html"><i class="fas fa-brush"></i> Image Studio</a>
-        <a href="exif.html"><i class="fas fa-fingerprint"></i> EXIF Forensic</a>
-        <a href="downloader.html"><i class="fas fa-cloud-download"></i> Downloader</a>
-        <a href="scanner.html"><i class="fas fa-shield-halved"></i> Scanner</a>
-        <a href="contact.html" class="active"><i class="fas fa-user-secret"></i> Contact HQ</a>
+        <a href="index.html"><i class="fas fa-th-large"></i> لوحة التحكم</a>
+        <a href="editor.html"><i class="fas fa-brush"></i> استوديو الصور</a>
+        <a href="exif.html"><i class="fas fa-fingerprint"></i> التحقيق الجنائي</a>
+        <a href="downloader.html"><i class="fas fa-cloud-download"></i> المحمل الذكي</a>
+        <a href="scanner.html"><i class="fas fa-shield-halved"></i> الفاحص الأمني</a>
+        <a href="contact.html" class="active"><i class="fas fa-user-secret"></i> التواصل المشفر</a>
     </nav>
 
     <div class="content-area">
@@ -204,39 +210,36 @@
                     <i class="fas fa-user-ninja"></i>
                 </div>
             </div>
-            
-            <div class="badge">SECURED IDENTITY</div>
-            <h1 style="margin: 15px 0 5px; font-size: 2rem;">VIP_ARM</h1>
-            <p style="color: var(--text-gray); font-size: 14px;">Lead of <span style="color: var(--gold-glow)">Kernel-0x0</span> Research Team</p>
 
-            <div class="stats-box">
-                <div class="stat-item">
-                    <i class="fas fa-code"></i>
-                    <div>Core Skills</div>
-                    <span>Python & C++</span>
-                </div>
-                <div class="stat-item">
-                    <i class="fas fa-server"></i>
-                    <div>Environment</div>
-                    <span>Kali NetHunter</span>
-                </div>
+            <div style="margin-top: 20px;">
+                <span style="color: var(--gold-glow); font-size: 11px; letter-spacing: 2px;">SECURED IDENTITY // VIP_ARM</span>
+                <h1 style="margin: 10px 0; font-size: 2.2rem; letter-spacing: -1px;">Kernel-0x0 HQ</h1>
+            </div>
+
+            <!-- Secure Message Injector -->
+            <div class="secure-form">
+                <input type="text" id="subject" placeholder="[Subject_Header]">
+                <textarea id="message" rows="4" placeholder="[Enter_Encrypted_Payload_Here]"></textarea>
+                <button class="btn-send" onclick="sendToBridge()">
+                    <i class="fas fa-bolt"></i> تنفيذ الإرسال الآمن
+                </button>
             </div>
 
             <div class="social-grid">
                 <a href="https://t.me/YOUR_TELEGRAM" class="social-link"><i class="fab fa-telegram"></i> Telegram</a>
                 <a href="https://github.com/sylith17-tech" class="social-link"><i class="fab fa-github"></i> GitHub</a>
-                <a href="#" class="social-link"><i class="fab fa-discord"></i> Discord</a>
-                <a href="#" class="social-link"><i class="fab fa-x-twitter"></i> Twitter</a>
             </div>
 
-            <div class="terminal-footer">
+            <div class="terminal-footer" id="terminal-status">
                 STATUS: ENCRYPTED // NODE: KERNEL-0X0 // 2026
             </div>
         </div>
     </div>
 
+    <!-- ربط ملف JavaScript الخارجي -->
+    <script src="script.js"></script>
     <script>
-        // Simple Particle Background
+        // Particle Background Logic
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let particles = [];
@@ -244,19 +247,19 @@
         function init() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
-            for(let i=0; i<80; i++) {
+            for(let i=0; i<60; i++) {
                 particles.push({
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
                     size: Math.random() * 2,
-                    speed: Math.random() * 0.5 + 0.2
+                    speed: Math.random() * 0.5 + 0.1
                 });
             }
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#ffcc00';
+            ctx.fillStyle = '#ffcc0033';
             particles.forEach(p => {
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
@@ -267,15 +270,37 @@
             requestAnimationFrame(animate);
         }
 
-        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         init();
         animate();
 
-        // Lockdown
-        document.addEventListener('contextmenu', e => e.preventDefault());
-        document.onkeydown = (e) => {
-            if(e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false;
-        };
+        // Secure Bridge Function (سيتم ربطه بـ app.py لاحقاً)
+        async function sendToBridge() {
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+
+            if(!subject || !message) {
+                alert("CRITICAL ERROR: NULL_PAYLOAD_DETECTED");
+                return;
+            }
+
+            // إرسال البيانات إلى app.py
+            try {
+                const response = await fetch('/send_message', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ subject, message })
+                });
+                
+                if(response.ok) {
+                    alert("SUCCESS: Data transmitted to VIP_ARM via secure tunnel.");
+                } else {
+                    alert("ERROR: Transmission failed. Check Backend.");
+                }
+            } catch (e) {
+                console.log("Offline Mode: Message queued locally.");
+                alert("SYSTEM: Bridge not found. Are we running on Render yet?");
+            }
+        }
     </script>
 </body>
 </html>
