@@ -2,6 +2,7 @@ Flask
 flask-cors
 yt-dlp
 moviepy>=2.0.0
+gTTS
 python-telegram-bot
 requests
 Pillow
