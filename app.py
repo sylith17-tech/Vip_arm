@@ -22,8 +22,9 @@ CORS(app)
 
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
 STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports') # مجلد جديد لحفظ تصدير الاستوديو
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads') # إضافة مجلد الرفع المفقود
 
-for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER]:
+for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 
@@ -76,6 +77,24 @@ def index():
 def studio_page():
     return render_template('studio.html')
 
+# --- [FIX] مسار الرفع المخصص للاستوديو ---
+@app.route('/upload', methods=['POST'])
+def upload_file():
+    # التحقق من كلا الاسمين (image و file) لضمان التوافق التام
+    file = request.files.get('image') or request.files.get('file')
+    if not file:
+        return jsonify({"error": "No Payload"}), 400
+    
+    filename = f"VIP_{uuid.uuid4().hex}_{file.filename}"
+    filepath = os.path.join(UPLOAD_FOLDER, filename)
+    file.save(filepath)
+    
+    return jsonify({
+        "status": "success",
+        "url": f"/{filepath}",
+        "filename": filename
+    })
+
 @app.route('/<page>')
 def serve_pages(page):
     if page.endswith('.html'): return render_template(page)
@@ -89,7 +108,7 @@ def serve_pages(page):
 def unified_handler():
     data = request.json
     url = data.get('url')
-    mode = data.get('mode') 
+    mode = data.get('mode')
 
     if not url:
         return jsonify({"status": "failed", "message": "No URL provided"}), 400
