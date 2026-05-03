@@ -75,7 +75,8 @@ def index():
 # مسار خاص بواجهة الاستوديو الجديدة
 @app.route('/studio')
 def studio_page():
-    return render_template('studio.html')
+    from flask import send_from_directory
+    return send_from_directory('.', 'studio.html')
 
 # --- [FIX] مسار الرفع المخصص للاستوديو ---
 @app.route('/upload', methods=['POST'])
