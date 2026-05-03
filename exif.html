@@ -187,7 +187,7 @@
         <div class="upload-container" onclick="document.getElementById('file-input').click()">
             <i class="fas fa-shield-upload" style="font-size: 40px; color: var(--neon-green); margin-bottom: 15px;"></i>
             <p>اسحب الصورة هنا أو اضغط لرفع ملف للتحقيق</p>
-            <input type="file" id="file-input" hidden accept="image/*">
+            <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this.files[0])">
         </div>
 
         <div class="analysis-grid" id="main-grid">
