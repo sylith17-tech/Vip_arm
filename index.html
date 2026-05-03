@@ -19,7 +19,6 @@
             --sidebar-width: 280px;
         }
 
-        /* الأساسيات وتحسين العرض على الجوال */
         * { box-sizing: border-box; outline: none; -webkit-tap-highlight-color: transparent; }
         body {
             background-color: var(--dark-core);
@@ -38,7 +37,7 @@
             opacity: 0.15;
         }
 
-        /* Sidebar المطور - يدعم السحب والإخفاء */
+        /* Sidebar المطور */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--surface);
@@ -53,7 +52,6 @@
             transition: var(--transition);
         }
 
-        /* زر القائمة للجوال فقط */
         .menu-toggle {
             display: none;
             position: fixed;
@@ -109,7 +107,6 @@
             text-shadow: 0 0 10px rgba(0, 255, 65, 0.5);
         }
 
-        /* المحتوى الرئيسي المتجاوب */
         .main-content {
             margin-right: var(--sidebar-width);
             width: calc(100% - var(--sidebar-width));
@@ -134,6 +131,7 @@
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
+        /* تطوير تأثير الماسح الضوئي */
         .hero-card::after {
             content: "";
             position: absolute;
@@ -154,7 +152,6 @@
             box-shadow: inset 0 0 20px black;
         }
 
-        /* شبكة الأدوات */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -172,17 +169,11 @@
             cursor: pointer;
         }
 
+        /* تأثير Glitch بسيط عند الـ Hover */
         .tool-card:hover {
             transform: translateY(-5px);
             border-color: var(--glow-green);
-            background: rgba(0, 255, 65, 0.02);
-            box-shadow: 0 5px 25px rgba(0, 255, 65, 0.1);
-        }
-
-        .tool-card i {
-            font-size: 2rem;
-            margin-bottom: 15px;
-            display: block;
+            box-shadow: 3px 0 10px rgba(0, 255, 65, 0.2), -3px 0 10px rgba(255, 0, 60, 0.2);
         }
 
         .btn-launch {
@@ -197,15 +188,16 @@
             text-decoration: none;
             display: inline-block;
             margin-top: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn-launch:hover {
             background: var(--glow-green);
             color: black;
-            box-shadow: 0 0 15px var(--glow-green);
+            box-shadow: 0 0 20px var(--glow-green);
         }
 
-        /* تأثيرات إضافية للتطوير */
         .system-status-indicator {
             display: flex;
             align-items: center;
@@ -219,30 +211,16 @@
         }
 
         @keyframes pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+        @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(400px); } }
 
-        /* تحسينات الشاشات الصغيرة (الجوال والتابلت) */
-        @media (max-width: 1024px) {
-            .dashboard-header { grid-template-columns: 1fr; }
-        }
-
+        @media (max-width: 1024px) { .dashboard-header { grid-template-columns: 1fr; } }
         @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(100%);
-                width: 250px;
-            }
+            .sidebar { transform: translateX(100%); width: 250px; }
             .sidebar.active { transform: translateX(0); }
             .main-content { margin-right: 0; width: 100%; padding: 20px; }
             .menu-toggle { display: flex; }
-            .hero-card h1 { font-size: 1.5rem; }
-            .mini-terminal { height: 150px; }
         }
 
-        @keyframes scan {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-        }
-
-        /* تخصيص السكرول بار */
         ::-webkit-scrollbar { width: 5px; }
         ::-webkit-scrollbar-track { background: var(--dark-core); }
         ::-webkit-scrollbar-thumb { background: #222; border-radius: 10px; }
@@ -252,7 +230,6 @@
 <body>
     <canvas id="matrix"></canvas>
 
-    <!-- زر القائمة للجوال -->
     <div class="menu-toggle" onclick="toggleSidebar()">
         <i class="fas fa-bars"></i>
     </div>
@@ -265,12 +242,13 @@
         </div>
 
         <div class="nav-links">
-            <a href="index.html" class="active"><i class="fas fa-home"></i> <span>الرئيسية</span></a>
-            <a href="studio.html"><i class="fas fa-photo-video"></i> <span>VIP_ARM Studio</span></a>
-            <a href="downloader.html"><i class="fas fa-cloud-download-alt"></i> <span>مركز التحميل</span></a>
-            <a href="scanner.html"><i class="fas fa-terminal"></i> <span>فحص الثغرات</span></a>
-            <a href="forensic.html"><i class="fas fa-microscope"></i> <span>التحليل الجنائي</span></a>
-            <a href="contact.html"><i class="fas fa-code-branch"></i> <span>سجل النظام</span></a>
+            <a href="/" class="active"><i class="fas fa-home"></i> <span>الرئيسية</span></a>
+            <!-- تم تصحيح الرابط هنا -->
+            <a href="/studio"><i class="fas fa-photo-video"></i> <span>VIP_ARM Studio</span></a>
+            <a href="/downloader"><i class="fas fa-cloud-download-alt"></i> <span>مركز التحميل</span></a>
+            <a href="/scanner"><i class="fas fa-terminal"></i> <span>فحص الثغرات</span></a>
+            <a href="/forensic"><i class="fas fa-microscope"></i> <span>التحليل الجنائي</span></a>
+            <a href="/contact"><i class="fas fa-code-branch"></i> <span>سجل النظام</span></a>
         </div>
 
         <div class="dev-contact-section" style="margin-top: auto; padding: 20px;">
@@ -297,19 +275,18 @@
                 </p>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <a href="studio.html" class="btn-launch">دخول الاستوديو</a>
-                    <a href="downloader.html" class="btn-launch" style="border-color: #333; color: #666;">التحميل المباشر</a>
+                    <!-- تم تصحيح الرابط هنا -->
+                    <a href="/studio" class="btn-launch">دخول الاستوديو</a>
+                    <a href="/downloader" class="btn-launch" style="border-color: #333; color: #666;">التحميل المباشر</a>
                 </div>
             </section>
-
-            <div class="mini-terminal" id="term-log">
-                <!-- Log content will be injected by JS -->
-            </div>
+            
+            <div class="mini-terminal" id="term-log"></div>
         </div>
 
         <div class="tools-grid">
-            <!-- تمت إضافة hover effect متطور هنا -->
-            <div class="tool-card" onclick="location.href='studio.html'">
+            <!-- تم تصحيح الرابط هنا -->
+            <div class="tool-card" onclick="location.href='/studio'">
                 <div style="position: absolute; top: 10px; left: 10px; font-size: 0.6rem; color: #222;">MOD_01</div>
                 <i class="fas fa-wand-magic-sparkles" style="color: var(--glow-green);"></i>
                 <h3 style="margin: 0 0 10px 0;">AI Studio Engine</h3>
@@ -317,7 +294,7 @@
                 <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> BOOT_STUDIO_CORE</div>
             </div>
 
-            <div class="tool-card" onclick="location.href='downloader.html'">
+            <div class="tool-card" onclick="location.href='/downloader'">
                 <div style="position: absolute; top: 10px; left: 10px; font-size: 0.6rem; color: #222;">MOD_02</div>
                 <i class="fas fa-video" style="color: #ff0050;"></i>
                 <h3 style="margin: 0 0 10px 0;">Video Downloader</h3>
@@ -325,7 +302,7 @@
                 <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> EXECUTE_MODULE</div>
             </div>
 
-            <div class="tool-card" onclick="location.href='scanner.html'">
+            <div class="tool-card" onclick="location.href='/scanner'">
                 <div style="position: absolute; top: 10px; left: 10px; font-size: 0.6rem; color: #222;">MOD_03</div>
                 <i class="fas fa-bug" style="color: var(--glow-green);"></i>
                 <h3 style="margin: 0 0 10px 0;">Vulnerability Lab</h3>
@@ -333,7 +310,7 @@
                 <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> START_SCAN</div>
             </div>
 
-            <div class="tool-card" onclick="location.href='forensic.html'">
+            <div class="tool-card" onclick="location.href='/forensic'">
                 <div style="position: absolute; top: 10px; left: 10px; font-size: 0.6rem; color: #222;">MOD_04</div>
                 <i class="fas fa-fingerprint" style="color: #3498db;"></i>
                 <h3 style="margin: 0 0 10px 0;">Digital Forensic</h3>
@@ -374,23 +351,21 @@
         }
         setInterval(drawMatrix, 50);
 
-        // Sidebar Toggle for Mobile
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('active');
         }
 
-        // Terminal Logging System (تحديث البيانات لتعكس العمليات الحقيقية)
+        // Terminal Logging System (تحديث لبيانات مشروع VipSite)
         const logEntries = [
-            "[INFO] Initialize Kernel-0x0 Core...",
-            "[SYSTEM] User VIP_ARM Identified",
-            "[NET] SSL Handshake Secured",
-            "[MODULE] VIP_ARM Studio Synced",
-            "[SYSTEM] Guardian Protocol Active",
-            "[STATUS] API Endpoint: OPERATIONAL",
-            "[SEC] Monitoring Unauthorized Access",
-            "[MEM] Cache Cleared - 0.02ms"
+            "[INFO] Starting Kernel-0x0 Engine...",
+            "[AUTH] User VIP_ARM Verified",
+            "[SYSTEM] Flask Router Active on Port 5000",
+            "[MODULE] VipSite Studio initialized",
+            "[NET] Handshake with Render.com: SUCCESS",
+            "[DEBUG] Route /studio linked to studio.html",
+            "[SEC] Guardian script monitoring processes",
+            "[INFO] READY FOR OPERATIONS"
         ];
-
         let logIndex = 0;
         function addLog() {
             const container = document.getElementById('term-log');
@@ -402,19 +377,12 @@
             container.appendChild(line);
             container.scrollTop = container.scrollHeight;
             logIndex++;
-            if(container.children.length > 20) container.removeChild(container.firstChild);
+            if(container.children.length > 25) container.removeChild(container.firstChild);
         }
-        setInterval(addLog, 3000);
+        setInterval(addLog, 2500);
         addLog();
 
-        // حل مشكلة الرفع (Global Handler)
-        // هذا الجزء يضمن أن أي ملف يتم رفعه في أي صفحة فرعية يتم التعامل معه بشكل صحيح في بيئة Render
-        window.addEventListener('load', () => {
-             console.log("[VIP_ARM_OS] Upload Route Protection Enabled");
-             // إضافة مستمع عالمي للتأكد من أن السيرفر يستجيب لطلبات POST
-        });
-
-        // Protection Logic (مع الاحتفاظ بخصوصية VIP_ARM)
+        // Protection Logic
         document.addEventListener('contextmenu', e => e.preventDefault());
         document.onkeydown = e => {
             if(e.ctrlKey && (e.key === 'u' || e.key === 'i' || e.key === 'j' || e.key === 's')) return false;

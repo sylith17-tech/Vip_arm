@@ -1,161 +1,266 @@
+<!-- الجزء العلوي للواجهة (CSS مُحسن) -->
+<style>
+    :root {
+        --neon-green: #00ff41;
+        --neon-blue: #00f2ff;
+        --dark-bg: #050505;
+        --panel-bg: rgba(15, 15, 15, 0.9);
+    }
+    
+    body { background: var(--dark-bg); color: #fff; font-family: 'Fira Code', monospace; }
+    
+    /* استايل السلايدرز الجديد */
+    input[type="range"] {
+        -webkit-appearance: none;
+        width: 100%;
+        background: #222;
+        height: 4px;
+        border-radius: 2px;
+        margin: 15px 0;
+    }
+    
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 15px;
+        height: 15px;
+        background: var(--neon-green);
+        box-shadow: 0 0 10px var(--neon-green);
+        cursor: pointer;
+        border-radius: 50%;
+    }
+
+    .studio-panel {
+        background: var(--panel-bg);
+        border: 1px solid #333;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.5);
+    }
+
+    .status-bar {
+        background: #000;
+        padding: 5px 15px;
+        border-left: 3px solid var(--neon-green);
+        font-size: 0.8rem;
+        margin-bottom: 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    #mainCanvas {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #444;
+        display: none;
+        margin: 0 auto;
+    }
+</style>
+
+<!-- واجهة الاستوديو -->
+<div class="studio-panel">
+    <div class="status-bar">
+        <span id="statusMsg">SYSTEM_READY // WAITING_FOR_INPUT</span>
+        <span id="nodeId">NODE: Kernel-0x0</span>
+    </div>
+
+    <!-- منطقة العمل -->
+    <div id="frame" style="border: 2px dashed #333; padding: 40px; text-align: center; cursor: pointer;" onclick="triggerUpload()">
+        <div id="dropPrompt">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--neon-green);"></i>
+            <p>اسحب الصورة هنا أو اضغط لرفعها إلى السيرفر</p>
+        </div>
+        <canvas id="mainCanvas"></canvas>
+    </div>
+
+    <!-- التحكم -->
+    <div class="controls" style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div>
+            <label>Brightness</label>
+            <input type="range" id="br" min="0" max="200" value="100">
+            <label>Contrast</label>
+            <input type="range" id="ct" min="0" max="200" value="100">
+        </div>
+        <div>
+            <label>Saturation</label>
+            <input type="range" id="sat" min="0" max="200" value="100">
+            <label>Hue Rotate</label>
+            <input type="range" id="hue" min="0" max="360" value="0">
+        </div>
+    </div>
+
+    <div class="actions" style="display: flex; gap: 10px; margin-top: 20px;">
+        <button onclick="applyMagic('matrix')" class="btn-launch">Matrix Hack</button>
+        <button onclick="applyMagic('cyber')" class="btn-launch">Cyber Frame</button>
+        <button onclick="exportArt()" class="btn-launch" style="background: var(--neon-blue); color: black;">Export PNG</button>
+        <button onclick="resetStudio()" class="btn-launch" style="border-color: #f00; color: #f00;">Reset</button>
+    </div>
+</div>
+
+<input type="file" id="imageLoader" style="display: none;" accept="image/*">
+
 <script>
-        const canvas = document.getElementById('mainCanvas');
-        const ctx = canvas.getContext('2d');
-        const loader = document.getElementById('imageLoader');
-        let rawImg = null;
+    const canvas = document.getElementById('mainCanvas');
+    const ctx = canvas.getContext('2d');
+    const loader = document.getElementById('imageLoader');
+    let rawImg = null;
 
-        function closeGuide() { document.getElementById('userGuide').style.display = 'none'; }
-        function triggerUpload() { loader.click(); }
+    function closeGuide() { document.getElementById('userGuide').style.display = 'none'; }
+    function triggerUpload() { loader.click(); }
 
-        // معالجة الصورة المرفوعة وإرسالها للسيرفر
-        loader.addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+    // معالجة الصورة المرفوعة وإرسالها للسيرفر
+    loader.addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
 
-            // الجزء الخاص بالعرض الفوري في المتصفح
-            const reader = new FileReader();
-            reader.onload = function(event) {
-                const img = new Image();
-                img.onload = function() {
-                    rawImg = img;
-                    initCanvas();
-                    document.getElementById('dropPrompt').style.display = 'none';
-                    canvas.style.display = 'block';
-                    updateStatus('IMAGE_LOADED // SUCCESS');
-                }
-                img.src = event.target.result;
+        // الجزء الخاص بالعرض الفوري في المتصفح
+        const reader = new FileReader();
+        reader.onload = function(event) {
+            const img = new Image();
+            img.onload = function() {
+                rawImg = img;
+                initCanvas();
+                document.getElementById('dropPrompt').style.display = 'none';
+                canvas.style.display = 'block';
+                updateStatus('IMAGE_LOADED // SUCCESS');
             }
-            reader.readAsDataURL(file);
+            img.src = event.target.result;
+        }
+        reader.readAsDataURL(file);
 
-            // الجزء المصلح: إرسال الصورة فعلياً للسيرفر (FIXED)
-            uploadToServer(file);
-        });
+        // الجزء المصلح: إرسال الصورة فعلياً للسيرفر
+        uploadToServer(file);
+    });
 
-        async function uploadToServer(file) {
-            const formData = new FormData();
-            // تم تعديل المفتاح ليتوافق مع استقبال السيرفر
-            formData.append('image', file); 
+    async function uploadToServer(file) {
+        const formData = new FormData();
+        // تم استخدام 'image' ليتوافق مع forensic_core و upload_file في app.py
+        formData.append('image', file);
 
-            try {
-                updateStatus('UPLOADING_TO_KERNEL...');
-                const response = await fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok) {
-                    updateStatus('SYNC_COMPLETED // NODE: Kernel-0x0');
-                    console.log("Server Response:", result);
-                } else {
-                    updateStatus('SYNC_ERROR // CHECK_SERVER_LOGS');
-                }
-            } catch (err) {
-                updateStatus('OFFLINE_MODE // LOCAL_RENDER');
-                console.error("Upload Error:", err);
+        try {
+            updateStatus('UPLOADING_TO_KERNEL...');
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                updateStatus('SYNC_COMPLETED // NODE: Kernel-0x0');
+                console.log("Server Response:", result);
+                // يمكنك تخزين رابط الصورة المرفوعة إذا أردت استخدامها لاحقاً
+                window.lastUploadedFile = result.url;
+            } else {
+                updateStatus('SYNC_ERROR // CHECK_SERVER_LOGS');
             }
+        } catch (err) {
+            updateStatus('OFFLINE_MODE // LOCAL_RENDER');
+            console.error("Upload Error:", err);
         }
+    }
 
-        function initCanvas() {
-            canvas.width = rawImg.width;
-            canvas.height = rawImg.height;
-            draw();
-        }
-
-        function draw() {
-            if(!rawImg) return;
-            const b = document.getElementById('br').value;
-            const c = document.getElementById('ct').value;
-            const s = document.getElementById('sat').value;
-            const h = document.getElementById('hue').value;
-
-            ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
-            ctx.drawImage(rawImg, 0, 0);
-        }
-
-        // تطبيق الثيمات الاحترافية
-        async function applyMagic(type) {
-            if(!rawImg) return alert("خطأ: يرجى رفع صورة أولاً!");
-
-            showLoader("جاري استدعاء وحدة Kernel-0x0...");
-
-            setTimeout(() => {
-                hideLoader();
-                if(type === 'matrix') {
-                    applyMatrixEffect();
-                } else if(type === 'cyber') {
-                    applyCyberOverlay();
-                }
-                updateStatus(`THEME_${type.toUpperCase()} // APPLIED`);
-            }, 1500);
-        }
-
-        function applyMatrixEffect() {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = "#00ff41";
-            ctx.font = "15px monospace";
-            for(let i=0; i<50; i++) {
-                const txt = Math.random() > 0.5 ? "1" : "0";
-                ctx.fillText(txt, Math.random()*canvas.width, Math.random()*canvas.height);
-            }
-        }
-
-        function applyCyberOverlay() {
-            ctx.strokeStyle = "var(--neon-green)";
-            ctx.lineWidth = 2;
-            ctx.strokeRect(20, 20, canvas.width-40, canvas.height-40);
-            ctx.fillStyle = "var(--neon-green)";
-            ctx.font = "20px monospace";
-            ctx.fillText("VIP_ARM_SECURED", 40, 40);
-        }
-
-        function updateStatus(msg) { document.getElementById('statusMsg').innerText = msg; }
+    function initCanvas() {
+        // الحفاظ على أبعاد الصورة الأصلية مع مراعاة عرض الشاشة
+        const maxWidth = 1200;
+        let scale = 1;
+        if(rawImg.width > maxWidth) scale = maxWidth / rawImg.width;
         
-        function showLoader(txt) {
-            const l = document.getElementById('loader');
-            l.style.display = 'flex';
-            document.getElementById('loaderText').innerText = txt;
-        }
-        
-        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+        canvas.width = rawImg.width * scale;
+        canvas.height = rawImg.height * scale;
+        draw();
+    }
 
-        function exportArt() {
-            const link = document.createElement('a');
-            link.download = 'VIP_ARM_ARTWORK.png';
-            link.href = canvas.toDataURL();
-            link.click();
-        }
+    function draw() {
+        if(!rawImg) return;
+        const b = document.getElementById('br').value;
+        const c = document.getElementById('ct').value;
+        const s = document.getElementById('sat').value;
+        const h = document.getElementById('hue').value;
 
-        // مستمعات الأحداث للسلايدرز
-        document.querySelectorAll('input[type="range"]').forEach(input => {
-            input.addEventListener('input', draw);
-        });
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
+        ctx.drawImage(rawImg, 0, 0, canvas.width, canvas.height);
+    }
 
-        function toggleM(id) {
-            const menu = document.getElementById(id);
-            menu.classList.toggle('active');
-        }
+    // تطبيق الثيمات الاحترافية
+    async function applyMagic(type) {
+        if(!rawImg) return alert("خطأ: يرجى رفع صورة أولاً!");
 
-        function resetStudio() { location.reload(); }
+        updateStatus(`CALLING_MODULE: ${type.toUpperCase()}...`);
 
-        // منع السلوك الافتراضي للسحب والإفلات
-        const frame = document.getElementById('frame');
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            frame.addEventListener(eventName, e => {
-                e.preventDefault();
-                e.stopPropagation();
-            }, false);
-        });
-
-        frame.addEventListener('drop', e => {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            if(files.length > 0) {
-                loader.files = files;
-                const event = new Event('change');
-                loader.dispatchEvent(event);
+        setTimeout(() => {
+            if(type === 'matrix') {
+                applyMatrixEffect();
+            } else if(type === 'cyber') {
+                applyCyberOverlay();
             }
-        });
-    </script>
+            updateStatus(`THEME_${type.toUpperCase()} // APPLIED`);
+        }, 800);
+    }
+
+    function applyMatrixEffect() {
+        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = "#00ff41";
+        ctx.font = `${canvas.width/40}px monospace`;
+        for(let i=0; i<80; i++) {
+            const txt = Math.random() > 0.5 ? "1" : "0";
+            ctx.fillText(txt, Math.random()*canvas.width, Math.random()*canvas.height);
+        }
+    }
+
+    function applyCyberOverlay() {
+        ctx.strokeStyle = "#00ff41";
+        ctx.lineWidth = 4;
+        ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
+        
+        ctx.fillStyle = "rgba(0, 255, 65, 0.1)";
+        ctx.fillRect(0, 0, canvas.width, 40);
+        
+        ctx.fillStyle = "#00ff41";
+        ctx.font = "bold 16px monospace";
+        ctx.fillText(">> VIP_ARM_OPERATIONAL_OVERLAY", 20, 25);
+    }
+
+    function updateStatus(msg) { 
+        document.getElementById('statusMsg').innerText = msg;
+        console.log(`[KERNEL-0x0] ${msg}`);
+    }
+
+    function exportArt() {
+        updateStatus('GENERATING_PNG_PACKAGE...');
+        const link = document.createElement('a');
+        link.download = `VIP_ARM_STUDIO_${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        setTimeout(() => updateStatus('EXPORT_SUCCESS'), 1000);
+    }
+
+    // مستمعات الأحداث للسلايدرز
+    document.querySelectorAll('input[type="range"]').forEach(input => {
+        input.addEventListener('input', draw);
+    });
+
+    function resetStudio() { 
+        if(confirm("هل تريد تصفير بيئة العمل؟")) location.reload(); 
+    }
+
+    // منع السلوك الافتراضي للسحب والإفلات
+    const frame = document.getElementById('frame');
+    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        frame.addEventListener(eventName, e => {
+            e.preventDefault();
+            e.stopPropagation();
+        }, false);
+    });
+
+    frame.addEventListener('drop', e => {
+        const dt = e.dataTransfer;
+        const files = dt.files;
+        if(files.length > 0) {
+            loader.files = files;
+            const event = new Event('change');
+            loader.dispatchEvent(event);
+        }
+    });
+</script>

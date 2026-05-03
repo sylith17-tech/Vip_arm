@@ -6,8 +6,9 @@ from flask import Flask, render_template, request, jsonify, send_file, after_thi
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-# التوافق مع MoviePy 2.2.1
-from moviepy import VideoFileClip, vfx
+# التوافق مع MoviePy 2.2.1 - تصحيح الاستيراد للمؤثرات
+from moviepy import VideoFileClip
+import moviepy.video.fx.all as vfx
 from gtts import gTTS
 
 # [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
@@ -21,8 +22,8 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
-STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports') # مجلد جديد لحفظ تصدير الاستوديو
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads') # إضافة مجلد الرفع المفقود
+STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports') 
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads') 
 
 for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
@@ -52,7 +53,8 @@ def create_shorts(input_path):
         w, h = clip.size
         target_ratio = 9/16
         target_w = h * target_ratio
-        final_clip = clip.crop(x_center=w/2, width=target_w)
+        # تصحيح MoviePy 2.x: استخدام fx لتطبيق الـ Crop
+        final_clip = clip.fx(vfx.crop, x_center=w/2, width=target_w)
         final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
     return output_path
 
@@ -62,7 +64,10 @@ def dub_video(input_path, lang='ar'):
     with VideoFileClip(input_path) as video:
         tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
         tts.save(temp_audio)
-        video.set_audio(VideoFileClip(temp_audio).audio).write_videofile(output_path)
+        # تصحيح MoviePy 2.x: تغيير set_audio إلى with_audio
+        audio_clip = VideoFileClip(temp_audio).audio
+        final_video = video.with_audio(audio_clip)
+        final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
@@ -72,32 +77,34 @@ def dub_video(input_path, lang='ar'):
 def index():
     return render_template('index.html')
 
-# مسار خاص بواجهة الاستوديو الجديدة
+# مسار خاص بواجهة الاستوديو
 @app.route('/studio')
 def studio_page():
-    from flask import send_from_directory
-    return send_from_directory('.', 'studio.html')
+    return render_template('studio.html')
 
-# --- [FIX] مسار الرفع المخصص للاستوديو ---
+# --- [FIXED] مسار الرفع المخصص ---
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    # التحقق من كلا الاسمين (image و file) لضمان التوافق التام
     file = request.files.get('image') or request.files.get('file')
     if not file:
         return jsonify({"error": "No Payload"}), 400
-    
+
     filename = f"VIP_{uuid.uuid4().hex}_{file.filename}"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
-    
+
+    # تصحيح الرابط ليعود بمسار نسبي للمتصفح
     return jsonify({
         "status": "success",
-        "url": f"/{filepath}",
+        "url": f"/uploads/{filename}",
         "filename": filename
     })
 
 @app.route('/<page>')
 def serve_pages(page):
+    # حماية المجلدات من التداخل مع المسارات العامة
+    if os.path.exists(page) and not page.endswith('.html'):
+        return send_file(page)
     if page.endswith('.html'): return render_template(page)
     if os.path.exists(f"{page}.html"): return render_template(f"{page}.html")
     return render_template('index.html'), 404
@@ -110,6 +117,10 @@ def unified_handler():
     data = request.json
     url = data.get('url')
     mode = data.get('mode')
+    
+    # تهيئة المسارات لتجنب أخطاء Cleanup
+    raw_path = None
+    final_path = None
 
     if not url:
         return jsonify({"status": "failed", "message": "No URL provided"}), 400
@@ -152,7 +163,8 @@ def unified_handler():
             @after_this_request
             def cleanup(response):
                 try:
-                    for f in [raw_path, final_path]:
+                    # استخدام set لحذف الملفات دون تكرار
+                    for f in {raw_path, final_path}:
                         if f and os.path.exists(f): os.remove(f)
                 except Exception as e:
                     logger.error(f"Cleanup Error: {e}")
