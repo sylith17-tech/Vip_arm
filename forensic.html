@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kernel-0x0 | Forensic Intelligence Lab</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --deep-black: #050505;
+            --panel-bg: rgba(10, 10, 10, 0.9);
+            --accent-blue: #00f2ff;
+        }
+
+        body {
+            background-color: var(--deep-black);
+            color: #e0e0e0;
+            font-family: 'JetBrains Mono', monospace;
+            margin: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Matrix Background Effect */
+        #matrix-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            opacity: 0.15;
+        }
+
+        /* Sidebar - VIP Identity */
+        .sidebar {
+            width: 70px;
+            background: #000;
+            border-left: 1px solid #222;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+            transition: 0.3s;
+            z-index: 1000;
+        }
+        .sidebar:hover { width: 220px; }
+        .sidebar a {
+            width: 100%;
+            padding: 15px 0;
+            color: #444;
+            text-align: center;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.3s;
+        }
+        .sidebar a span { display: none; margin-right: 15px; font-size: 14px; }
+        .sidebar:hover a span { display: block; }
+        .sidebar a:hover, .sidebar a.active { color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); }
+
+        /* Workspace */
+        .workspace {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .forensic-header {
+            border-right: 4px solid var(--neon-green);
+            padding-right: 20px;
+            background: linear-gradient(270deg, rgba(0, 255, 65, 0.05), transparent);
+        }
+
+        /* Drop Zone */
+        .upload-container {
+            border: 1px dashed var(--neon-green);
+            background: var(--panel-bg);
+            padding: 40px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .upload-container:hover { box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); }
+
+        /* Results Grid */
+        .analysis-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            display: none;
+        }
+
+        .card {
+            background: var(--panel-bg);
+            border: 1px solid #222;
+            padding: 20px;
+            border-radius: 8px;
+            position: relative;
+        }
+
+        .card-header {
+            color: var(--accent-blue);
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #222;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid #111;
+        }
+        .data-label { color: #888; }
+        .data-value { color: var(--neon-green); }
+
+        /* Map Styling */
+        #map {
+            height: 250px;
+            width: 100%;
+            border-radius: 4px;
+            margin-top: 10px;
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        /* Scanline Effect */
+        .scanline {
+            width: 100%;
+            height: 100px;
+            z-index: 10;
+            background: linear-gradient(0deg, rgba(0, 255, 65, 0) 0%, rgba(0, 255, 65, 0.1) 50%, rgba(0, 255, 65, 0) 100%);
+            opacity: 0.1;
+            position: absolute;
+            bottom: 100%;
+            animation: scan 3s linear infinite;
+        }
+
+        @keyframes scan { 0% { bottom: 100%; } 100% { bottom: -100px; } }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid var(--neon-green);
+            background: transparent;
+            color: var(--neon-green);
+            cursor: pointer;
+            font-family: 'JetBrains Mono';
+            transition: 0.3s;
+        }
+        .btn:hover { background: var(--neon-green); color: #000; }
+        .btn-danger { border-color: #ff003c; color: #ff003c; }
+        .btn-danger:hover { background: #ff003c; color: #fff; }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-bg"></canvas>
+
+    <nav class="sidebar">
+        <a href="index.html" title="Dashboard"><i class="fas fa-th-large"></i><span>لوحة التحكم</span></a>
+        <a href="scanner.html" title="Scanner"><i class="fas fa-radar"></i><span>الفاحص الذكي</span></a>
+        <a href="exif.html" class="active" title="Forensics"><i class="fas fa-fingerprint"></i><span>التحقيق الجنائي</span></a>
+        <a href="editor.html" title="Editor"><i class="fas fa-wand-magic-sparkles"></i><span>محرر الصور</span></a>
+    </nav>
+
+    <div class="workspace">
+        <header class="forensic-header">
+            <h1 style="margin: 0; letter-spacing: 2px;">VIP_ARM // METADATA FORENSICS</h1>
+            <p style="color: var(--accent-blue); font-size: 12px;">SYSTEM_STATUS: READY_FOR_INGESTION</p>
+        </header>
+
+        <div class="upload-container" onclick="document.getElementById('file-input').click()">
+            <i class="fas fa-shield-upload" style="font-size: 40px; color: var(--neon-green); margin-bottom: 15px;"></i>
+            <p>اسحب الصورة هنا أو اضغط لرفع ملف للتحقيق</p>
+            <input type="file" id="file-input" hidden accept="image/*">
+        </div>
+
+        <div class="analysis-grid" id="main-grid">
+            <!-- Panel 1: Image & Map -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-eye"></i> المعاينة والموقع الجغرافي</span>
+                </div>
+                <div class="scanline"></div>
+                <img id="preview" style="width: 100%; border-radius: 4px; margin-bottom: 15px;">
+                <div id="map-container" style="display: none;">
+                    <div id="map"></div>
+                </div>
+            </div>
+
+            <!-- Panel 2: Technical Metadata -->
+            <div class="card">
+                <div class="card-header">
+                    <span><i class="fas fa-code-branch"></i> البصمة الرقمية والمعلومات</span>
+                    <span id="file-size" style="color: #666;"></span>
+                </div>
+                <div id="meta-list" style="max-height: 400px; overflow-y: auto;">
+                    <!-- Data injected here -->
+                </div>
+                <div class="btn-group">
+                    <button class="btn" onclick="generateReport()"><i class="fas fa-file-export"></i> تصدير تقرير</button>
+                    <button class="btn btn-danger" onclick="wipeMetadata()"><i class="fas fa-eraser"></i> تدمير البيانات</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Matrix Background Effect
+        const canvas = document.getElementById('matrix-bg');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^";
+        const fontSize = 16;
+        const columns = canvas.width/fontSize;
+        const drops = Array(Math.floor(columns)).fill(1);
+
+        function drawMatrix() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#0F0";
+            ctx.font = fontSize + "px monospace";
+            for(let i = 0; i < drops.length; i++) {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+                if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+                drops[i]++;
+            }
+        }
+        setInterval(drawMatrix, 30);
+
+        // Forensic Logic
+        const fileInput = document.getElementById('file-input');
+        let map;
+
+        fileInput.addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            document.getElementById('main-grid').style.display = 'grid';
+            document.getElementById('preview').src = URL.createObjectURL(file);
+            
+            // 1. Calculate File Hash (SHA-256)
+            const arrayBuffer = await file.arrayBuffer();
+            const hash = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(arrayBuffer)).toString();
+            
+            const metaList = document.getElementById('meta-list');
+            metaList.innerHTML = `
+                <div class="data-row"><span class="data-label">اسم الملف</span><span class="data-value">${file.name}</span></div>
+                <div class="data-row"><span class="data-label">SHA-256 Hash</span><span class="data-value" style="font-size: 8px;">${hash}</span></div>
+            `;
+
+            // 2. Extract EXIF
+            EXIF.getData(file, function() {
+                const tags = EXIF.getAllTags(this);
+                for (let tag in tags) {
+                    if (typeof tags[tag] !== 'object') {
+                        metaList.innerHTML += `
+                            <div class="data-row">
+                                <span class="data-label">${tag}</span>
+                                <span class="data-value">${tags[tag]}</span>
+                            </div>`;
+                    }
+                }
+
+                // 3. Geolocation Map
+                if (tags.GPSLatitude) {
+                    document.getElementById('map-container').style.display = 'block';
+                    const lat = convertCoord(tags.GPSLatitude, tags.GPSLatitudeRef);
+                    const lon = convertCoord(tags.GPSLongitude, tags.GPSLongitudeRef);
+                    
+                    if(map) map.remove();
+                    map = L.map('map').setView([lat, lon], 13);
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+                    L.marker([lat, lon]).addTo(map).bindPopup('موقع التقاط الصورة').openPopup();
+                } else {
+                    document.getElementById('map-container').style.display = 'none';
+                }
+            });
+        });
+
+        function convertCoord(coord, ref) {
+            let decimal = coord[0] + coord[1]/60 + coord[2]/3600;
+            return (ref === "S" || ref === "W") ? decimal * -1 : decimal;
+        }
+
+        function wipeMetadata() {
+            const img = document.getElementById('preview');
+            const canvas = document.createElement('canvas');
+            canvas.width = img.naturalWidth;
+            canvas.height = img.naturalHeight;
+            canvas.getContext('2d').drawImage(img, 0, 0);
+            
+            const link = document.createElement('a');
+            link.download = 'CLEAN_IMG_VIP_ARM.jpg';
+            link.href = canvas.toDataURL('image/jpeg');
+            link.click();
+            alert("تم تدمير كافة البيانات المخفية بنجاح.");
+        }
+
+        function generateReport() {
+            window.print(); // طريقة سريعة واحترافية لحفظ التقرير كـ PDF
+        }
+    </script>
+</body>
+</html>
