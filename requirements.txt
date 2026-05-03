@@ -1,2 +1,7 @@
+Flask
+yt-dlp
 moviepy>=2.0.0
+python-telegram-bot
+requests
+Pillow
 gunicorn
