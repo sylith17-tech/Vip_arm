@@ -7,7 +7,7 @@ from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
 # التوافق مع MoviePy 2.2.1
-from moviepy import VideoFileClip, vfx 
+from moviepy import VideoFileClip, vfx
 from gtts import gTTS
 
 # [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
@@ -21,8 +21,11 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
-if not os.path.exists(DOWNLOAD_FOLDER):
-    os.makedirs(DOWNLOAD_FOLDER)
+STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports') # مجلد جديد لحفظ تصدير الاستوديو
+
+for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER]:
+    if not os.path.exists(folder):
+        os.makedirs(folder)
 
 # وظيفة مساعدة لتنسيق حجم الملفات
 def format_size(bytes):
@@ -68,32 +71,36 @@ def dub_video(input_path, lang='ar'):
 def index():
     return render_template('index.html')
 
+# مسار خاص بواجهة الاستوديو الجديدة
+@app.route('/studio')
+def studio_page():
+    return render_template('studio.html')
+
 @app.route('/<page>')
 def serve_pages(page):
     if page.endswith('.html'): return render_template(page)
     if os.path.exists(f"{page}.html"): return render_template(f"{page}.html")
     return render_template('index.html'), 404
 
-# --- API Endpoints: الإصلاح الشامل للمشكلة ---
+# --- API Endpoints ---
 
 @app.route('/api/download', methods=['POST'])
 @app.route('/api/process', methods=['POST'])
 def unified_handler():
     data = request.json
     url = data.get('url')
-    mode = data.get('mode') # يمكن أن يكون None لعملية الاستخراج العادية
+    mode = data.get('mode') 
 
     if not url:
         return jsonify({"status": "failed", "message": "No URL provided"}), 400
 
     try:
-        # الحالة الأولى: استخراج البيانات لعرضها في الجدول (Downloader UI)
         if not mode:
             ydl_opts = {'quiet': True, 'nocheckcertificate': True}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 formats = []
-                for f in info.get('formats', [])[-8:]: # استخراج آخر 8 جودات (الأعلى غالباً)
+                for f in info.get('formats', [])[-8:]:
                     if f.get('url'):
                         formats.append({
                             "ext": f.get('ext', 'mp4'),
@@ -110,8 +117,6 @@ def unified_handler():
                     "duration": f"{int(info.get('duration', 0))//60}:{int(info.get('duration', 0))%60:02d}",
                     "formats": formats[::-1]
                 })
-
-        # الحالة الثانية: معالجة الفيديو (Shorts / Dub)
         else:
             with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
                 info = ydl.extract_info(url, download=True)

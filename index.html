@@ -169,6 +169,7 @@
             transition: all 0.4s ease;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
         }
 
         .tool-card:hover {
@@ -250,15 +251,16 @@
 
         <div class="nav-links">
             <a href="index.html" class="active"><i class="fas fa-home"></i> <span>الرئيسية</span></a>
+            <a href="studio.html"><i class="fas fa-photo-video"></i> <span>VIP_ARM Studio</span></a>
             <a href="downloader.html"><i class="fas fa-cloud-download-alt"></i> <span>مركز التحميل</span></a>
             <a href="scanner.html"><i class="fas fa-terminal"></i> <span>فحص الثغرات</span></a>
             <a href="forensic.html"><i class="fas fa-microscope"></i> <span>التحليل الجنائي</span></a>
             <a href="contact.html"><i class="fas fa-code-branch"></i> <span>سجل النظام</span></a>
         </div>
 
-        <div class="dev-contact-section">
+        <div class="dev-contact-section" style="margin-top: auto; padding: 20px;">
             <p style="font-size: 0.7rem; color: #444; text-align: center; margin-bottom: 10px;">SECURED COMMUNICATION</p>
-            <div class="social-icons">
+            <div class="social-icons" style="display: flex; justify-content: center; gap: 15px;">
                 <a href="https://www.facebook.com/profile.php?id=61556942055610" target="_blank" style="color: #1877F2;"><i class="fab fa-facebook"></i></a>
                 <a href="https://t.me/MyVIP_2026_bot" target="_blank" style="color: #24A1DE;"><i class="fab fa-telegram"></i></a>
                 <a href="https://wa.me/963996273320" target="_blank" style="color: #25D366;"><i class="fab fa-whatsapp"></i></a>
@@ -280,8 +282,8 @@
                 </p>
 
                 <div style="display: flex; gap: 15px; flex-wrap: wrap;">
-                    <a href="downloader.html" class="btn-launch">ابدأ التحميل</a>
-                    <a href="scanner.html" class="btn-launch" style="border-color: #333; color: #666;">فحص سريع</a>
+                    <a href="studio.html" class="btn-launch">دخول الاستوديو</a>
+                    <a href="downloader.html" class="btn-launch" style="border-color: #333; color: #666;">التحميل المباشر</a>
                 </div>
             </section>
 
@@ -291,10 +293,17 @@
         </div>
 
         <div class="tools-grid">
+            <div class="tool-card" onclick="location.href='studio.html'">
+                <i class="fas fa-wand-magic-sparkles" style="color: var(--glow-green);"></i>
+                <h3 style="margin: 0 0 10px 0;">AI Studio Engine</h3>
+                <p style="color: #555; font-size: 0.85rem;">المحرك المتقدم لقص مقاطع Shorts، الدبلجة الصوتية، ومعالجة الفيديو الاحترافية.</p>
+                <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> BOOT_STUDIO_CORE</div>
+            </div>
+
             <div class="tool-card" onclick="location.href='downloader.html'">
                 <i class="fas fa-video" style="color: #ff0050;"></i>
-                <h3 style="margin: 0 0 10px 0;">Video Studio AI</h3>
-                <p style="color: #555; font-size: 0.85rem;">قص المقاطع، الدبلجة الآلية، والتحميل بدقة 4K.</p>
+                <h3 style="margin: 0 0 10px 0;">Video Downloader</h3>
+                <p style="color: #555; font-size: 0.85rem;">استخراج وتحميل الوسائط من كافة المنصات العالمية بدقة 4K.</p>
                 <div style="margin-top: 15px; font-size: 0.7rem; color: var(--glow-green); font-family: monospace;">>> EXECUTE_MODULE</div>
             </div>
 
@@ -356,6 +365,7 @@
             "[SYSTEM] Root authenticated: VIP_ARM",
             "[NET] SSL Handshake: SUCCESS",
             "[MODULE] AI Video Engine: LOADED",
+            "[STUDIO] AI Core Synced: READY",
             "[STATUS] Cloud Sync: OPERATIONAL",
             "[SEC] Firewall rules: UPDATED",
             "[MEM] Usage: 12% - OK"
@@ -364,6 +374,7 @@
         let logIndex = 0;
         function addLog() {
             const container = document.getElementById('term-log');
+            if(!container) return;
             const line = document.createElement('div');
             line.style.marginBottom = "5px";
             line.innerHTML = `<span style="color: var(--glow-green)">[${new Date().toLocaleTimeString()}]</span> <span style="color: #aaa">${logEntries[logIndex % logEntries.length]}</span>`;

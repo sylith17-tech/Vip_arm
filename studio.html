@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VIP_ARM | Cyber Studio Pro v6.5</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --neon-green: #00ff41;
+            --cyber-blue: #00d4ff;
+            --danger-red: #ff3e3e;
+            --dark-core: #080808;
+            --panel-bg: #121212;
+            --glass: rgba(255, 255, 255, 0.05);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            background-color: var(--dark-core);
+            color: #ffffff;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            height: 100%; overflow: hidden;
+        }
+
+        /* واجهة التعليمات (Guide Modal) */
+        #userGuide {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.9);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        .guide-content {
+            background: var(--panel-bg); border: 1px solid var(--neon-green);
+            padding: 30px; border-radius: 20px; max-width: 500px; text-align: center;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.2);
+        }
+
+        /* الهيكل الرئيسي */
+        .studio-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            height: 100vh;
+        }
+
+        @media (max-width: 1100px) {
+            .studio-container { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto; overflow-y: auto; }
+        }
+
+        /* الألواح الجانبية */
+        .side-panel {
+            background: var(--panel-bg);
+            border-left: 1px solid #222; border-right: 1px solid #222;
+            display: flex; flex-direction: column; gap: 20px; padding: 25px;
+            overflow-y: auto; scrollbar-width: thin;
+        }
+
+        /* منطقة العمل */
+        .work-zone {
+            position: relative; display: flex; align-items: center; justify-content: center;
+            background-image: linear-gradient(rgba(0, 255, 65, 0.02) 1px, transparent 1px),
+                              linear-gradient(90deg, rgba(0, 255, 65, 0.02) 1px, transparent 1px);
+            background-size: 30px 30px; padding: 40px;
+        }
+
+        .canvas-frame {
+            position: relative; border-radius: 15px;
+            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            transition: var(--transition); border: 2px dashed #444;
+            display: flex; align-items: center; justify-content: center;
+            min-width: 300px; min-height: 300px;
+        }
+
+        #mainCanvas { max-width: 100%; max-height: 80vh; border-radius: 10px; display: none; }
+
+        /* الأدوات */
+        .tool-group { background: var(--glass); padding: 15px; border-radius: 12px; border: 1px solid #333; }
+        .tool-title { font-size: 0.9rem; color: var(--neon-green); margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+
+        .action-card {
+            background: #1a1a1a; padding: 15px; border-radius: 10px; cursor: pointer;
+            border: 1px solid transparent; transition: var(--transition); margin-bottom: 10px;
+        }
+        .action-card:hover { border-color: var(--neon-green); transform: scale(1.02); background: #222; }
+
+        /* شريط الحالة المطور */
+        .status-bar {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.7); padding: 8px 20px; border-radius: 20px;
+            border: 1px solid var(--neon-green); font-family: monospace; font-size: 0.8rem;
+        }
+
+        /* أزرار التحكم السفلية */
+        .bottom-actions { margin-top: auto; display: grid; gap: 10px; }
+        .btn-prime { background: var(--neon-green); color: black; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .btn-sec { background: transparent; color: white; border: 1px solid #444; padding: 12px; border-radius: 8px; cursor: pointer; }
+
+        /* الموبايل */
+        @media (max-width: 1100px) {
+            .side-panel { display: none; }
+            .side-panel.active { display: flex; position: fixed; inset: 0; z-index: 1500; }
+            .mobile-nav { display: flex; position: fixed; bottom: 0; width: 100%; background: var(--panel-bg); height: 70px; border-top: 1px solid var(--neon-green); justify-content: space-around; align-items: center; z-index: 1600; }
+        }
+        .mobile-nav { display: none; }
+    </style>
+</head>
+<body>
+
+    <!-- واجهة التوجيه -->
+    <div id="userGuide">
+        <div class="guide-content">
+            <i class="fas fa-terminal fa-3x" style="color: var(--neon-green); margin-bottom: 15px;"></i>
+            <h2>مرحباً بك في وحدة المعالجة السيبرانية</h2>
+            <p>اتبع الخطوات التالية لتحويل صورتك:</p>
+            <ul style="text-align: right; line-height: 1.8;">
+                <li><i class="fas fa-upload"></i> 1. ارفع صورتك من زر الإضافة.</li>
+                <li><i class="fas fa-magic"></i> 2. اختر "ثيم" من القائمة اليمنى.</li>
+                <li><i class="fas fa-sliders-h"></i> 3. قم بضبط الألوان من القائمة اليسرى.</li>
+                <li><i class="fas fa-save"></i> 4. احفظ نتيجتك النهائية بجودة عالية.</li>
+            </ul>
+            <button class="btn-prime" style="width: 100%;" onclick="closeGuide()">ابدأ الآن</button>
+        </div>
+    </div>
+
+    <div class="studio-container">
+        <!-- القائمة اليمنى: المختبر -->
+        <aside class="side-panel" id="rightMenu">
+            <h3 style="color: var(--neon-green);"><i class="fas fa-flask"></i> مختبر التأثيرات</h3>
+            
+            <div class="action-card" onclick="triggerUpload()">
+                <i class="fas fa-folder-open"></i> <strong>فتح ملف جديد</strong>
+                <p style="font-size: 0.7rem; color: #888;">تحميل صورة من جهازك للبدء</p>
+                <input type="file" id="imageLoader" hidden accept="image/*">
+            </div>
+
+            <div class="tool-group">
+                <div class="tool-title"><i class="fas fa-biohazard"></i> ثيمات النخبة</div>
+                <div class="action-card" onclick="applyMagic('matrix')"><strong>نمط الماتريكس (V3)</strong></div>
+                <div class="action-card" onclick="applyMagic('cyber')"><strong>تشفير VIP_ARM</strong></div>
+                <div class="action-card" onclick="applyMagic('glitch')"><strong>تأثير الخلل الرقمي</strong></div>
+            </div>
+
+            <div class="tool-group">
+                <div class="tool-title"><i class="fas fa-map-marker-alt"></i> الخلفيات الذكية</div>
+                <div class="action-card" onclick="applyMagic('server')"><strong>غرفة السيرفرات</strong></div>
+                <div class="action-card" onclick="applyMagic('dark')"><strong>المكتب المظلم</strong></div>
+            </div>
+        </aside>
+
+        <!-- منطقة العمل -->
+        <main class="work-zone">
+            <div class="status-bar" id="statusMsg">STATUS: SYSTEM_READY // WAITING_FOR_INPUT</div>
+            
+            <div class="canvas-frame" id="frame">
+                <canvas id="mainCanvas"></canvas>
+                <div id="dropPrompt" style="text-align: center;">
+                    <i class="fas fa-microchip fa-4x" style="color: #333; margin-bottom: 20px;"></i>
+                    <p style="color: #555;">قم بسحب وإسقاط الصورة هنا أو استخدم زر الرفع</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- القائمة اليسرى: التعديل الدقيق -->
+        <aside class="side-panel" id="leftMenu">
+            <h3 style="color: var(--cyber-blue);"><i class="fas fa-tools"></i> وحدة التحكم</h3>
+            
+            <div class="tool-group">
+                <div class="tool-title">الإضاءة والتباين</div>
+                <input type="range" id="br" min="0" max="200" value="100">
+                <input type="range" id="ct" min="0" max="200" value="100">
+            </div>
+
+            <div class="tool-group">
+                <div class="tool-title">الألوان (RGB)</div>
+                <input type="range" id="sat" min="0" max="200" value="100">
+                <input type="range" id="hue" min="0" max="360" value="0">
+            </div>
+
+            <div class="bottom-actions">
+                <button class="btn-sec" onclick="resetStudio()">إعادة ضبط</button>
+                <button class="btn-prime" onclick="exportArt()">حفظ وتصدير <i class="fas fa-download"></i></button>
+            </div>
+        </aside>
+
+        <!-- نافذة التحميل -->
+        <div id="loader" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:3000; flex-direction:column; align-items:center; justify-content:center;">
+            <div class="loader-circle" style="width:60px; height:60px; border:4px solid var(--neon-green); border-top-color:transparent; border-radius:50%; animation:spin 1s linear infinite;"></div>
+            <p id="loaderText" style="margin-top:20px; font-family:monospace; color:var(--neon-green);"></p>
+        </div>
+    </div>
+
+    <!-- نافذة الموبايل -->
+    <nav class="mobile-nav">
+        <button onclick="toggleM('rightMenu')" style="background:none; border:none; color:white;"><i class="fas fa-magic fa-lg"></i></button>
+        <button onclick="triggerUpload()" style="background:var(--neon-green); color:black; border:none; width:50px; height:50px; border-radius:50%;"><i class="fas fa-plus"></i></button>
+        <button onclick="toggleM('leftMenu')" style="background:none; border:none; color:white;"><i class="fas fa-sliders-h fa-lg"></i></button>
+    </nav>
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const loader = document.getElementById('imageLoader');
+        let rawImg = null;
+
+        function closeGuide() { document.getElementById('userGuide').style.display = 'none'; }
+        function triggerUpload() { loader.click(); }
+
+        // معالجة الصورة المرفوعة
+        loader.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    rawImg = img;
+                    initCanvas();
+                    document.getElementById('dropPrompt').style.display = 'none';
+                    canvas.style.display = 'block';
+                    updateStatus('IMAGE_LOADED // SUCCESS');
+                }
+                img.src = event.target.result;
+            }
+            reader.readAsDataURL(file);
+        });
+
+        function initCanvas() {
+            canvas.width = rawImg.width;
+            canvas.height = rawImg.height;
+            draw();
+        }
+
+        function draw() {
+            if(!rawImg) return;
+            const b = document.getElementById('br').value;
+            const c = document.getElementById('ct').value;
+            const s = document.getElementById('sat').value;
+            const h = document.getElementById('hue').value;
+
+            ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
+            ctx.drawImage(rawImg, 0, 0);
+        }
+
+        // تطبيق الثيمات الاحترافية
+        async function applyMagic(type) {
+            if(!rawImg) return alert("خطأ: يرجى رفع صورة أولاً!");
+            
+            showLoader("جاري استدعاء وحدة Kernel-0x0...");
+            
+            setTimeout(() => {
+                hideLoader();
+                if(type === 'matrix') {
+                    applyMatrixEffect();
+                } else if(type === 'cyber') {
+                    applyCyberOverlay();
+                }
+                updateStatus(`THEME_${type.toUpperCase()} // APPLIED`);
+            }, 1500);
+        }
+
+        function applyMatrixEffect() {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = "#00ff41";
+            ctx.font = "15px monospace";
+            for(let i=0; i<50; i++) {
+                const txt = Math.random() > 0.5 ? "1" : "0";
+                ctx.fillText(txt, Math.random()*canvas.width, Math.random()*canvas.height);
+            }
+        }
+
+        function applyCyberOverlay() {
+            ctx.strokeStyle = "var(--neon-green)";
+            ctx.lineWidth = 2;
+            ctx.strokeRect(20, 20, canvas.width-40, canvas.height-40);
+            ctx.fillStyle = "var(--neon-green)";
+            ctx.fillText("VIP_ARM_SECURED", 40, 40);
+        }
+
+        function updateStatus(msg) { document.getElementById('statusMsg').innerText = msg; }
+        function showLoader(txt) { 
+            const l = document.getElementById('loader');
+            l.style.display = 'flex';
+            document.getElementById('loaderText').innerText = txt;
+        }
+        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
+
+        function exportArt() {
+            const link = document.createElement('a');
+            link.download = 'VIP_ARM_ARTWORK.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // مستمعات الأحداث للسلايدرز
+        document.querySelectorAll('input[type="range"]').forEach(input => {
+            input.addEventListener('input', draw);
+        });
+
+        function toggleM(id) {
+            const menu = document.getElementById(id);
+            menu.classList.toggle('active');
+        }
+
+        function resetStudio() { location.reload(); }
+    </script>
+</body>
+</html>
