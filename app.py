@@ -8,7 +8,7 @@ from PIL import Image
 from PIL.ExifTags import TAGS
 # التوافق مع MoviePy 2.2.1 - تصحيح الاستيراد للمؤثرات
 from moviepy import VideoFileClip
-import moviepy.video.fx.all as vfx
+from moviepy.video import fx as vfx
 from gtts import gTTS
 
 # [CENTRAL_INTELLIGENCE_CORE] - NODE: Kernel-0x0
