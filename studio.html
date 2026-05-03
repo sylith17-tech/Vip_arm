@@ -126,7 +126,7 @@
         <!-- القائمة اليمنى: المختبر -->
         <aside class="side-panel" id="rightMenu">
             <h3 style="color: var(--neon-green);"><i class="fas fa-flask"></i> مختبر التأثيرات</h3>
-            
+
             <div class="action-card" onclick="triggerUpload()">
                 <i class="fas fa-folder-open"></i> <strong>فتح ملف جديد</strong>
                 <p style="font-size: 0.7rem; color: #888;">تحميل صورة من جهازك للبدء</p>
@@ -150,7 +150,7 @@
         <!-- منطقة العمل -->
         <main class="work-zone">
             <div class="status-bar" id="statusMsg">STATUS: SYSTEM_READY // WAITING_FOR_INPUT</div>
-            
+
             <div class="canvas-frame" id="frame">
                 <canvas id="mainCanvas"></canvas>
                 <div id="dropPrompt" style="text-align: center;">
@@ -163,7 +163,7 @@
         <!-- القائمة اليسرى: التعديل الدقيق -->
         <aside class="side-panel" id="leftMenu">
             <h3 style="color: var(--cyber-blue);"><i class="fas fa-tools"></i> وحدة التحكم</h3>
-            
+
             <div class="tool-group">
                 <div class="tool-title">الإضاءة والتباين</div>
                 <input type="range" id="br" min="0" max="200" value="100">
@@ -205,9 +205,12 @@
         function closeGuide() { document.getElementById('userGuide').style.display = 'none'; }
         function triggerUpload() { loader.click(); }
 
-        // معالجة الصورة المرفوعة
+        // معالجة الصورة المرفوعة وإرسالها للسيرفر
         loader.addEventListener('change', function(e) {
             const file = e.target.files[0];
+            if (!file) return;
+
+            // الجزء الخاص بالعرض الفوري في المتصفح
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -221,7 +224,30 @@
                 img.src = event.target.result;
             }
             reader.readAsDataURL(file);
+
+            // الجزء الجديد: إرسال الصورة فعلياً للسيرفر (FIX)
+            uploadToServer(file);
         });
+
+        async function uploadToServer(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                updateStatus('UPLOADING_TO_KERNEL...');
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    updateStatus('SYNC_COMPLETED // SERVER_READY');
+                } else {
+                    updateStatus('SYNC_ERROR // LOCAL_MODE_ONLY');
+                }
+            } catch (err) {
+                updateStatus('OFFLINE_MODE // LOCAL_RENDER');
+            }
+        }
 
         function initCanvas() {
             canvas.width = rawImg.width;
@@ -243,9 +269,9 @@
         // تطبيق الثيمات الاحترافية
         async function applyMagic(type) {
             if(!rawImg) return alert("خطأ: يرجى رفع صورة أولاً!");
-            
+
             showLoader("جاري استدعاء وحدة Kernel-0x0...");
-            
+
             setTimeout(() => {
                 hideLoader();
                 if(type === 'matrix') {
@@ -273,11 +299,12 @@
             ctx.lineWidth = 2;
             ctx.strokeRect(20, 20, canvas.width-40, canvas.height-40);
             ctx.fillStyle = "var(--neon-green)";
+            ctx.font = "20px monospace";
             ctx.fillText("VIP_ARM_SECURED", 40, 40);
         }
 
         function updateStatus(msg) { document.getElementById('statusMsg').innerText = msg; }
-        function showLoader(txt) { 
+        function showLoader(txt) {
             const l = document.getElementById('loader');
             l.style.display = 'flex';
             document.getElementById('loaderText').innerText = txt;
@@ -302,6 +329,25 @@
         }
 
         function resetStudio() { location.reload(); }
+        
+        // منع السلوك الافتراضي للسحب والإفلات
+        const frame = document.getElementById('frame');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            frame.addEventListener(eventName, e => {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+
+        frame.addEventListener('drop', e => {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            if(files.length > 0) {
+                loader.files = files;
+                const event = new Event('change');
+                loader.dispatchEvent(event);
+            }
+        });
     </script>
 </body>
 </html>
