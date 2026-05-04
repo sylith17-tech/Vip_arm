@@ -15,11 +15,11 @@
             --secondary: #7000ff;
             --accent: #ff0055;
             --bg-dark: #020617;
-            --panel-bg: rgba(15, 23, 42, 0.7);
+            --panel-bg: rgba(15, 23, 42, 0.8);
             --border-glow: rgba(0, 242, 255, 0.3);
             --text-main: #f1f5f9;
             --text-dim: #94a3b8;
-            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
@@ -33,14 +33,14 @@
             justify-content: center;
             align-items: center;
             overflow-x: hidden;
-            perspective: 1200px;
+            perspective: 1500px;
         }
 
         #matrix-bg {
             position: fixed;
             top: 0; left: 0; z-index: -1;
-            opacity: 0.12;
-            filter: hue-rotate(180deg);
+            opacity: 0.15;
+            filter: hue-rotate(160deg) brightness(1.2);
         }
 
         /* --- Modern Floating Navigation --- */
@@ -50,408 +50,437 @@
             left: 50%;
             transform: translateX(-50%);
             background: var(--panel-bg);
-            backdrop-filter: blur(20px);
-            padding: 12px 35px;
+            backdrop-filter: blur(25px);
+            padding: 14px 40px;
             border-radius: 100px;
             border: 1px solid var(--border-glow);
             display: flex;
-            gap: 20px;
+            gap: 25px;
             z-index: 2000;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px var(--border-glow);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8), inset 0 0 20px var(--border-glow);
         }
 
         .nav-link {
-            width: 45px;
-            height: 45px;
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-dim);
             text-decoration: none;
             border-radius: 50%;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             transition: var(--transition);
             position: relative;
         }
 
         .nav-link:hover, .nav-link.active {
             color: var(--primary);
-            background: rgba(0, 242, 255, 0.15);
-            transform: translateY(-8px) scale(1.1);
-            text-shadow: 0 0 10px var(--primary);
+            background: rgba(0, 242, 255, 0.2);
+            transform: translateY(-12px) scale(1.15);
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
         }
 
         .nav-link::after {
             content: attr(data-tooltip);
             position: absolute;
-            top: -50px;
-            background: var(--primary);
+            top: -55px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
             color: #000;
-            padding: 5px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 0.8rem;
             font-weight: 900;
             opacity: 0;
             pointer-events: none;
             transition: var(--transition);
             white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
         }
 
-        .nav-link:hover::after { opacity: 1; top: -60px; }
+        .nav-link:hover::after { opacity: 1; top: -65px; }
 
-        /* --- Developer Side Panel --- */
+        /* --- Enhanced Developer Side Panel --- */
         .dev-side-panel {
             position: fixed;
-            left: 30px;
+            left: 35px;
             top: 50%;
             transform: translateY(-50%);
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 20px;
             z-index: 1000;
         }
 
-        .dev-social-card {
-            background: var(--panel-bg);
-            border: 1px solid var(--border-glow);
-            padding: 15px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
+        .social-container {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            background: var(--panel-bg);
+            padding: 12px;
+            border-radius: 25px;
+            border: 1px solid var(--border-glow);
+            backdrop-filter: blur(15px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         }
 
         .social-icon {
-            width: 50px;
-            height: 50px;
+            width: 55px;
+            height: 55px;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 15px;
+            border-radius: 18px;
             color: var(--text-main);
             text-decoration: none;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             transition: var(--transition);
-            background: rgba(255,255,255,0.05);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .social-icon.fb:hover { background: #1877F2; transform: translateX(10px); }
-        .social-icon.tg:hover { background: #26A5E4; transform: translateX(10px); }
-        .social-icon.wa:hover { background: #25D366; transform: translateX(10px); }
+        .social-icon.fb:hover { background: #1877F2; transform: rotate(15deg) scale(1.1); box-shadow: 0 0 25px #1877F2; }
+        .social-icon.tg:hover { background: #26A5E4; transform: rotate(-15deg) scale(1.1); box-shadow: 0 0 25px #26A5E4; }
+        .social-icon.wa:hover { background: #25D366; transform: translateY(-5px) scale(1.1); box-shadow: 0 0 25px #25D366; }
 
         /* --- Layout Structure --- */
         .content-container {
-            width: 92%;
-            max-width: 1400px;
-            padding: 40px 0 120px 0;
+            width: 94%;
+            max-width: 1500px;
+            padding: 40px 0 130px 0;
             display: grid;
-            grid-template-columns: 1fr 380px;
-            gap: 40px;
+            grid-template-columns: 1fr 400px;
+            gap: 50px;
         }
 
         /* --- Hero Section Evolution --- */
         .hero-section {
-            background: linear-gradient(135deg, rgba(112, 0, 255, 0.1), rgba(0, 242, 255, 0.05));
-            border-radius: 50px;
-            padding: 80px 60px;
+            background: linear-gradient(165deg, rgba(112, 0, 255, 0.15), rgba(0, 242, 255, 0.05));
+            border-radius: 60px;
+            padding: 90px 70px;
             border: 1px solid var(--border-glow);
             position: relative;
             overflow: hidden;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.4);
         }
 
         .hero-section::before {
             content: 'KERNEL';
             position: absolute;
-            bottom: -30px;
-            left: 20px;
-            font-size: 12rem;
+            top: -20px;
+            right: -20px;
+            font-size: 15rem;
             font-weight: 900;
             color: var(--primary);
-            opacity: 0.05;
+            opacity: 0.03;
             pointer-events: none;
         }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
-            gap: 12px;
-            background: rgba(0, 242, 255, 0.1);
-            padding: 10px 25px;
+            gap: 15px;
+            background: rgba(0, 242, 255, 0.12);
+            padding: 12px 30px;
             border-radius: 100px;
             color: var(--primary);
-            font-size: 0.85rem;
-            font-weight: bold;
+            font-size: 0.9rem;
+            font-weight: 900;
             border: 1px solid var(--border-glow);
-            margin-bottom: 30px;
+            margin-bottom: 40px;
+            letter-spacing: 1px;
         }
 
         .pulse-dot {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             background: var(--primary);
             border-radius: 50%;
-            animation: pulse 2s infinite;
+            animation: pulse 2.5s infinite;
         }
 
         @keyframes pulse {
-            0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
-            100% { box-shadow: 0 0 0 15px rgba(0, 242, 255, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.8); }
+            100% { box-shadow: 0 0 0 20px rgba(0, 242, 255, 0); }
         }
 
         /* --- Tools Grid --- */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            margin-top: 40px;
+            gap: 30px;
+            margin-top: 50px;
         }
 
         .neo-card {
             background: var(--panel-bg);
             border: 1px solid var(--border-glow);
-            border-radius: 35px;
-            padding: 35px;
+            border-radius: 40px;
+            padding: 45px 35px;
             transition: var(--transition);
             position: relative;
             text-align: center;
-            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .neo-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, transparent, rgba(0, 242, 255, 0.05));
+            opacity: 0;
+            transition: var(--transition);
         }
 
         .neo-card:hover {
-            transform: translateY(-15px) rotateX(10deg);
+            transform: translateY(-20px) scale(1.02);
             border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0, 242, 255, 0.1);
+            box-shadow: 0 25px 50px rgba(0, 242, 255, 0.15);
         }
+
+        .neo-card:hover::before { opacity: 1; }
 
         .neo-card i {
-            font-size: 3rem;
-            margin-bottom: 25px;
+            font-size: 3.5rem;
+            margin-bottom: 30px;
             display: block;
-            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            background: linear-gradient(180deg, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 5px 15px rgba(0, 242, 255, 0.2));
         }
 
-        /* --- Sidebar Vitals --- */
+        /* --- Sidebar Vitals Evolution --- */
         .sidebar-vitals {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 30px;
         }
 
         .vital-box {
             background: var(--panel-bg);
-            border-radius: 35px;
-            padding: 30px;
+            border-radius: 40px;
+            padding: 35px;
             border: 1px solid var(--border-glow);
-            backdrop-filter: blur(15px);
+            backdrop-filter: blur(20px);
+            position: relative;
         }
 
         .terminal-modern {
             background: #000;
-            border-radius: 25px;
-            padding: 20px;
+            border-radius: 30px;
+            padding: 25px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 0.85rem;
-            height: 380px;
+            height: 420px;
             overflow-y: auto;
             border: 1px solid #1e293b;
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary) #000;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
         }
 
         .dev-tag {
-            background: linear-gradient(45deg, var(--secondary), var(--accent));
-            padding: 6px 18px;
-            border-radius: 8px;
-            font-size: 0.7rem;
+            background: linear-gradient(90deg, var(--secondary), var(--accent));
+            padding: 8px 22px;
+            border-radius: 12px;
+            font-size: 0.75rem;
             font-weight: 900;
-            text-transform: uppercase;
+            box-shadow: 0 5px 15px rgba(112, 0, 255, 0.3);
         }
 
         .btn-modern {
-            background: var(--primary);
+            background: linear-gradient(90deg, var(--primary), #00d2ff);
             color: #000;
-            padding: 18px 45px;
-            border-radius: 20px;
+            padding: 20px 50px;
+            border-radius: 25px;
             text-decoration: none;
             font-weight: 900;
             display: inline-block;
-            margin-top: 35px;
+            margin-top: 40px;
             transition: var(--transition);
-            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
+            box-shadow: 0 15px 30px rgba(0, 242, 255, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
 
         .btn-modern:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px var(--primary);
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 0 0 50px var(--primary);
         }
 
-        /* --- Responsiveness --- */
+        /* --- Custom Scrollbar --- */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+
         @media (max-width: 1200px) {
-            .content-container { grid-template-columns: 1fr; width: 95%; }
+            .content-container { grid-template-columns: 1fr; }
             .dev-side-panel { display: none; }
             .tools-grid { grid-template-columns: 1fr; }
+            .hero-section { padding: 50px 30px; }
         }
     </style>
 </head>
 <body>
     <canvas id="matrix-bg"></canvas>
 
-    <!-- Developer Profile Side Panel -->
+    <!-- Interactive Developer Profile Panel -->
     <div class="dev-side-panel">
-        <div class="dev-social-card">
-            <a href="https://www.facebook.com/lith.haker" target="_blank" class="social-icon fb" title="Facebook">
+        <div class="social-container">
+            <a href="https://www.facebook.com/lith.haker" target="_blank" class="social-icon fb" title="Facebook Profile">
                 <i class="fab fa-facebook-f"></i>
             </a>
-            <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="social-icon tg" title="Telegram Bot">
+            <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="social-icon tg" title="Telegram Intelligence Bot">
                 <i class="fab fa-telegram-plane"></i>
             </a>
-            <a href="https://wa.me/963996273320" target="_blank" class="social-icon wa" title="WhatsApp">
+            <a href="https://wa.me/963996273320" target="_blank" class="social-icon wa" title="WhatsApp Direct">
                 <i class="fab fa-whatsapp"></i>
             </a>
         </div>
     </div>
 
-    <!-- Floating Navigation -->
+    <!-- Main Navigation Hub -->
     <nav class="nav-capsule">
-        <a href="/" class="nav-link active" data-tooltip="الرئيسية"><i class="fas fa-home"></i></a>
-        <a href="/studio" class="nav-link" data-tooltip="STUDIO"><i class="fas fa-clapperboard"></i></a>
-        <a href="/downloader" class="nav-link" data-tooltip="التحميل"><i class="fas fa-arrow-down-to-bracket"></i></a>
-        <a href="/scanner" class="nav-link" data-tooltip="SECURITY"><i class="fas fa-fingerprint"></i></a>
-        <a href="/forensic" class="nav-link" data-tooltip="FORENSIC"><i class="fas fa-dna"></i></a>
+        <a href="/" class="nav-link active" data-tooltip="CORE SYSTEM"><i class="fas fa-home"></i></a>
+        <a href="/studio" class="nav-link" data-tooltip="VIDEO STUDIO"><i class="fas fa-video"></i></a>
+        <a href="/downloader" class="nav-link" data-tooltip="CLOUD DOWNLOAD"><i class="fas fa-cloud-arrow-down"></i></a>
+        <a href="/scanner" class="nav-link" data-tooltip="CYBER SCANNER"><i class="fas fa-user-shield"></i></a>
+        <a href="/forensic" class="nav-link" data-tooltip="DIGITAL DNA"><i class="fas fa-microscope"></i></a>
     </nav>
 
-    <!-- Main Content Container -->
+    <!-- Primary Layout -->
     <div class="content-container">
         
-        <!-- Center Body -->
-        <div class="main-body">
+        <main class="main-body">
+            <!-- Hero Cyber Section -->
             <section class="hero-section">
                 <div class="status-pill">
                     <div class="pulse-dot"></div>
-                    SYSTEM: VIP_ARM OS v7.2 | Kernel-0x0 ACTIVE
+                    NODE: Kernel-0x0 | IDENTITY: VIP_ARM | UPTIME: 99.9%
                 </div>
-                <h1 style="font-size: 3.8rem; font-weight: 900; margin-bottom: 25px; line-height: 1.2;">الجيل القادم من المعالجة الرقمية</h1>
-                <p style="font-size: 1.2rem; color: var(--text-dim); line-height: 1.8; max-width: 650px;">
-                    مرحباً بك في بيئة **Kernel-0x0** المتطورة. قمنا بإعادة هندسة النظام ليوفر لك سرعة فائقة في معالجة الفيديو، فحص المواقع، وإدارة البيانات السحابية بلمسة واحدة.
+                <h1 style="font-size: 4rem; font-weight: 900; margin-bottom: 25px; line-height: 1.1; color: #fff;">
+                    المعالج السيبراني <br><span style="color: var(--primary);">المتطور v7.2</span>
+                </h1>
+                <p style="font-size: 1.3rem; color: var(--text-dim); line-height: 1.9; max-width: 700px; margin-bottom: 10px;">
+                    أهلاً بك في المرحلة التالية من **Kernel-0x0**. نظام متكامل لإدارة العمليات الرقمية، بدءاً من المعالجة السحابية المتقدمة وحتى التحليل الأمني العميق.
                 </p>
-                <div style="display: flex; gap: 20px; align-items: center;">
-                    <a href="/studio" class="btn-modern">إطلاق محرك الاستوديو</a>
-                    <p style="margin-top: 30px; color: var(--primary); font-family: 'JetBrains Mono'; font-weight: bold;">[ DEV: VIP_ARM ]</p>
+                <div style="display: flex; gap: 25px; align-items: center;">
+                    <a href="/studio" class="btn-modern">دخول الاستوديو</a>
+                    <div style="margin-top: 35px;">
+                        <span style="color: var(--text-dim); font-family: 'JetBrains Mono'; font-size: 0.9rem;">DEVELOPED BY:</span>
+                        <span style="color: var(--primary); font-family: 'JetBrains Mono'; font-weight: bold; margin-right: 10px; font-size: 1.1rem;">VIP_ARM</span>
+                    </div>
                 </div>
             </section>
 
+            <!-- Tools Orchestrator -->
             <div class="tools-grid">
-                <!-- Card 1 -->
                 <div class="neo-card" onclick="location.href='/studio'">
-                    <i class="fas fa-wand-magic-sparkles"></i>
-                    <h3 style="font-weight: 900; letter-spacing: 1px;">AI Studio</h3>
-                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 15px;">تقنيات متقدمة لدبلجة وتحرير الفيديوهات آلياً باستخدام MoviePy.</p>
+                    <i class="fas fa-magic"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1.5px; margin-bottom: 10px;">AI STUDIO</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem;">إنتاج وتحرير المحتوى المرئي بدقة 4K عبر خوارزميات ذكية.</p>
                 </div>
-                <!-- Card 2 -->
                 <div class="neo-card" onclick="location.href='/scanner'">
-                    <i class="fas fa-shield-halved"></i>
-                    <h3 style="font-weight: 900; letter-spacing: 1px;">Scanner Lab</h3>
-                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 15px;">تحليل شامل لثغرات الويب وفحص استجابة الخوادم Headers.</p>
+                    <i class="fas fa-terminal"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1.5px; margin-bottom: 10px;">SECURITY LAB</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem;">فحص شامل للثغرات البرمجية وتحليل أمن البيانات.</p>
                 </div>
-                <!-- Card 3 -->
                 <div class="neo-card" onclick="location.href='/downloader'">
-                    <i class="fas fa-bolt"></i>
-                    <h3 style="font-weight: 900; letter-spacing: 1px;">Downloader</h3>
-                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 15px;">سحب الوسائط بجميع الصيغ من المنصات العالمية بسرعة البرق.</p>
+                    <i class="fas fa-download"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1.5px; margin-bottom: 10px;">FAST LOAD</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem;">نظام سحب بيانات فائق السرعة يدعم كافة المنصات العالمية.</p>
                 </div>
             </div>
-        </div>
+        </main>
 
-        <!-- Sidebar Section -->
+        <!-- Dynamic Sidebar -->
         <aside class="sidebar-vitals">
+            <!-- Developer Metadata -->
             <div class="vital-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
-                    <span class="dev-tag">DEVELOPER PRO</span>
-                    <h3 style="font-family: 'JetBrains Mono'; color: var(--primary); font-size: 1.4rem;">VIP_ARM</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+                    <span class="dev-tag">CORE ARCHITECT</span>
+                    <i class="fas fa-fingerprint" style="color: var(--primary); font-size: 1.5rem;"></i>
                 </div>
-                <div style="font-size: 0.9rem; color: var(--text-dim); line-height: 2;">
-                    <p><i class="fas fa-code-branch" style="color: var(--primary); width: 25px;"></i> الإصدار: 5.3 Stable</p>
-                    <p><i class="fas fa-microchip" style="color: var(--primary); width: 25px;"></i> النواة: Kernel-0x0</p>
-                    <p><i class="fas fa-phone" style="color: var(--primary); width: 25px;"></i> +963 996 273 320</p>
+                <div style="font-size: 1rem; color: var(--text-main); line-height: 2.2;">
+                    <p><i class="fas fa-id-badge" style="color: var(--primary); width: 30px;"></i> <strong>الاسم:</strong> VIP_ARM</p>
+                    <p><i class="fas fa-code" style="color: var(--primary); width: 30px;"></i> <strong>الإصدار:</strong> 5.3 Stable</p>
+                    <p><i class="fas fa-microchip" style="color: var(--primary); width: 30px;"></i> <strong>النواة:</strong> Kernel-0x0</p>
+                    <p><i class="fab fa-whatsapp" style="color: var(--primary); width: 30px;"></i> <strong>تواصل:</strong> 963996273320+</p>
                 </div>
             </div>
 
+            <!-- Real-time Logic Terminal -->
             <div class="vital-box">
-                <h4 style="margin-bottom: 20px; font-size: 0.9rem; color: var(--primary); letter-spacing: 3px; font-weight: 900;">LIVE_SYSTEM_LOGS</h4>
-                <div class="terminal-modern" id="terminal">
-                    <!-- Logs injection via JS -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+                    <div style="width: 8px; height: 8px; background: #ff5f56; border-radius: 50%;"></div>
+                    <div style="width: 8px; height: 8px; background: #ffbd2e; border-radius: 50%;"></div>
+                    <div style="width: 8px; height: 8px; background: #27c93f; border-radius: 50%;"></div>
+                    <span style="font-size: 0.75rem; color: var(--text-dim); font-weight: 900; margin-right: 10px;">LIVE CONSOLE</span>
                 </div>
+                <div class="terminal-modern" id="terminal"></div>
             </div>
 
-            <p style="text-align: center; font-size: 0.65rem; color: #4b5563; letter-spacing: 4px; font-weight: bold;">
-                SECURED BY VIP_ARM PROTOCOLS &copy; 2026
-            </p>
+            <div style="text-align: center; opacity: 0.4; font-size: 0.7rem; letter-spacing: 5px;">
+                ENCRYPTED BY VIP_ARM OS &copy; 2026
+            </div>
         </aside>
 
     </div>
 
     <script>
-        // Matrix Canvas Animation
+        // Enhanced Matrix Stream
         const canvas = document.getElementById('matrix-bg');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
-        const alphabet = "VIPARM01KERNEL0x0";
-        const fontSize = 17;
+        const symbols = "VIPARM01KERNEL0x0";
+        const fontSize = 18;
         const columns = width / fontSize;
-        const rainDrops = Array.from({ length: columns }).fill(1);
+        const drops = Array(Math.floor(columns)).fill(1);
 
-        const draw = () => {
-            ctx.fillStyle = 'rgba(2, 6, 23, 0.05)';
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.08)';
             ctx.fillRect(0, 0, width, height);
             ctx.fillStyle = '#00f2ff';
             ctx.font = fontSize + 'px monospace';
 
-            rainDrops.forEach((y, i) => {
-                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+            drops.forEach((y, i) => {
+                const text = symbols.charAt(Math.floor(Math.random() * symbols.length));
                 ctx.fillText(text, i * fontSize, y * fontSize);
-                if (y * fontSize > height && Math.random() > 0.975) rainDrops[i] = 0;
-                rainDrops[i]++;
+                if (y * fontSize > height && Math.random() > 0.98) drops[i] = 0;
+                drops[i]++;
             });
-        };
-        setInterval(draw, 35);
-
-        // Advanced Terminal Logs
-        const logs = [
-            "Handshaking with VIP_ARM server...",
-            "Decrypting Kernel-0x0 protocols...",
-            "Loading Neural Engine v5.3...",
-            "Establishing Secure Tunnel...",
-            "User Identity: VIP_ARM Authenticated",
-            "Checking Security Headers...",
-            "WhatsApp Bridge: Connected (+963...)",
-            "Module [Studio] Ready.",
-            "Scanning for updates... Done.",
-            "System is currently OPTIMAL."
-        ];
-        let logIndex = 0;
-        const terminal = document.getElementById('terminal');
-
-        function addLog() {
-            const time = new Date().toLocaleTimeString([], {hour12: false});
-            const p = document.createElement('p');
-            p.style.color = "#4ade80";
-            p.style.marginBottom = "10px";
-            p.style.borderRight = "2px solid var(--primary)";
-            p.style.paddingRight = "10px";
-            p.innerHTML = `<span style="color: #64748b;">[${time}]</span> <span style="color: var(--primary);">#</span> ${logs[logIndex % logs.length]}`;
-            terminal.appendChild(p);
-            terminal.scrollTop = terminal.scrollHeight;
-            logIndex++;
         }
-        setInterval(addLog, 2800);
-        addLog();
+        setInterval(drawMatrix, 40);
+
+        // Advanced Console Logic
+        const logData = [
+            "Initializing Kernel-0x0 core...",
+            "Loading VIP_ARM security layers...",
+            "Facebook API: Connected [lith.haker]",
+            "Telegram Bot Protocol: Online (v2026)",
+            "WhatsApp Bridge: Ready [+963...]",
+            "Memory Check: 100% Integrity",
+            "System Status: OPTIMAL",
+            "Establishing neural link with server...",
+            "Welcome Back, Developer VIP_ARM."
+        ];
+        let count = 0;
+        const term = document.getElementById('terminal');
+
+        function pushLog() {
+            const time = new Date().toLocaleTimeString([], {hour12: false, hour: '2-digit', minute:'2-digit', second:'2-digit'});
+            const line = document.createElement('div');
+            line.style.marginBottom = "12px";
+            line.style.borderLeft = "3px solid var(--primary)";
+            line.style.paddingLeft = "12px";
+            line.innerHTML = `<span style="color: #64748b; font-size: 0.7rem;">[${time}]</span> <br> <span style="color: var(--primary); font-weight:bold;">$</span> ${logData[count % logData.length]}`;
+            term.appendChild(line);
+            term.scrollTop = term.scrollHeight;
+            count++;
+        }
+        setInterval(pushLog, 3000);
+        pushLog();
 
         window.addEventListener('resize', () => {
             width = canvas.width = window.innerWidth;
