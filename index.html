@@ -15,14 +15,14 @@
             --secondary: #7000ff;
             --accent: #ff0055;
             --bg-dark: #020617;
-            --panel-bg: rgba(15, 23, 42, 0.6);
-            --border-glow: rgba(0, 242, 255, 0.2);
+            --panel-bg: rgba(15, 23, 42, 0.7);
+            --border-glow: rgba(0, 242, 255, 0.3);
             --text-main: #f1f5f9;
             --text-dim: #94a3b8;
-            --transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+            --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
 
         body {
             background-color: var(--bg-dark);
@@ -33,338 +33,362 @@
             justify-content: center;
             align-items: center;
             overflow-x: hidden;
-            perspective: 1000px;
+            perspective: 1200px;
         }
 
         #matrix-bg {
             position: fixed;
             top: 0; left: 0; z-index: -1;
-            opacity: 0.15;
+            opacity: 0.12;
             filter: hue-rotate(180deg);
         }
 
-        /* --- Floating Navigation Capsule --- */
+        /* --- Modern Floating Navigation --- */
         .nav-capsule {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--panel-bg);
-            backdrop-filter: blur(25px);
-            padding: 10px 30px;
+            backdrop-filter: blur(20px);
+            padding: 12px 35px;
             border-radius: 100px;
             border: 1px solid var(--border-glow);
             display: flex;
-            gap: 15px;
+            gap: 20px;
             z-index: 2000;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5), 0 0 20px var(--border-glow);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px var(--border-glow);
         }
 
         .nav-link {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
             color: var(--text-dim);
             text-decoration: none;
             border-radius: 50%;
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             transition: var(--transition);
             position: relative;
         }
 
         .nav-link:hover, .nav-link.active {
             color: var(--primary);
-            background: rgba(0, 242, 255, 0.1);
-            transform: translateY(-10px);
+            background: rgba(0, 242, 255, 0.15);
+            transform: translateY(-8px) scale(1.1);
+            text-shadow: 0 0 10px var(--primary);
         }
 
         .nav-link::after {
             content: attr(data-tooltip);
             position: absolute;
-            top: -45px;
+            top: -50px;
             background: var(--primary);
-            color: black;
-            padding: 4px 12px;
-            border-radius: 6px;
-            font-size: 0.7rem;
+            color: #000;
+            padding: 5px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
             font-weight: 900;
             opacity: 0;
             pointer-events: none;
             transition: var(--transition);
+            white-space: nowrap;
         }
 
-        .nav-link:hover::after { opacity: 1; top: -55px; }
+        .nav-link:hover::after { opacity: 1; top: -60px; }
 
-        /* --- Floating Sidebar Info --- */
-        .side-info {
+        /* --- Developer Side Panel --- */
+        .dev-side-panel {
             position: fixed;
-            right: 30px;
+            left: 30px;
             top: 50%;
             transform: translateY(-50%);
-            width: 70px;
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
             z-index: 1000;
         }
 
-        .info-hex {
-            width: 60px;
-            height: 60px;
+        .dev-social-card {
             background: var(--panel-bg);
-            backdrop-filter: blur(10px);
             border: 1px solid var(--border-glow);
+            padding: 15px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
             display: flex;
             align-items: center;
             justify-content: center;
-            cursor: pointer;
-            clip-path: polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%);
+            border-radius: 15px;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 1.3rem;
             transition: var(--transition);
+            background: rgba(255,255,255,0.05);
         }
 
-        .info-hex:hover {
-            background: var(--primary);
-            color: black;
-            transform: scale(1.1) rotate(15deg);
-        }
+        .social-icon.fb:hover { background: #1877F2; transform: translateX(10px); }
+        .social-icon.tg:hover { background: #26A5E4; transform: translateX(10px); }
+        .social-icon.wa:hover { background: #25D366; transform: translateX(10px); }
 
-        /* --- Main Content Layout --- */
+        /* --- Layout Structure --- */
         .content-container {
-            width: 90%;
+            width: 92%;
             max-width: 1400px;
-            padding-bottom: 120px;
+            padding: 40px 0 120px 0;
             display: grid;
             grid-template-columns: 1fr 380px;
-            gap: 30px;
+            gap: 40px;
         }
 
+        /* --- Hero Section Evolution --- */
         .hero-section {
-            background: radial-gradient(circle at top right, rgba(112, 0, 255, 0.15), transparent);
-            border-radius: 40px;
-            padding: 60px;
+            background: linear-gradient(135deg, rgba(112, 0, 255, 0.1), rgba(0, 242, 255, 0.05));
+            border-radius: 50px;
+            padding: 80px 60px;
             border: 1px solid var(--border-glow);
             position: relative;
             overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
         }
 
         .hero-section::before {
-            content: 'KERNEL-0x0';
+            content: 'KERNEL';
             position: absolute;
-            top: -20px;
-            right: -20px;
-            font-size: 10rem;
+            bottom: -30px;
+            left: 20px;
+            font-size: 12rem;
             font-weight: 900;
-            opacity: 0.03;
+            color: var(--primary);
+            opacity: 0.05;
             pointer-events: none;
         }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             background: rgba(0, 242, 255, 0.1);
-            padding: 8px 20px;
-            border-radius: 50px;
+            padding: 10px 25px;
+            border-radius: 100px;
             color: var(--primary);
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             font-weight: bold;
-            margin-bottom: 20px;
-            width: fit-content;
+            border: 1px solid var(--border-glow);
+            margin-bottom: 30px;
         }
 
         .pulse-dot {
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: var(--primary);
             border-radius: 50%;
-            animation: pulse 1.5s infinite;
+            animation: pulse 2s infinite;
         }
 
         @keyframes pulse {
             0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
-            100% { box-shadow: 0 0 0 10px rgba(0, 242, 255, 0); }
+            100% { box-shadow: 0 0 0 15px rgba(0, 242, 255, 0); }
         }
 
-        /* --- Modern Grid Tools --- */
+        /* --- Tools Grid --- */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            margin-top: 30px;
+            gap: 25px;
+            margin-top: 40px;
         }
 
         .neo-card {
             background: var(--panel-bg);
             border: 1px solid var(--border-glow);
-            border-radius: 30px;
-            padding: 30px;
+            border-radius: 35px;
+            padding: 35px;
             transition: var(--transition);
             position: relative;
-            overflow: hidden;
+            text-align: center;
             cursor: pointer;
         }
 
         .neo-card:hover {
-            background: rgba(255,255,255,0.05);
-            transform: translateY(-10px);
+            transform: translateY(-15px) rotateX(10deg);
             border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0, 242, 255, 0.1);
         }
 
         .neo-card i {
-            font-size: 2.5rem;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            font-size: 3rem;
+            margin-bottom: 25px;
+            display: block;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 20px;
         }
 
-        /* --- Terminal / Activity Section --- */
+        /* --- Sidebar Vitals --- */
         .sidebar-vitals {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 25px;
         }
 
         .vital-box {
             background: var(--panel-bg);
-            border-radius: 30px;
-            padding: 25px;
+            border-radius: 35px;
+            padding: 30px;
             border: 1px solid var(--border-glow);
+            backdrop-filter: blur(15px);
         }
 
         .terminal-modern {
             background: #000;
-            border-radius: 20px;
+            border-radius: 25px;
             padding: 20px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            height: 400px;
+            font-size: 0.85rem;
+            height: 380px;
             overflow-y: auto;
             border: 1px solid #1e293b;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary) #000;
         }
 
         .dev-tag {
-            background: linear-gradient(90deg, var(--secondary), var(--accent));
-            padding: 5px 15px;
-            border-radius: 5px;
-            font-size: 0.6rem;
-            font-weight: bold;
-            letter-spacing: 1px;
-        }
-
-        /* --- Mobile Optimization --- */
-        @media (max-width: 1100px) {
-            .content-container { grid-template-columns: 1fr; width: 95%; padding-top: 80px;}
-            .side-info { display: none; }
-            .tools-grid { grid-template-columns: 1fr; }
-            .nav-capsule { width: 90%; justify-content: space-around; padding: 10px; }
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            padding: 6px 18px;
+            border-radius: 8px;
+            font-size: 0.7rem;
+            font-weight: 900;
+            text-transform: uppercase;
         }
 
         .btn-modern {
             background: var(--primary);
             color: #000;
-            padding: 15px 40px;
-            border-radius: 15px;
+            padding: 18px 45px;
+            border-radius: 20px;
             text-decoration: none;
             font-weight: 900;
             display: inline-block;
-            margin-top: 30px;
+            margin-top: 35px;
             transition: var(--transition);
-            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.2);
         }
 
         .btn-modern:hover {
-            box-shadow: 0 0 30px var(--primary);
             transform: scale(1.05);
+            box-shadow: 0 0 40px var(--primary);
         }
 
+        /* --- Responsiveness --- */
+        @media (max-width: 1200px) {
+            .content-container { grid-template-columns: 1fr; width: 95%; }
+            .dev-side-panel { display: none; }
+            .tools-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
     <canvas id="matrix-bg"></canvas>
 
+    <!-- Developer Profile Side Panel -->
+    <div class="dev-side-panel">
+        <div class="dev-social-card">
+            <a href="https://www.facebook.com/lith.haker" target="_blank" class="social-icon fb" title="Facebook">
+                <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="social-icon tg" title="Telegram Bot">
+                <i class="fab fa-telegram-plane"></i>
+            </a>
+            <a href="https://wa.me/963996273320" target="_blank" class="social-icon wa" title="WhatsApp">
+                <i class="fab fa-whatsapp"></i>
+            </a>
+        </div>
+    </div>
+
     <!-- Floating Navigation -->
     <nav class="nav-capsule">
         <a href="/" class="nav-link active" data-tooltip="الرئيسية"><i class="fas fa-home"></i></a>
         <a href="/studio" class="nav-link" data-tooltip="STUDIO"><i class="fas fa-clapperboard"></i></a>
-        <a href="/downloader" class="nav-item nav-link" data-tooltip="التحميل"><i class="fas fa-arrow-down-to-bracket"></i></a>
+        <a href="/downloader" class="nav-link" data-tooltip="التحميل"><i class="fas fa-arrow-down-to-bracket"></i></a>
         <a href="/scanner" class="nav-link" data-tooltip="SECURITY"><i class="fas fa-fingerprint"></i></a>
         <a href="/forensic" class="nav-link" data-tooltip="FORENSIC"><i class="fas fa-dna"></i></a>
     </nav>
 
-    <!-- Sidebar Social Hex -->
-    <div class="side-info">
-        <div class="info-hex" onclick="window.open('https://t.me/MyVIP_2026_bot')"><i class="fab fa-telegram-plane"></i></div>
-        <div class="info-hex" onclick="window.open('https://wa.me/963996273320')"><i class="fab fa-whatsapp"></i></div>
-        <div class="info-hex" onclick="window.open('https://www.facebook.com/lith.haker')"><i class="fab fa-facebook-f"></i></div>
-    </div>
-
-    <!-- Main Content -->
+    <!-- Main Content Container -->
     <div class="content-container">
         
+        <!-- Center Body -->
         <div class="main-body">
             <section class="hero-section">
                 <div class="status-pill">
                     <div class="pulse-dot"></div>
                     SYSTEM: VIP_ARM OS v7.2 | Kernel-0x0 ACTIVE
                 </div>
-                <h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 20px;">الجيل القادم من المعالجة الرقمية</h1>
-                <p style="font-size: 1.1rem; color: var(--text-dim); line-height: 1.8; max-width: 600px;">
+                <h1 style="font-size: 3.8rem; font-weight: 900; margin-bottom: 25px; line-height: 1.2;">الجيل القادم من المعالجة الرقمية</h1>
+                <p style="font-size: 1.2rem; color: var(--text-dim); line-height: 1.8; max-width: 650px;">
                     مرحباً بك في بيئة **Kernel-0x0** المتطورة. قمنا بإعادة هندسة النظام ليوفر لك سرعة فائقة في معالجة الفيديو، فحص المواقع، وإدارة البيانات السحابية بلمسة واحدة.
                 </p>
-                <div>
+                <div style="display: flex; gap: 20px; align-items: center;">
                     <a href="/studio" class="btn-modern">إطلاق محرك الاستوديو</a>
+                    <p style="margin-top: 30px; color: var(--primary); font-family: 'JetBrains Mono'; font-weight: bold;">[ DEV: VIP_ARM ]</p>
                 </div>
             </section>
 
             <div class="tools-grid">
-                <!-- Tool 1 -->
+                <!-- Card 1 -->
                 <div class="neo-card" onclick="location.href='/studio'">
                     <i class="fas fa-wand-magic-sparkles"></i>
-                    <h3>AI Studio</h3>
-                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">تقنيات متقدمة لدبلجة وتحرير الفيديوهات آلياً باستخدام MoviePy.</p>
+                    <h3 style="font-weight: 900; letter-spacing: 1px;">AI Studio</h3>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 15px;">تقنيات متقدمة لدبلجة وتحرير الفيديوهات آلياً باستخدام MoviePy.</p>
                 </div>
-                <!-- Tool 2 -->
+                <!-- Card 2 -->
                 <div class="neo-card" onclick="location.href='/scanner'">
                     <i class="fas fa-shield-halved"></i>
-                    <h3>Scanner Lab</h3>
-                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">تحليل شامل لثغرات الويب وفحص استجابة الخوادم Headers.</p>
+                    <h3 style="font-weight: 900; letter-spacing: 1px;">Scanner Lab</h3>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 15px;">تحليل شامل لثغرات الويب وفحص استجابة الخوادم Headers.</p>
                 </div>
-                <!-- Tool 3 -->
+                <!-- Card 3 -->
                 <div class="neo-card" onclick="location.href='/downloader'">
                     <i class="fas fa-bolt"></i>
-                    <h3>Downloader</h3>
-                    <p style="color: var(--text-dim); font-size: 0.85rem; margin-top: 10px;">سحب الوسائط بجميع الصيغ من المنصات العالمية بسرعة البرق.</p>
+                    <h3 style="font-weight: 900; letter-spacing: 1px;">Downloader</h3>
+                    <p style="color: var(--text-dim); font-size: 0.9rem; margin-top: 15px;">سحب الوسائط بجميع الصيغ من المنصات العالمية بسرعة البرق.</p>
                 </div>
             </div>
         </div>
 
+        <!-- Sidebar Section -->
         <aside class="sidebar-vitals">
             <div class="vital-box">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                     <span class="dev-tag">DEVELOPER PRO</span>
-                    <h3 style="font-family: 'JetBrains Mono'; color: var(--primary);">VIP_ARM</h3>
+                    <h3 style="font-family: 'JetBrains Mono'; color: var(--primary); font-size: 1.4rem;">VIP_ARM</h3>
                 </div>
-                <div style="font-size: 0.8rem; color: var(--text-dim);">
-                    <p><i class="fas fa-code-branch" style="margin-left: 10px;"></i> الإصدار: 5.3 Stable</p>
-                    <p><i class="fas fa-microchip" style="margin-left: 10px;"></i> النواة: Kernel-0x0</p>
+                <div style="font-size: 0.9rem; color: var(--text-dim); line-height: 2;">
+                    <p><i class="fas fa-code-branch" style="color: var(--primary); width: 25px;"></i> الإصدار: 5.3 Stable</p>
+                    <p><i class="fas fa-microchip" style="color: var(--primary); width: 25px;"></i> النواة: Kernel-0x0</p>
+                    <p><i class="fas fa-phone" style="color: var(--primary); width: 25px;"></i> +963 996 273 320</p>
                 </div>
             </div>
 
             <div class="vital-box">
-                <h4 style="margin-bottom: 15px; font-size: 0.9rem; color: var(--primary); letter-spacing: 2px;">LIVE_SYSTEM_LOGS</h4>
+                <h4 style="margin-bottom: 20px; font-size: 0.9rem; color: var(--primary); letter-spacing: 3px; font-weight: 900;">LIVE_SYSTEM_LOGS</h4>
                 <div class="terminal-modern" id="terminal">
-                    <!-- Logs injection -->
+                    <!-- Logs injection via JS -->
                 </div>
             </div>
 
-            <!-- Footer Small -->
-            <p style="text-align: center; font-size: 0.6rem; color: #444; letter-spacing: 3px; margin-top: 10px;">
+            <p style="text-align: center; font-size: 0.65rem; color: #4b5563; letter-spacing: 4px; font-weight: bold;">
                 SECURED BY VIP_ARM PROTOCOLS &copy; 2026
             </p>
         </aside>
@@ -372,14 +396,14 @@
     </div>
 
     <script>
-        // Matrix BG Effect
+        // Matrix Canvas Animation
         const canvas = document.getElementById('matrix-bg');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
         let height = canvas.height = window.innerHeight;
 
         const alphabet = "VIPARM01KERNEL0x0";
-        const fontSize = 16;
+        const fontSize = 17;
         const columns = width / fontSize;
         const rainDrops = Array.from({ length: columns }).fill(1);
 
@@ -396,15 +420,17 @@
                 rainDrops[i]++;
             });
         };
-        setInterval(draw, 30);
+        setInterval(draw, 35);
 
-        // Terminal Log Script
+        // Advanced Terminal Logs
         const logs = [
             "Handshaking with VIP_ARM server...",
             "Decrypting Kernel-0x0 protocols...",
             "Loading Neural Engine v5.3...",
             "Establishing Secure Tunnel...",
-            "User Identity: Authenticated",
+            "User Identity: VIP_ARM Authenticated",
+            "Checking Security Headers...",
+            "WhatsApp Bridge: Connected (+963...)",
             "Module [Studio] Ready.",
             "Scanning for updates... Done.",
             "System is currently OPTIMAL."
@@ -416,18 +442,20 @@
             const time = new Date().toLocaleTimeString([], {hour12: false});
             const p = document.createElement('p');
             p.style.color = "#4ade80";
-            p.style.marginBottom = "8px";
+            p.style.marginBottom = "10px";
+            p.style.borderRight = "2px solid var(--primary)";
+            p.style.paddingRight = "10px";
             p.innerHTML = `<span style="color: #64748b;">[${time}]</span> <span style="color: var(--primary);">#</span> ${logs[logIndex % logs.length]}`;
             terminal.appendChild(p);
             terminal.scrollTop = terminal.scrollHeight;
             logIndex++;
         }
-        setInterval(addLog, 2500);
+        setInterval(addLog, 2800);
         addLog();
 
         window.addEventListener('resize', () => {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
         });
     </script>
 </body>
