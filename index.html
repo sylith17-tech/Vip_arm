@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kernel-0x0 | VIP_ARM OS</title>
-    
+
     <!-- Assets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
@@ -23,7 +23,7 @@
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        
+
         body {
             background-color: var(--bg-dark);
             color: var(--text-main);
@@ -86,6 +86,23 @@
             background: rgba(0, 242, 255, 0.1);
             color: var(--primary);
             box-shadow: inset 0 0 10px rgba(0, 242, 255, 0.1);
+        }
+
+        /* Developer Identity Card */
+        .dev-identity {
+            background: rgba(0, 0, 0, 0.3);
+            margin: 15px;
+            padding: 15px;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+        }
+        
+        .dev-badge {
+            font-size: 0.65rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: 'JetBrains Mono';
         }
 
         /* Main Content Area */
@@ -184,6 +201,43 @@
             box-shadow: inset 0 0 20px rgba(0, 242, 255, 0.05);
         }
 
+        /* Contact Section (Dev Info) */
+        .dev-contact-footer {
+            margin-top: 50px;
+            padding: 30px;
+            background: linear-gradient(to right, rgba(0, 242, 255, 0.05), transparent);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .social-links {
+            display: flex;
+            gap: 15px;
+        }
+
+        .social-link {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+            text-decoration: none;
+            transition: var(--transition);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .social-link.fb:hover { background: #1877F2; border-color: #1877F2; transform: rotate(-10deg); }
+        .social-link.tg:hover { background: #0088cc; border-color: #0088cc; transform: rotate(10deg); }
+        .social-link.wa:hover { background: #25D366; border-color: #25D366; transform: scale(1.1); }
+
         /* Responsive Mobile Menu */
         .mobile-nav {
             display: none;
@@ -237,7 +291,7 @@
             <h2 style="margin-top: 10px; letter-spacing: 3px;">KERNEL-0x0</h2>
             <p style="font-size: 0.6rem; color: var(--primary); font-family: 'JetBrains Mono';">VIP_ARM CORE v7.2</p>
         </div>
-        
+
         <nav class="nav-menu">
             <a href="/" class="nav-item active"><i class="fas fa-th-large"></i> الرئيسية</a>
             <a href="/studio" class="nav-item"><i class="fas fa-video"></i> Studio Engine</a>
@@ -246,12 +300,16 @@
             <a href="/forensic" class="nav-item"><i class="fas fa-search-nodes"></i> الجنائي الرقمي</a>
         </nav>
 
-        <div style="padding: 20px; text-align: center;">
-            <div style="display: flex; justify-content: center; gap: 15px; margin-bottom: 15px;">
+        <!-- Improved Developer Sidebar Identity -->
+        <div class="dev-identity">
+            <p class="dev-badge">Lead Developer</p>
+            <h4 style="color: var(--text-main); margin: 5px 0;">VIP_ARM</h4>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
                 <a href="https://t.me/MyVIP_2026_bot" style="color: var(--primary)"><i class="fab fa-telegram-plane"></i></a>
-                <a href="#" style="color: var(--text-dim)"><i class="fab fa-github"></i></a>
+                <a href="https://www.facebook.com/lith.haker" style="color: var(--text-dim)"><i class="fab fa-facebook"></i></a>
+                <a href="https://wa.me/963996273320" style="color: #25D366"><i class="fab fa-whatsapp"></i></a>
             </div>
-            <p style="font-size: 0.5rem; color: #444;">SECURED BY VIP_ARM PROTOCOLS</p>
+            <p style="font-size: 0.45rem; color: #444; margin-top: 10px;">SECURED BY VIP_ARM PROTOCOLS</p>
         </div>
     </aside>
 
@@ -260,9 +318,9 @@
         <div class="dashboard-grid">
             <section class="welcome-card">
                 <span style="color: var(--primary); font-size: 0.8rem; font-weight: bold; letter-spacing: 2px;">SYS_STATUS: OPERATIONAL</span>
-                <h1 style="font-size: 2.5rem; margin: 10px 0;">مرحباً، VIP_ARM</h1>
+                <h1 style="font-size: 2.5rem; margin: 10px 0;">مرحباً بكم في موقعنا، VIP_ARM</h1>
                 <p style="color: var(--text-dim); line-height: 1.8; max-width: 500px;">
-                    تم ربط جميع الوحدات البرمجية بنجاح. بيئة <b>Kernel-0x0</b> جاهزة لتنفيذ مهام المعالجة والفحص السحابي.
+                    تم تحديث الموقع وتحديث جميع أقسامه <b>Kernel-0x0</b> جاهزة لتنفيذ مهام المعالجة والفحص السحابي.
                 </p>
                 <div class="metrics-bar">
                     <div class="metric-item"><i class="fas fa-server"></i> CPU: 12%</div>
@@ -309,6 +367,19 @@
                 </p>
             </div>
         </div>
+
+        <!-- Developer Professional Footer Section -->
+        <section class="dev-contact-footer">
+            <div>
+                <h3 style="color: var(--primary); margin-bottom: 5px;">تواصل مع المطور</h3>
+                <p style="color: var(--text-dim); font-size: 0.85rem;">للدعم الفني والاستفسارات البرمجية الخاصة بـ Kernel-0x0</p>
+            </div>
+            <div class="social-links">
+                <a href="https://www.facebook.com/lith.haker" class="social-link fb"><i class="fab fa-facebook-f"></i></a>
+                <a href="https://t.me/MyVIP_2026_bot" class="social-link tg"><i class="fab fa-telegram-plane"></i></a>
+                <a href="https://wa.me/963996273320" class="social-link wa"><i class="fab fa-whatsapp"></i></a>
+            </div>
+        </section>
     </main>
 
     <!-- Mobile Navigation -->
@@ -354,13 +425,15 @@
             "VIP_ARM Identity Confirmed.",
             "Ready for system deployment.",
             "Monitoring active threads...",
+            "Developer contact protocols: ACTIVE",
             "All modules: OPERATIONAL"
         ];
         let i = 0;
         const term = document.getElementById('terminal');
         const addLog = () => {
             const p = document.createElement('p');
-            p.innerHTML = `<span style="color: var(--primary)">[${new Date().toLocaleTimeString()}]</span> ${logs[i % logs.length]}`;
+            p.style.marginBottom = "5px";
+            p.innerHTML = `<span style="color: var(--primary)">[${new Date().toLocaleTimeString()}]</span> <span style="color: #4ade80">>></span> ${logs[i % logs.length]}`;
             term.appendChild(p);
             term.scrollTop = term.scrollHeight;
             i++;
