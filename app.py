@@ -2,11 +2,12 @@ import os
 import yt_dlp
 import logging
 import uuid
+import requests
 from flask import Flask, render_template, request, jsonify, send_file, after_this_request
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-# التوافق مع MoviePy 2.2.1 - تصحيح الاستيراد للمؤثرات
+# التوافق مع MoviePy 2.x
 from moviepy import VideoFileClip
 from moviepy.video import fx as vfx
 from gtts import gTTS
@@ -21,15 +22,16 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
 
+# إعداد المجلدات
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
-STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports') 
-UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads') 
+STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports')
+UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
 
 for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-# وظيفة مساعدة لتنسيق حجم الملفات
+# --- وظائف مساعدة ---
 def format_size(bytes):
     if not bytes: return "--"
     for unit in ['B', 'KB', 'MB', 'GB']:
@@ -44,7 +46,7 @@ def get_ydl_opts(custom_out=None):
         'quiet': True
     }
 
-# --- ميزات المعالجة المتقدمة (AI Core) ---
+# --- ميزات المعالجة المتقدمة (AI & Video Core) ---
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
@@ -53,7 +55,6 @@ def create_shorts(input_path):
         w, h = clip.size
         target_ratio = 9/16
         target_w = h * target_ratio
-        # تصحيح MoviePy 2.x: استخدام fx لتطبيق الـ Crop
         final_clip = clip.fx(vfx.crop, x_center=w/2, width=target_w)
         final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
     return output_path
@@ -64,122 +65,107 @@ def dub_video(input_path, lang='ar'):
     with VideoFileClip(input_path) as video:
         tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
         tts.save(temp_audio)
-        # تصحيح MoviePy 2.x: تغيير set_audio إلى with_audio
         audio_clip = VideoFileClip(temp_audio).audio
         final_video = video.with_audio(audio_clip)
         final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
-# --- إدارة المسارات (Routing Control) ---
+# --- [NEW] ميزة الفحص الأمني المطورة (Scanner Core) ---
+@app.route('/api/scan', methods=['POST'])
+def web_scanner():
+    data = request.json
+    target_url = data.get('url')
+    if not target_url:
+        return jsonify({"error": "Missing Target URL"}), 400
 
+    try:
+        if not target_url.startswith('http'):
+            target_url = 'https://' + target_url
+
+        response = requests.get(target_url, timeout=10, verify=True)
+        headers = response.headers
+        
+        security_headers = [
+            "Content-Security-Policy", "Strict-Transport-Security",
+            "X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection"
+        ]
+
+        results = {h: {"status": "✅ Found" if h in headers else "❌ Missing", "value": headers.get(h, "N/A")} for h in security_headers}
+
+        return jsonify({
+            "target": target_url,
+            "status_code": response.status_code,
+            "server": headers.get("Server", "Hidden"),
+            "security_report": results
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+# --- إدارة المسارات والرفع ---
 @app.route('/')
 def index():
     return render_template('index.html')
 
-# مسار خاص بواجهة الاستوديو
 @app.route('/studio')
 def studio_page():
     return render_template('studio.html')
 
-# --- [FIXED] مسار الرفع المخصص ---
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files.get('image') or request.files.get('file')
-    if not file:
-        return jsonify({"error": "No Payload"}), 400
+    if not file: return jsonify({"error": "No Payload"}), 400
 
     filename = f"VIP_{uuid.uuid4().hex}_{file.filename}"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
-
-    # تصحيح الرابط ليعود بمسار نسبي للمتصفح
-    return jsonify({
-        "status": "success",
-        "url": f"/uploads/{filename}",
-        "filename": filename
-    })
+    return jsonify({"status": "success", "url": f"/uploads/{filename}", "filename": filename})
 
 @app.route('/<page>')
 def serve_pages(page):
-    # حماية المجلدات من التداخل مع المسارات العامة
     if os.path.exists(page) and not page.endswith('.html'):
         return send_file(page)
-    if page.endswith('.html'): return render_template(page)
-    if os.path.exists(f"{page}.html"): return render_template(f"{page}.html")
+    target = page if page.endswith('.html') else f"{page}.html"
+    if os.path.exists(target): return render_template(target)
     return render_template('index.html'), 404
 
 # --- API Endpoints ---
-
 @app.route('/api/download', methods=['POST'])
 @app.route('/api/process', methods=['POST'])
 def unified_handler():
     data = request.json
     url = data.get('url')
     mode = data.get('mode')
-    
-    # تهيئة المسارات لتجنب أخطاء Cleanup
-    raw_path = None
-    final_path = None
+    raw_path = final_path = None
 
-    if not url:
-        return jsonify({"status": "failed", "message": "No URL provided"}), 400
+    if not url: return jsonify({"status": "failed", "message": "No URL provided"}), 400
 
     try:
         if not mode:
-            ydl_opts = {'quiet': True, 'nocheckcertificate': True}
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
                 info = ydl.extract_info(url, download=False)
-                formats = []
-                for f in info.get('formats', [])[-8:]:
-                    if f.get('url'):
-                        formats.append({
-                            "ext": f.get('ext', 'mp4'),
-                            "resolution": f.get('resolution', 'N/A'),
-                            "filesize": format_size(f.get('filesize') or f.get('filesize_approx')),
-                            "url": f.get('url'),
-                            "vcodec": f.get('vcodec', 'none')
-                        })
-                return jsonify({
-                    "status": "success",
-                    "title": info.get('title', 'Media Content'),
-                    "thumbnail": info.get('thumbnail', ''),
-                    "uploader": info.get('uploader', 'VIP_ARM_SOURCE'),
-                    "duration": f"{int(info.get('duration', 0))//60}:{int(info.get('duration', 0))%60:02d}",
-                    "formats": formats[::-1]
-                })
+                formats = [{"ext": f.get('ext'), "resolution": f.get('resolution'), "filesize": format_size(f.get('filesize')), "url": f.get('url')} for f in info.get('formats', [])[-8:] if f.get('url')]
+                return jsonify({"status": "success", "title": info.get('title'), "thumbnail": info.get('thumbnail'), "formats": formats[::-1]})
         else:
             with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
                 info = ydl.extract_info(url, download=True)
                 raw_path = ydl.prepare_filename(info)
-
-            if mode == 'shorts':
-                final_path = create_shorts(raw_path)
-            elif mode == 'dub':
-                final_path = dub_video(raw_path)
-            else:
-                final_path = raw_path
+            
+            final_path = create_shorts(raw_path) if mode == 'shorts' else dub_video(raw_path) if mode == 'dub' else raw_path
 
             @after_this_request
             def cleanup(response):
-                try:
-                    # استخدام set لحذف الملفات دون تكرار
-                    for f in {raw_path, final_path}:
-                        if f and os.path.exists(f): os.remove(f)
-                except Exception as e:
-                    logger.error(f"Cleanup Error: {e}")
+                for f in {raw_path, final_path}:
+                    if f and os.path.exists(f): os.remove(f)
                 return response
-
             return send_file(final_path, as_attachment=True)
-
     except Exception as e:
-        logger.error(f"Kernel Error: {str(e)}")
         return jsonify({"status": "failed", "error": str(e)}), 500
 
 @app.route('/api/exif', methods=['POST'])
 def forensic_core():
-    if 'image' not in request.files: return jsonify({"error": "No Payload"}), 400
-    file = request.files['image']
+    file = request.files.get('image')
+    if not file: return jsonify({"error": "No Image"}), 400
     try:
         img = Image.open(file)
         raw_exif = img._getexif()

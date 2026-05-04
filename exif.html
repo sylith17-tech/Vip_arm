@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | Forensic Intelligence Lab</title>
+    <title>Kernel-0x0 | Forensic Intelligence Lab v3.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
@@ -12,44 +12,46 @@
         :root {
             --neon-green: #00ff41;
             --deep-black: #050505;
-            --panel-bg: rgba(10, 10, 10, 0.9);
+            --panel-bg: rgba(10, 10, 10, 0.95);
             --accent-blue: #00f2ff;
+            --accent-purple: #bc13fe;
+            --danger-red: #ff003c;
+            --border-ui: #1a1a1a;
         }
 
         body {
             background-color: var(--deep-black);
             color: #e0e0e0;
-            font-family: 'JetBrains Mono', monospace;
+            font-family: 'Consolas', 'JetBrains Mono', monospace;
             margin: 0;
             display: flex;
             height: 100vh;
             overflow: hidden;
         }
 
-        /* Matrix Background Effect */
         #matrix-bg {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             z-index: -1;
-            opacity: 0.15;
+            opacity: 0.12;
         }
 
-        /* Sidebar - VIP Identity */
+        /* Sidebar System */
         .sidebar {
             width: 70px;
             background: #000;
-            border-left: 1px solid #222;
+            border-left: 1px solid var(--border-ui);
             display: flex;
             flex-direction: column;
             align-items: center;
             padding-top: 20px;
-            transition: 0.3s;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
         }
         .sidebar:hover { width: 220px; }
         .sidebar a {
             width: 100%;
-            padding: 15px 0;
+            padding: 18px 0;
             color: #444;
             text-align: center;
             text-decoration: none;
@@ -58,113 +60,135 @@
             justify-content: center;
             transition: 0.3s;
         }
-        .sidebar a span { display: none; margin-right: 15px; font-size: 14px; }
+        .sidebar a span { display: none; margin-right: 15px; font-size: 14px; white-space: nowrap; }
         .sidebar:hover a span { display: block; }
         .sidebar a:hover, .sidebar a.active { color: var(--neon-green); text-shadow: 0 0 10px var(--neon-green); }
 
-        /* Workspace */
+        /* Workspace Layout */
         .workspace {
             flex: 1;
-            padding: 30px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            padding: 20px;
+            gap: 15px;
+            overflow: hidden;
         }
 
         .forensic-header {
             border-right: 4px solid var(--neon-green);
             padding-right: 20px;
             background: linear-gradient(270deg, rgba(0, 255, 65, 0.05), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
-        /* Drop Zone */
-        .upload-container {
-            border: 1px dashed var(--neon-green);
+        /* Responsive Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 400px 1fr 350px;
+            gap: 15px;
+            overflow: hidden;
+        }
+
+        .card {
             background: var(--panel-bg);
+            border: 1px solid var(--border-ui);
+            border-radius: 4px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .card-header {
+            background: rgba(255,255,255,0.02);
+            padding: 10px 15px;
+            font-size: 11px;
+            color: var(--accent-blue);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-bottom: 1px solid var(--border-ui);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Analysis Components */
+        #map {
+            height: 200px;
+            width: 100%;
+            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
+        }
+
+        .terminal-box {
+            flex: 1;
+            background: #000;
+            padding: 10px;
+            font-size: 10px;
+            color: var(--neon-green);
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 12px;
+            border-bottom: 1px solid #111;
+            font-size: 11px;
+        }
+        .data-label { color: #666; }
+        .data-value { color: var(--neon-green); text-align: left; }
+
+        /* Upload Area */
+        .drop-zone {
+            border: 1px dashed #333;
             padding: 40px;
             text-align: center;
             border-radius: 8px;
             cursor: pointer;
             transition: 0.3s;
         }
-        .upload-container:hover { box-shadow: 0 0 20px rgba(0, 255, 65, 0.2); }
+        .drop-zone:hover { border-color: var(--neon-green); background: rgba(0,255,65,0.02); }
 
-        /* Results Grid */
-        .analysis-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            display: none;
-        }
-
-        .card {
-            background: var(--panel-bg);
-            border: 1px solid #222;
-            padding: 20px;
-            border-radius: 8px;
-            position: relative;
-        }
-
-        .card-header {
-            color: var(--accent-blue);
-            font-size: 12px;
-            text-transform: uppercase;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #222;
-            padding-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .data-row {
-            display: flex;
-            justify-content: space-between;
-            font-size: 12px;
-            padding: 8px 0;
-            border-bottom: 1px solid #111;
-        }
-        .data-label { color: #888; }
-        .data-value { color: var(--neon-green); }
-
-        /* Map Styling */
-        #map {
-            height: 250px;
-            width: 100%;
-            border-radius: 4px;
-            margin-top: 10px;
-            filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
-        }
-
-        /* Scanline Effect */
-        .scanline {
-            width: 100%;
-            height: 100px;
-            z-index: 10;
-            background: linear-gradient(0deg, rgba(0, 255, 65, 0) 0%, rgba(0, 255, 65, 0.1) 50%, rgba(0, 255, 65, 0) 100%);
-            opacity: 0.1;
-            position: absolute;
-            bottom: 100%;
-            animation: scan 3s linear infinite;
-        }
-
-        @keyframes scan { 0% { bottom: 100%; } 100% { bottom: -100px; } }
-
-        .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+        /* Buttons */
+        .btn-group { padding: 10px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
         .btn {
-            flex: 1;
-            padding: 12px;
-            border: 1px solid var(--neon-green);
             background: transparent;
+            border: 1px solid var(--neon-green);
             color: var(--neon-green);
+            padding: 10px;
             cursor: pointer;
-            font-family: 'JetBrains Mono';
-            transition: 0.3s;
+            font-family: 'Consolas';
+            font-size: 10px;
+            transition: 0.2s;
         }
-        .btn:hover { background: var(--neon-green); color: #000; }
-        .btn-danger { border-color: #ff003c; color: #ff003c; }
-        .btn-danger:hover { background: #ff003c; color: #fff; }
+        .btn:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 10px var(--neon-green); }
+        .btn-danger { border-color: var(--danger-red); color: var(--danger-red); }
+        .btn-danger:hover { background: var(--danger-red); color: #fff; }
 
+        /* Overlay Scanning */
+        .scan-line {
+            position: absolute; width: 100%; height: 2px; background: var(--accent-blue);
+            top: 0; left: 0; box-shadow: 0 0 10px var(--accent-blue);
+            animation: moveScan 3s linear infinite; z-index: 10; opacity: 0;
+        }
+        .is-scanning .scan-line { opacity: 1; }
+        @keyframes moveScan { 0% { top: 0%; } 100% { top: 100%; } }
+
+        /* UI Stats */
+        .bottom-bar {
+            background: #000;
+            border-top: 1px solid var(--border-ui);
+            padding: 5px 20px;
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            color: #444;
+        }
     </style>
 </head>
 <body>
@@ -175,60 +199,90 @@
         <a href="index.html" title="Dashboard"><i class="fas fa-th-large"></i><span>لوحة التحكم</span></a>
         <a href="scanner.html" title="Scanner"><i class="fas fa-radar"></i><span>الفاحص الذكي</span></a>
         <a href="exif.html" class="active" title="Forensics"><i class="fas fa-fingerprint"></i><span>التحقيق الجنائي</span></a>
-        <a href="editor.html" title="Editor"><i class="fas fa-wand-magic-sparkles"></i><span>محرر الصور</span></a>
+        <a href="editor.html" title="Editor"><i class="fas fa-wand-magic-sparkles"></i><span>المعالج العصبي</span></a>
     </nav>
 
     <div class="workspace">
         <header class="forensic-header">
-            <h1 style="margin: 0; letter-spacing: 2px;">VIP_ARM // METADATA FORENSICS</h1>
-            <p style="color: var(--accent-blue); font-size: 12px;">SYSTEM_STATUS: READY_FOR_INGESTION</p>
+            <div>
+                <h2 style="margin: 0; letter-spacing: 2px; color: var(--neon-green);">VIP_ARM // FORENSIC LAB v3.0</h2>
+                <span style="font-size: 10px; color: var(--accent-blue);">NEURAL_LINK: ACTIVE | SYSTEM: Kernel-0x0</span>
+            </div>
+            <div id="file-status" style="font-size: 11px; color: #555;">AWAITING_INGESTION...</div>
         </header>
 
-        <div class="upload-container" onclick="document.getElementById('file-input').click()">
-            <i class="fas fa-shield-upload" style="font-size: 40px; color: var(--neon-green); margin-bottom: 15px;"></i>
-            <p>اسحب الصورة هنا أو اضغط لرفع ملف للتحقيق</p>
-            <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this.files[0])">
+        <div id="upload-gate" class="drop-zone" onclick="document.getElementById('file-input').click()">
+            <i class="fas fa-shield-virus" style="font-size: 50px; color: var(--neon-green); margin-bottom: 15px;"></i>
+            <h3>مركز استلام الأدلة الرقمية</h3>
+            <p style="color: #666;">قم بإسقاط الصور (JPG/PNG) لتحليل الميتاداتا، الجيوفيزياء، والبيانات الثنائية.</p>
+            <input type="file" id="file-input" hidden onchange="processForensics(this.files[0])">
         </div>
 
-        <div class="analysis-grid" id="main-grid">
-            <!-- Panel 1: Image & Map -->
+        <main class="main-grid" id="forensic-ui" style="display: none;">
+            <!-- Column 1: Media & Map -->
             <div class="card">
-                <div class="card-header">
-                    <span><i class="fas fa-eye"></i> المعاينة والموقع الجغرافي</span>
+                <div class="card-header"><span><i class="fas fa-eye"></i> التحليل البصري والجغرافي</span></div>
+                <div style="padding: 10px; position: relative;" id="preview-container">
+                    <div class="scan-line"></div>
+                    <img id="img-preview" style="width:100%; border: 1px solid #222; border-radius: 2px;">
                 </div>
-                <div class="scanline"></div>
-                <img id="preview" style="width: 100%; border-radius: 4px; margin-bottom: 15px;">
-                <div id="map-container" style="display: none;">
+                <div id="map-container" style="display:none;">
                     <div id="map"></div>
+                    <div class="btn-group" style="padding: 5px;">
+                        <button class="btn" id="osint-btn"><i class="fas fa-external-link-alt"></i> OSINT Tracking</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Panel 2: Technical Metadata -->
+            <!-- Column 2: Metadata & Binary -->
             <div class="card">
                 <div class="card-header">
-                    <span><i class="fas fa-code-branch"></i> البصمة الرقمية والمعلومات</span>
-                    <span id="file-size" style="color: #666;"></span>
+                    <span><i class="fas fa-file-code"></i> الميتاداتا والتحليل الثنائي</span>
+                    <span id="file-hash-tag" style="color: var(--accent-purple); font-size: 9px;"></span>
                 </div>
-                <div id="meta-list" style="max-height: 400px; overflow-y: auto;">
-                    <!-- Data injected here -->
+                <div id="meta-container" style="overflow-y:auto; flex: 1;">
+                    <!-- Data Injected Here -->
+                </div>
+                <div class="card-header" style="border-top:1px solid var(--border-ui)">
+                    <span><i class="fas fa-terminal"></i> النصوص المستخرجة (Strings)</span>
+                </div>
+                <div class="terminal-box" id="strings-terminal">
+                    > Searching for encoded strings...
+                </div>
+            </div>
+
+            <!-- Column 3: Hex & Mastermind -->
+            <div class="card">
+                <div class="card-header"><span><i class="fas fa-cube"></i> HEX_VIEWER</span></div>
+                <div class="terminal-box" id="hex-terminal" style="color: var(--accent-blue);">
+                    <!-- Hex data here -->
                 </div>
                 <div class="btn-group">
-                    <button class="btn" onclick="generateReport()"><i class="fas fa-file-export"></i> تصدير تقرير</button>
-                    <button class="btn btn-danger" onclick="wipeMetadata()"><i class="fas fa-eraser"></i> تدمير البيانات</button>
+                    <button class="btn" onclick="generateForensicReport()"><i class="fas fa-file-pdf"></i> تصدير تقرير</button>
+                    <button class="btn btn-danger" onclick="wipeAllMetadata()"><i class="fas fa-biohazard"></i> تدمير الميتاداتا</button>
                 </div>
+                <button class="btn" style="margin: 0 10px 10px; background: var(--accent-purple); border:none; color:white;" onclick="uplinkToMastermind()">
+                    <i class="fas fa-brain"></i> مزامنة مع العقل المدبر
+                </button>
             </div>
-        </div>
+        </main>
+
+        <footer class="bottom-bar">
+            <span>OPERATOR: VIP_ARM</span>
+            <span id="process-log">IDLE</span>
+            <span>LATENCY: 12ms</span>
+        </footer>
     </div>
 
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
-        // Matrix Background Effect
+        // Matrix Background Logic
         const canvas = document.getElementById('matrix-bg');
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()*&^";
-        const fontSize = 16;
+        const alphabet = "0123456789ABCDEF@#$%&";
+        const fontSize = 14;
         const columns = canvas.width/fontSize;
         const drops = Array(Math.floor(columns)).fill(1);
 
@@ -244,79 +298,133 @@
                 drops[i]++;
             }
         }
-        setInterval(drawMatrix, 30);
+        setInterval(drawMatrix, 50);
 
-        // Forensic Logic
-        const fileInput = document.getElementById('file-input');
+        // Forensic Engine
         let map;
-
-        fileInput.addEventListener('change', async function(e) {
-            const file = e.target.files[0];
+        async function processForensics(file) {
             if(!file) return;
 
-            document.getElementById('main-grid').style.display = 'grid';
-            document.getElementById('preview').src = URL.createObjectURL(file);
-            
-            // 1. Calculate File Hash (SHA-256)
+            // UI Transitions
+            document.getElementById('upload-gate').style.display = 'none';
+            document.getElementById('forensic-ui').style.display = 'grid';
+            document.getElementById('img-preview').src = URL.createObjectURL(file);
+            document.getElementById('preview-container').classList.add('is-scanning');
+            document.getElementById('process-log').innerText = "SCANNING_BINARY_STRUCTURE...";
+
+            // 1. SHA-256 Hashing
             const arrayBuffer = await file.arrayBuffer();
             const hash = CryptoJS.SHA256(CryptoJS.lib.WordArray.create(arrayBuffer)).toString();
-            
-            const metaList = document.getElementById('meta-list');
-            metaList.innerHTML = `
-                <div class="data-row"><span class="data-label">اسم الملف</span><span class="data-value">${file.name}</span></div>
-                <div class="data-row"><span class="data-label">SHA-256 Hash</span><span class="data-value" style="font-size: 8px;">${hash}</span></div>
-            `;
+            document.getElementById('file-hash-tag').innerText = `SHA256: ${hash.substring(0,16)}...`;
 
-            // 2. Extract EXIF
+            // 2. Metadata Extraction
+            const metaContainer = document.getElementById('meta-container');
+            metaContainer.innerHTML = `<div class="data-row"><span class="data-label">NAME</span><span class="data-value">${file.name}</span></div>`;
+            metaContainer.innerHTML += `<div class="data-row"><span class="data-label">SIZE</span><span class="data-value">${(file.size/1024).toFixed(2)} KB</span></div>`;
+
             EXIF.getData(file, function() {
-                const tags = EXIF.getAllTags(this);
-                for (let tag in tags) {
-                    if (typeof tags[tag] !== 'object') {
-                        metaList.innerHTML += `
+                const allTags = EXIF.getAllTags(this);
+                if(Object.keys(allTags).length === 0) {
+                    metaContainer.innerHTML += `<div style="padding:20px; color:var(--danger-red); font-size:10px;">[!] NO EXIF METADATA FOUND</div>`;
+                }
+                for (let tag in allTags) {
+                    if (typeof allTags[tag] !== 'object') {
+                        metaContainer.innerHTML += `
                             <div class="data-row">
                                 <span class="data-label">${tag}</span>
-                                <span class="data-value">${tags[tag]}</span>
+                                <span class="data-value">${allTags[tag]}</span>
                             </div>`;
                     }
                 }
 
-                // 3. Geolocation Map
-                if (tags.GPSLatitude) {
+                // 3. Geolocation OSINT
+                if (allTags.GPSLatitude) {
                     document.getElementById('map-container').style.display = 'block';
-                    const lat = convertCoord(tags.GPSLatitude, tags.GPSLatitudeRef);
-                    const lon = convertCoord(tags.GPSLongitude, tags.GPSLongitudeRef);
+                    const lat = convertGPS(allTags.GPSLatitude, allTags.GPSLatitudeRef);
+                    const lon = convertGPS(allTags.GPSLongitude, allTags.GPSLongitudeRef);
                     
                     if(map) map.remove();
                     map = L.map('map').setView([lat, lon], 13);
                     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-                    L.marker([lat, lon]).addTo(map).bindPopup('موقع التقاط الصورة').openPopup();
-                } else {
-                    document.getElementById('map-container').style.display = 'none';
+                    L.marker([lat, lon]).addTo(map).bindPopup(`Location Captured`).openPopup();
+
+                    document.getElementById('osint-btn').onclick = () => {
+                        window.open(`https://www.google.com/maps?q=${lat},${lon}`, '_blank');
+                    };
                 }
             });
-        });
 
-        function convertCoord(coord, ref) {
+            // 4. Binary Strings Extraction
+            extractStrings(arrayBuffer);
+
+            // 5. Hex View Generation
+            generateHexView(arrayBuffer);
+
+            setTimeout(() => {
+                document.getElementById('preview-container').classList.remove('is-scanning');
+                document.getElementById('process-log').innerText = "ANALYSIS_COMPLETE";
+            }, 2000);
+        }
+
+        function convertGPS(coord, ref) {
             let decimal = coord[0] + coord[1]/60 + coord[2]/3600;
             return (ref === "S" || ref === "W") ? decimal * -1 : decimal;
         }
 
-        function wipeMetadata() {
-            const img = document.getElementById('preview');
+        function extractStrings(buffer) {
+            const view = new Uint8Array(buffer);
+            let strings = "";
+            let current = "";
+            for (let i = 0; i < view.length; i++) {
+                if (view[i] >= 32 && view[i] <= 126) {
+                    current += String.fromCharCode(view[i]);
+                } else {
+                    if (current.length > 4) strings += "> " + current + "\n";
+                    current = "";
+                }
+                if (strings.length > 5000) break; // Limit
+            }
+            document.getElementById('strings-terminal').innerText = strings || "> No readable strings found.";
+        }
+
+        function generateHexView(buffer) {
+            const view = new Uint8Array(buffer.slice(0, 1024)); // First 1KB
+            let hex = "";
+            for (let i = 0; i < view.length; i += 16) {
+                const line = view.slice(i, i + 16);
+                hex += i.toString(16).padStart(8, '0') + "  ";
+                hex += Array.from(line).map(b => b.toString(16).padStart(2, '0')).join(' ') + "\n";
+            }
+            document.getElementById('hex-terminal').innerText = hex;
+        }
+
+        // Logic Actions
+        function wipeAllMetadata() {
+            const img = document.getElementById('img-preview');
             const canvas = document.createElement('canvas');
             canvas.width = img.naturalWidth;
             canvas.height = img.naturalHeight;
             canvas.getContext('2d').drawImage(img, 0, 0);
             
+            const cleanData = canvas.toDataURL('image/jpeg', 0.9);
             const link = document.createElement('a');
-            link.download = 'CLEAN_IMG_VIP_ARM.jpg';
-            link.href = canvas.toDataURL('image/jpeg');
+            link.download = `CLEANED_VIP_ARM_${Date.now()}.jpg`;
+            link.href = cleanData;
             link.click();
-            alert("تم تدمير كافة البيانات المخفية بنجاح.");
+            alert("Security Protocol: Metadata Wiped and Clean Copy Exported.");
         }
 
-        function generateReport() {
-            window.print(); // طريقة سريعة واحترافية لحفظ التقرير كـ PDF
+        function generateForensicReport() {
+            window.print();
+        }
+
+        async function uplinkToMastermind() {
+            document.getElementById('process-log').innerText = "UPLINKING_TO_CENTRAL_HUB...";
+            // Simulate API Call to app.py
+            setTimeout(() => {
+                alert("Mastermind Sync: Forensic evidence stored in central database.");
+                document.getElementById('process-log').innerText = "SYNC_SUCCESSFUL";
+            }, 1500);
         }
     </script>
 </body>

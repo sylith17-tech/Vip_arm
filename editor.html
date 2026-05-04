@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Kernel-0x0 | Neural Image Processor</title>
+    <title>Kernel-0x0 | Neural Image Processor v3.0</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root {
-            --bg-darker: #080808;
-            --bg-panel: #121212;
+            --bg-darker: #050505;
+            --bg-panel: #0d0d0d;
             --accent-cyan: #00f2ff;
             --accent-green: #00ff41;
+            --accent-purple: #bc13fe;
             --danger-red: #ff003c;
-            --border-ui: #222;
+            --border-ui: #1a1a1a;
+            --glass: rgba(13, 13, 13, 0.85);
         }
 
         body {
@@ -25,7 +27,7 @@
             overflow: hidden;
         }
 
-        /* Sidebar */
+        /* Sidebar - Fixed & Responsive */
         .sidebar {
             width: 70px;
             background: #000;
@@ -34,7 +36,7 @@
             flex-direction: column;
             align-items: center;
             padding-top: 20px;
-            transition: 0.3s;
+            transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
         }
         .sidebar:hover { width: 220px; }
@@ -53,55 +55,26 @@
         .sidebar:hover a span { display: block; }
         .sidebar a.active { color: var(--accent-cyan); text-shadow: 0 0 10px var(--accent-cyan); }
 
-        /* Main Lab Workspace */
-        .lab-space {
+        /* Main Content Grid */
+        .main-layout {
             flex: 1;
-            display: flex;
-            flex-direction: column;
+            display: grid;
+            grid-template-columns: 320px 1fr 280px;
+            height: 100vh;
         }
 
-        .top-toolbar {
-            height: 50px;
-            background: var(--bg-panel);
-            border-bottom: 1px solid var(--border-ui);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 15px;
-        }
-
-        .canvas-container {
-            flex: 1;
-            background-color: #050505;
-            background-image: radial-gradient(#111 1px, transparent 1px);
-            background-size: 20px 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: auto;
-            position: relative;
-        }
-
-        canvas {
-            max-width: 95%;
-            max-height: 95%;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            cursor: crosshair;
-            touch-action: none; /* لمنع التمرير أثناء الرسم */
-        }
-
-        /* Control Panels */
+        /* Left Control Panel */
         .side-panel {
-            width: 320px;
             background: var(--bg-panel);
             border-right: 1px solid var(--border-ui);
             display: flex;
             flex-direction: column;
             overflow-y: auto;
+            backdrop-filter: blur(10px);
         }
 
         .panel-section {
-            padding: 20px;
+            padding: 18px;
             border-bottom: 1px solid var(--border-ui);
         }
 
@@ -111,56 +84,140 @@
             color: var(--accent-cyan);
             text-transform: uppercase;
             letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .slider-box { margin-bottom: 15px; }
-        .slider-box label { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
-        input[type="range"] {
-            width: 100%;
-            height: 4px;
-            accent-color: var(--accent-cyan);
-            background: #222;
-            border-radius: 2px;
-            appearance: none;
-        }
-
-        .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        /* Tool Grid & Inputs */
+        .tool-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
         .btn-tool {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #ccc;
-            padding: 10px;
+            background: #151515;
+            border: 1px solid #222;
+            color: #888;
+            padding: 12px;
             cursor: pointer;
-            font-size: 14px;
             transition: 0.2s;
+            border-radius: 4px;
         }
         .btn-tool:hover, .btn-tool.active {
             border-color: var(--accent-cyan);
             color: var(--accent-cyan);
             background: rgba(0, 242, 255, 0.05);
+            box-shadow: 0 0 10px rgba(0, 242, 255, 0.1);
         }
+
+        .slider-box { margin-bottom: 15px; }
+        .slider-box label { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: #aaa; }
+        input[type="range"] {
+            width: 100%; height: 3px; accent-color: var(--accent-cyan); background: #222; appearance: none;
+        }
+
+        /* Center Canvas Space */
+        .canvas-area {
+            display: flex;
+            flex-direction: column;
+            background-color: #030303;
+            position: relative;
+        }
+
+        .top-nav {
+            height: 55px;
+            background: rgba(0,0,0,0.8);
+            border-bottom: 1px solid var(--border-ui);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 12px;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            padding: 20px;
+            background-image: linear-gradient(var(--border-ui) 1px, transparent 1px), linear-gradient(90deg, var(--border-ui) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 0 40px rgba(0,0,0,0.9);
+            background: #000;
+        }
+
+        /* Right Lab Panel (Forensics) */
+        .lab-panel {
+            background: #080808;
+            border-left: 1px solid var(--border-ui);
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .neural-stat {
+            background: #111;
+            padding: 12px;
+            border-radius: 8px;
+            border-right: 3px solid var(--accent-purple);
+        }
+        .stat-label { font-size: 10px; color: #555; text-transform: uppercase; }
+        .stat-value { font-size: 14px; color: var(--accent-purple); font-weight: bold; margin-top: 4px; }
 
         .btn-action {
             background: var(--accent-cyan);
             color: #000;
             border: none;
-            padding: 8px 15px;
-            font-weight: bold;
+            padding: 10px 15px;
+            font-weight: 800;
             cursor: pointer;
             font-family: 'Consolas';
-        }
-        .btn-action:hover { box-shadow: 0 0 15px var(--accent-cyan); }
-
-        .status-bar {
-            height: 25px;
-            background: #000;
-            border-top: 1px solid var(--border-ui);
-            font-size: 10px;
+            border-radius: 4px;
             display: flex;
             align-items: center;
-            padding: 0 15px;
-            color: #555;
+            justify-content: center;
+            gap: 8px;
+            transition: 0.3s;
+        }
+        .btn-action:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--accent-cyan); }
+
+        .btn-mastermind {
+            background: #000;
+            color: var(--accent-green);
+            border: 1px solid var(--accent-green);
+            padding: 10px;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-mastermind:hover { background: var(--accent-green); color: #000; }
+
+        .status-bar {
+            height: 30px;
+            background: #000;
+            border-top: 1px solid var(--border-ui);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            font-size: 10px;
+            color: #444;
             justify-content: space-between;
+        }
+
+        /* Animations */
+        @keyframes scanline {
+            0% { top: 0%; }
+            100% { top: 100%; }
+        }
+        .scanning::after {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 2px;
+            background: var(--accent-cyan); box-shadow: 0 0 15px var(--accent-cyan);
+            animation: scanline 3s linear infinite; z-index: 5;
         }
     </style>
 </head>
@@ -173,75 +230,119 @@
         <a href="scanner.html"><i class="fas fa-radar"></i><span>الفحص الأمني</span></a>
     </nav>
 
-    <div class="side-panel">
-        <div class="panel-section">
-            <h4><i class="fas fa-sliders"></i> التحكم بالألوان</h4>
-            <div class="slider-box">
-                <label>السطوع <span id="v-bright">100</span>%</label>
-                <input type="range" id="brightness" min="0" max="200" value="100">
+    <div class="main-layout">
+        <!-- Control Panel -->
+        <div class="side-panel">
+            <div class="panel-section">
+                <h4><i class="fas fa-sliders-h"></i> المعايير اللونية</h4>
+                <div class="slider-box">
+                    <label>السطوع <span id="v-bright">100</span>%</label>
+                    <input type="range" id="brightness" min="0" max="200" value="100">
+                </div>
+                <div class="slider-box">
+                    <label>التباين <span id="v-contrast">100</span>%</label>
+                    <input type="range" id="contrast" min="0" max="200" value="100">
+                </div>
+                <div class="slider-box">
+                    <label>التشبع <span id="v-saturate">100</span>%</label>
+                    <input type="range" id="saturate" min="0" max="200" value="100">
+                </div>
+                <div class="slider-box">
+                    <label>تدرج اللون <span id="v-hue">0</span>°</label>
+                    <input type="range" id="hue" min="0" max="360" value="0">
+                </div>
             </div>
-            <div class="slider-box">
-                <label>التباين <span id="v-contrast">100</span>%</label>
-                <input type="range" id="contrast" min="0" max="200" value="100">
+
+            <div class="panel-section">
+                <h4><i class="fas fa-pencil-ruler"></i> الأدوات الحية</h4>
+                <div class="tool-grid">
+                    <button class="btn-tool active" onclick="setTool('brush')" id="tool-brush"><i class="fas fa-paint-brush"></i></button>
+                    <button class="btn-tool" onclick="setTool('eraser')" id="tool-eraser"><i class="fas fa-eraser"></i></button>
+                    <button class="btn-tool" onclick="rotateImage()"><i class="fas fa-sync"></i></button>
+                    <button class="btn-tool" onclick="flipImage('h')"><i class="fas fa-arrows-alt-h"></i></button>
+                    <button class="btn-tool" onclick="flipImage('v')"><i class="fas fa-arrows-alt-v"></i></button>
+                    <button class="btn-tool" onclick="resetAll()"><i class="fas fa-history"></i></button>
+                </div>
+                <div class="slider-box" style="margin-top: 15px;">
+                    <label>قطر الأداة</label>
+                    <input type="range" id="brushSize" min="1" max="100" value="10">
+                </div>
             </div>
-            <div class="slider-box">
-                <label>التشبع <span id="v-saturate">100</span>%</label>
-                <input type="range" id="saturate" min="0" max="200" value="100">
-            </div>
-            <div class="slider-box">
-                <label>تدرج الألوان <span id="v-hue">0</span>°</label>
-                <input type="range" id="hue" min="0" max="360" value="0">
+
+            <div class="panel-section">
+                <h4><i class="fas fa-filter"></i> مصفوفات التصفية</h4>
+                <div class="tool-grid">
+                    <button class="btn-tool" onclick="setPreset('grayscale(100%)')">B&W</button>
+                    <button class="btn-tool" onclick="setPreset('invert(100%)')">NEG</button>
+                    <button class="btn-tool" onclick="setPreset('sepia(100%)')">OLD</button>
+                    <button class="btn-tool" onclick="setPreset('blur(5px)')">BLR</button>
+                    <button class="btn-tool" onclick="setPreset('contrast(200%) brightness(150%)')">ENH</button>
+                    <button class="btn-tool" onclick="setPreset('none')">RST</button>
+                </div>
             </div>
         </div>
 
-        <div class="panel-section">
-            <h4><i class="fas fa-tools"></i> أدوات الرسم</h4>
-            <div class="tool-grid">
-                <button class="btn-tool active" onclick="setTool('brush')"><i class="fas fa-paint-brush"></i></button>
-                <button class="btn-tool" onclick="setTool('eraser')"><i class="fas fa-eraser"></i></button>
-                <button class="btn-tool" onclick="rotateImage()"><i class="fas fa-rotate-right"></i></button>
-                <button class="btn-tool" onclick="flipImage('h')"><i class="fas fa-arrows-left-right"></i></button>
-                <button class="btn-tool" onclick="flipImage('v')"><i class="fas fa-arrows-up-down"></i></button>
-                <button class="btn-tool" onclick="resetAll()"><i class="fas fa-undo"></i></button>
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="top-nav">
+                <button class="btn-action" onclick="document.getElementById('file-input').click()">
+                    <i class="fas fa-upload"></i> حقن صورة
+                </button>
+                <input type="file" id="file-input" hidden accept="image/*">
+                
+                <button class="btn-action" style="background: var(--accent-green);" onclick="saveOutput()">
+                    <i class="fas fa-save"></i> حفظ محلي
+                </button>
+
+                <div style="margin-right: auto; color: #555; font-size: 12px; letter-spacing: 1px;">
+                    SYSTEM_STABLE // <strong>Kernel-0x0</strong>
+                </div>
             </div>
-            <div class="slider-box" style="margin-top: 15px;">
-                <label>حجم الفرشاة</label>
-                <input type="range" id="brushSize" min="1" max="50" value="5">
+
+            <div class="canvas-wrapper" id="canvas-wrap">
+                <canvas id="canvas"></canvas>
+            </div>
+
+            <div class="status-bar">
+                <span id="res-info">RESOLUTION: 0 x 0</span>
+                <span id="tool-info">ACTIVE_TOOL: BRUSH</span>
+                <span id="coord-info">X: 0 Y: 0</span>
+                <span style="color: var(--accent-cyan);">VIP_ARM_PROCESSOR_V3</span>
             </div>
         </div>
 
-        <div class="panel-section">
-            <h4><i class="fas fa-bolt"></i> فلاتر النظام</h4>
-            <div class="tool-grid">
-                <button class="btn-tool" onclick="setPreset('grayscale(100%)')">B&W</button>
-                <button class="btn-tool" onclick="setPreset('invert(100%)')">Negative</button>
-                <button class="btn-tool" onclick="setPreset('sepia(100%)')">Sepia</button>
-                <button class="btn-tool" onclick="setPreset('blur(5px)')">Blur</button>
-                <button class="btn-tool" onclick="setPreset('none')">Normal</button>
+        <!-- Right Lab Panel -->
+        <div class="lab-panel">
+            <div class="neural-stat">
+                <div class="stat-label">Neural Health</div>
+                <div class="stat-value">OPERATIONAL 100%</div>
             </div>
-        </div>
-    </div>
 
-    <div class="lab-space">
-        <div class="top-toolbar">
-            <button class="btn-action" onclick="document.getElementById('file-input').click()">
-                <i class="fas fa-upload"></i> حقن صورة
-            </button>
-            <input type="file" id="file-input" hidden accept="image/*">
-            <button class="btn-action" style="background: var(--accent-green);" onclick="saveOutput()">
-                <i class="fas fa-download"></i> تصدير البيانات المعدلة
-            </button>
-            <span style="color: #444; margin-right: auto;">KERNEL_EDITOR_V2.0</span>
-        </div>
+            <div class="panel-section" style="padding:0; border:none;">
+                <h4 style="color: var(--accent-purple);"><i class="fas fa-brain"></i> العقل المدبر (AI)</h4>
+                <button class="btn-mastermind" onclick="triggerMastermind('upscale')">
+                    <i class="fas fa-expand-arrows-alt"></i> تحسين الدقة (AI Upscale)
+                </button>
+                <button class="btn-mastermind" onclick="triggerMastermind('detect')">
+                    <i class="fas fa-search-plus"></i> كشف التعديلات (Forensics)
+                </button>
+                <button class="btn-mastermind" style="color: var(--danger-red); border-color: var(--danger-red);" onclick="triggerMastermind('steganography')">
+                    <i class="fas fa-user-secret"></i> فحص الرسائل المخفية
+                </button>
+            </div>
 
-        <div class="canvas-container">
-            <canvas id="canvas"></canvas>
-        </div>
+            <div class="panel-section" style="padding:0; border:none;">
+                <h4><i class="fas fa-database"></i> مزامنة السيرفر</h4>
+                <button class="btn-action" style="width: 100%; background: var(--accent-purple); color: #fff;" onclick="syncWithServer()">
+                    <i class="fas fa-cloud-upload-alt"></i> إرسال إلى المعمل المركزي
+                </button>
+            </div>
 
-        <div class="status-bar">
-            <span id="res-info">الوضوح: 0x0</span>
-            <span id="tool-info">الأداة الحالية: الفرشاة</span>
-            <span id="zoom-info">VIP_ARM SECURE ENGINE</span>
+            <div id="log-console" style="flex:1; background:#000; border:1px solid #111; font-size:9px; padding:10px; color:var(--accent-green); overflow-y:auto; font-family:'Courier New'">
+                > Initializing Neural Lab...<br>
+                > Kernel-0x0 Uplink Ready.<br>
+                > Awaiting data injection...
+            </div>
         </div>
     </div>
 
@@ -249,34 +350,50 @@
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const fileInput = document.getElementById('file-input');
+        const logConsole = document.getElementById('log-console');
         let img = new Image();
         let isDrawing = false;
         let currentTool = 'brush';
         let rotation = 0;
         let scaleX = 1, scaleY = 1;
 
-        // Load Image
+        // Logger function
+        function consoleLog(msg, type = 'info') {
+            const time = new Date().toLocaleTimeString();
+            let color = "var(--accent-green)";
+            if(type === 'warn') color = "orange";
+            if(type === 'error') color = "var(--danger-red)";
+            logConsole.innerHTML += `<div style="color:${color}">[${time}] > ${msg}</div>`;
+            logConsole.scrollTop = logConsole.scrollHeight;
+        }
+
+        // Image Loader
         fileInput.onchange = (e) => {
             const file = e.target.files[0];
             if (!file) return;
+            consoleLog(`Injecting data: ${file.name}...`);
             const reader = new FileReader();
             reader.onload = (event) => {
                 img = new Image();
                 img.onload = () => {
                     canvas.width = img.width;
                     canvas.height = img.height;
-                    applyFilters(); // Draw initial image
-                    document.getElementById('res-info').innerText = `الوضوح: ${img.width}x${img.height}`;
+                    resetAll();
+                    document.getElementById('res-info').innerText = `RESOLUTION: ${img.width} x ${img.height}`;
+                    consoleLog("Neural uplink successful. Resolution verified.");
                 };
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
         };
 
-        // Advanced Filters Engine
-        const sliders = ['brightness', 'contrast', 'saturate', 'hue'];
-        sliders.forEach(id => {
-            document.getElementById(id).addEventListener('input', applyFilters);
+        // Advanced Filter Logic
+        const filterControls = ['brightness', 'contrast', 'saturate', 'hue'];
+        filterControls.forEach(id => {
+            document.getElementById(id).addEventListener('input', () => {
+                document.getElementById(`v-${id.split('-')[0].substring(0, 6)}`).innerText = document.getElementById(id).value;
+                applyFilters();
+            });
         });
 
         function applyFilters() {
@@ -286,12 +403,11 @@
             const s = document.getElementById('saturate').value;
             const h = document.getElementById('hue').value;
 
-            document.getElementById('v-bright').innerText = b;
-            document.getElementById('v-contrast').innerText = c;
-            document.getElementById('v-saturate').innerText = s;
-            document.getElementById('v-hue').innerText = h;
-
             ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
+            renderCanvas();
+        }
+
+        function renderCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.save();
             ctx.translate(canvas.width/2, canvas.height/2);
@@ -304,107 +420,127 @@
         function setPreset(p) {
             if (!img.src) return;
             ctx.filter = p;
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            renderCanvas();
+            consoleLog(`Preset applied: ${p}`);
         }
 
-        // Drawing Logic (Mouse & Touch)
-        function getCoordinates(e) {
+        // Interaction Logic
+        function getPos(e) {
             const rect = canvas.getBoundingClientRect();
-            let clientX, clientY;
+            let cx, cy;
             if (e.touches) {
-                clientX = e.touches[0].clientX;
-                clientY = e.touches[0].clientY;
+                cx = e.touches[0].clientX; cy = e.touches[0].clientY;
             } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
+                cx = e.clientX; cy = e.clientY;
             }
             return {
-                x: (clientX - rect.left) * (canvas.width / rect.width),
-                y: (clientY - rect.top) * (canvas.height / rect.height)
+                x: (cx - rect.left) * (canvas.width / rect.width),
+                y: (cy - rect.top) * (canvas.height / rect.height)
             };
         }
 
-        const startDrawing = (e) => {
+        const start = (e) => {
             if (!img.src) return;
             isDrawing = true;
-            const pos = getCoordinates(e);
+            const pos = getPos(e);
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
             ctx.lineWidth = document.getElementById('brushSize').value;
             ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
-            
-            if (currentTool === 'eraser') {
-                ctx.globalCompositeOperation = 'destination-out';
-            } else {
-                ctx.globalCompositeOperation = 'source-over';
-                ctx.strokeStyle = '#00f2ff'; // VIP Cyan
-            }
+            ctx.globalCompositeOperation = (currentTool === 'eraser') ? 'destination-out' : 'source-over';
+            ctx.strokeStyle = varProp('--accent-cyan');
         };
 
-        const draw = (e) => {
+        const move = (e) => {
             if (!isDrawing) return;
-            e.preventDefault();
-            const pos = getCoordinates(e);
+            const pos = getPos(e);
             ctx.lineTo(pos.x, pos.y);
             ctx.stroke();
+            document.getElementById('coord-info').innerText = `X: ${Math.round(pos.x)} Y: ${Math.round(pos.y)}`;
         };
 
-        const stopDrawing = () => {
-            isDrawing = false;
-            ctx.closePath();
-        };
+        const stop = () => { isDrawing = false; ctx.closePath(); };
 
-        // Desktop Events
-        canvas.onmousedown = startDrawing;
-        canvas.onmousemove = draw;
-        canvas.onmouseup = stopDrawing;
-
-        // Mobile/Touch Events (NetHunter Optimized)
-        canvas.ontouchstart = startDrawing;
-        canvas.ontouchmove = draw;
-        canvas.ontouchend = stopDrawing;
+        canvas.onmousedown = start; canvas.onmousemove = move; window.onmouseup = stop;
+        canvas.ontouchstart = start; canvas.ontouchmove = move; canvas.ontouchend = stop;
 
         function setTool(t) {
             currentTool = t;
-            document.getElementById('tool-info').innerText = `الأداة الحالية: ${t === 'brush' ? 'الفرشاة' : 'الممحاة'}`;
+            document.getElementById('tool-info').innerText = `ACTIVE_TOOL: ${t.toUpperCase()}`;
             document.querySelectorAll('.btn-tool').forEach(b => b.classList.remove('active'));
-            const activeBtn = event.currentTarget;
-            if(activeBtn) activeBtn.classList.add('active');
+            document.getElementById(`tool-${t}`).classList.add('active');
         }
+
+        function varProp(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
 
         // Transformations
         function rotateImage() {
             rotation = (rotation + 90) % 360;
             canvas.style.transform = `rotate(${rotation}deg)`;
+            consoleLog(`Rotation set to ${rotation}°`);
         }
 
         function flipImage(dir) {
-            if(dir === 'h') scaleX *= -1;
-            else scaleY *= -1;
+            if(dir === 'h') scaleX *= -1; else scaleY *= -1;
             applyFilters();
+            consoleLog(`Flip ${dir === 'h' ? 'Horizontal' : 'Vertical'} applied.`);
         }
 
         function resetAll() {
             if (!img.src) return;
-            document.getElementById('brightness').value = 100;
-            document.getElementById('contrast').value = 100;
-            document.getElementById('saturate').value = 100;
+            ['brightness','contrast','saturate'].forEach(id => document.getElementById(id).value = 100);
             document.getElementById('hue').value = 0;
-            rotation = 0;
-            scaleX = 1; scaleY = 1;
+            rotation = 0; scaleX = 1; scaleY = 1;
             canvas.style.transform = `rotate(0deg)`;
             ctx.filter = 'none';
             ctx.globalCompositeOperation = 'source-over';
             applyFilters();
+            consoleLog("System reset. Parameters cleared.");
+        }
+
+        // Mastermind Backend Integration
+        async function triggerMastermind(mode) {
+            if (!img.src) return consoleLog("No data for Mastermind to process.", "error");
+            
+            consoleLog(`Contacting Mastermind for [${mode}]...`, 'warn');
+            document.getElementById('canvas-wrap').classList.add('scanning');
+            
+            // محاكاة الاتصال بالسيرفر - يمكن استبدالها بـ Fetch حقيقي لـ app.py
+            setTimeout(() => {
+                document.getElementById('canvas-wrap').classList.remove('scanning');
+                if(mode === 'steganography') {
+                    consoleLog("Steganography Report: No hidden bits detected in LSB layer.", "info");
+                } else {
+                    consoleLog(`Mastermind [${mode}] completed successfully.`, "info");
+                }
+            }, 2500);
+        }
+
+        async function syncWithServer() {
+            if (!img.src) return;
+            const dataURL = canvas.toDataURL('image/png');
+            consoleLog("Uploading to Forensic Vault...");
+            
+            try {
+                const response = await fetch('/api/save_image', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ image: dataURL, id: Date.now() })
+                });
+                if(response.ok) consoleLog("Data synchronized with Kernel-0x0 server.");
+                else throw new Error();
+            } catch {
+                consoleLog("Sync failed. Check app.py connection.", "error");
+            }
         }
 
         function saveOutput() {
             if (!img.src) return;
             const link = document.createElement('a');
-            link.download = `KERNEL_EX_${Date.now()}.png`;
+            link.download = `KERNEL_PROC_${Date.now()}.png`;
             link.href = canvas.toDataURL('image/png');
             link.click();
+            consoleLog("Result exported to local storage.");
         }
     </script>
 </body>

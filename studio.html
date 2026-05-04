@@ -1,266 +1,407 @@
-<!-- الجزء العلوي للواجهة (CSS مُحسن) -->
-<style>
-    :root {
-        --neon-green: #00ff41;
-        --neon-blue: #00f2ff;
-        --dark-bg: #050505;
-        --panel-bg: rgba(15, 15, 15, 0.9);
-    }
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP_ARM Studio | Kernel-0x0</title>
     
-    body { background: var(--dark-bg); color: #fff; font-family: 'Fira Code', monospace; }
-    
-    /* استايل السلايدرز الجديد */
-    input[type="range"] {
-        -webkit-appearance: none;
-        width: 100%;
-        background: #222;
-        height: 4px;
-        border-radius: 2px;
-        margin: 15px 0;
-    }
-    
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 15px;
-        height: 15px;
-        background: var(--neon-green);
-        box-shadow: 0 0 10px var(--neon-green);
-        cursor: pointer;
-        border-radius: 50%;
-    }
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-    .studio-panel {
-        background: var(--panel-bg);
-        border: 1px solid #333;
-        padding: 20px;
-        border-radius: 8px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.5);
-    }
-
-    .status-bar {
-        background: #000;
-        padding: 5px 15px;
-        border-left: 3px solid var(--neon-green);
-        font-size: 0.8rem;
-        margin-bottom: 20px;
-        display: flex;
-        justify-content: space-between;
-    }
-
-    #mainCanvas {
-        max-width: 100%;
-        height: auto;
-        border: 1px solid #444;
-        display: none;
-        margin: 0 auto;
-    }
-</style>
-
-<!-- واجهة الاستوديو -->
-<div class="studio-panel">
-    <div class="status-bar">
-        <span id="statusMsg">SYSTEM_READY // WAITING_FOR_INPUT</span>
-        <span id="nodeId">NODE: Kernel-0x0</span>
-    </div>
-
-    <!-- منطقة العمل -->
-    <div id="frame" style="border: 2px dashed #333; padding: 40px; text-align: center; cursor: pointer;" onclick="triggerUpload()">
-        <div id="dropPrompt">
-            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: var(--neon-green);"></i>
-            <p>اسحب الصورة هنا أو اضغط لرفعها إلى السيرفر</p>
-        </div>
-        <canvas id="mainCanvas"></canvas>
-    </div>
-
-    <!-- التحكم -->
-    <div class="controls" style="margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-        <div>
-            <label>Brightness</label>
-            <input type="range" id="br" min="0" max="200" value="100">
-            <label>Contrast</label>
-            <input type="range" id="ct" min="0" max="200" value="100">
-        </div>
-        <div>
-            <label>Saturation</label>
-            <input type="range" id="sat" min="0" max="200" value="100">
-            <label>Hue Rotate</label>
-            <input type="range" id="hue" min="0" max="360" value="0">
-        </div>
-    </div>
-
-    <div class="actions" style="display: flex; gap: 10px; margin-top: 20px;">
-        <button onclick="applyMagic('matrix')" class="btn-launch">Matrix Hack</button>
-        <button onclick="applyMagic('cyber')" class="btn-launch">Cyber Frame</button>
-        <button onclick="exportArt()" class="btn-launch" style="background: var(--neon-blue); color: black;">Export PNG</button>
-        <button onclick="resetStudio()" class="btn-launch" style="border-color: #f00; color: #f00;">Reset</button>
-    </div>
-</div>
-
-<input type="file" id="imageLoader" style="display: none;" accept="image/*">
-
-<script>
-    const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d');
-    const loader = document.getElementById('imageLoader');
-    let rawImg = null;
-
-    function closeGuide() { document.getElementById('userGuide').style.display = 'none'; }
-    function triggerUpload() { loader.click(); }
-
-    // معالجة الصورة المرفوعة وإرسالها للسيرفر
-    loader.addEventListener('change', function(e) {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        // الجزء الخاص بالعرض الفوري في المتصفح
-        const reader = new FileReader();
-        reader.onload = function(event) {
-            const img = new Image();
-            img.onload = function() {
-                rawImg = img;
-                initCanvas();
-                document.getElementById('dropPrompt').style.display = 'none';
-                canvas.style.display = 'block';
-                updateStatus('IMAGE_LOADED // SUCCESS');
-            }
-            img.src = event.target.result;
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg-dark: #030712;
+            --glass: rgba(15, 23, 42, 0.8);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --text-main: #e2e8f0;
+            --transition: all 0.3s ease;
         }
-        reader.readAsDataURL(file);
 
-        // الجزء المصلح: إرسال الصورة فعلياً للسيرفر
-        uploadToServer(file);
-    });
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
 
-    async function uploadToServer(file) {
-        const formData = new FormData();
-        // تم استخدام 'image' ليتوافق مع forensic_core و upload_file في app.py
-        formData.append('image', file);
+        /* Header Style */
+        .studio-header {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 15px 40px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
 
-        try {
-            updateStatus('UPLOADING_TO_KERNEL...');
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
-            });
+        .status-pill {
+            background: rgba(0, 242, 255, 0.1);
+            border: 1px solid var(--primary);
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-family: 'JetBrains Mono';
+            color: var(--primary);
+        }
 
-            const result = await response.json();
+        /* Layout Area */
+        .studio-container {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            padding: 20px;
+            flex: 1;
+        }
 
-            if (response.ok) {
-                updateStatus('SYNC_COMPLETED // NODE: Kernel-0x0');
-                console.log("Server Response:", result);
-                // يمكنك تخزين رابط الصورة المرفوعة إذا أردت استخدامها لاحقاً
-                window.lastUploadedFile = result.url;
+        /* Controls Panel */
+        .controls-panel {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 25px;
+            height: fit-content;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+        }
+
+        /* Sliders Style */
+        .control-group { margin-bottom: 20px; }
+        .control-group label { display: block; font-size: 0.8rem; margin-bottom: 8px; color: #94a3b8; }
+        
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            background: #1e293b;
+            border-radius: 2px;
+            appearance: none;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--primary);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Work Area */
+        .work-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .preview-box {
+            background: #000;
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            min-height: 500px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        #mainCanvas { max-width: 100%; max-height: 80vh; display: none; }
+
+        .drop-zone {
+            text-align: center;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+        .drop-zone:hover { transform: scale(1.05); color: var(--primary); }
+
+        /* Action Buttons */
+        .btn-action {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-action:hover {
+            background: var(--primary);
+            color: #000;
+            box-shadow: 0 0 15px var(--primary);
+        }
+        .btn-action.special { border-color: var(--secondary); color: var(--secondary); }
+        .btn-action.special:hover { background: var(--secondary); color: #fff; }
+
+        /* Video Input Section */
+        .url-input {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            padding: 12px;
+            border-radius: 10px;
+            color: var(--primary);
+            width: 100%;
+            margin-bottom: 10px;
+            font-family: 'JetBrains Mono';
+        }
+
+        /* System Terminal */
+        .studio-terminal {
+            background: #000;
+            border-radius: 15px;
+            padding: 15px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            height: 120px;
+            overflow-y: auto;
+            border: 1px solid #1e293b;
+        }
+
+        @media (max-width: 1024px) {
+            .studio-container { grid-template-columns: 1fr; }
+            .controls-panel { order: 2; }
+            .work-area { order: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="studio-header">
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <a href="/" style="color: var(--text-main)"><i class="fas fa-arrow-right"></i></a>
+            <h2 style="font-size: 1.1rem; letter-spacing: 2px;">VIP_ARM STUDIO <span style="font-weight: 300; opacity: 0.5;">v2.0</span></h2>
+        </div>
+        <div class="status-pill" id="statusMsg">KERNEL_0x0: WAITING</div>
+    </header>
+
+    <div class="studio-container">
+        <aside class="controls-panel">
+            <div class="section-title"><i class="fas fa-sliders-h"></i> مختبر الصور (Image Lab)</div>
+            <div class="control-group">
+                <label>السطوع (Brightness)</label>
+                <input type="range" id="br" min="0" max="200" value="100">
+            </div>
+            <div class="control-group">
+                <label>التباين (Contrast)</label>
+                <input type="range" id="ct" min="0" max="200" value="100">
+            </div>
+            <div class="control-group">
+                <label>التشبع (Saturation)</label>
+                <input type="range" id="sat" min="0" max="200" value="100">
+            </div>
+            <div class="control-group" style="margin-bottom: 30px;">
+                <label>تدوير اللون (Hue)</label>
+                <input type="range" id="hue" min="0" max="360" value="0">
+            </div>
+
+            <button onclick="applyMagic('matrix')" class="btn-action">Matrix Overlay</button>
+            <button onclick="applyMagic('cyber')" class="btn-action">Cyber Security Frame</button>
+            <button onclick="exportArt()" class="btn-action" style="background: var(--primary); color: #000;">تصدير الصورة (PNG)</button>
+
+            <div class="section-title" style="margin-top: 30px;"><i class="fas fa-film"></i> محرك الفيديو (Video Engine)</div>
+            <input type="text" id="videoUrl" class="url-input" placeholder="رابط فيديو (YouTube/Social)...">
+            <button onclick="processVideo('shorts')" class="btn-action special"><i class="fas fa-mobile-alt"></i> توليد مقطع Shorts</button>
+            <button onclick="processVideo('dub')" class="btn-action special"><i class="fas fa-microphone-alt"></i> دبلجة AI (عربي)</button>
+            
+            <button onclick="resetStudio()" class="btn-action" style="margin-top: 20px; color: #ff0055; border-color: #ff0055;">تصفير النظام</button>
+        </aside>
+
+        <main class="work-area">
+            <div class="preview-box" id="dropFrame" onclick="triggerUpload()">
+                <div id="dropPrompt" class="drop-zone">
+                    <i class="fas fa-microchip" style="font-size: 4rem; color: var(--primary); margin-bottom: 20px; filter: drop-shadow(0 0 15px var(--primary));"></i>
+                    <h3>اسحب ملفك هنا أو انقر للرفع</h3>
+                    <p style="color: #444; margin-top: 10px; font-size: 0.8rem;">يدعم الصور (PNG, JPG) والفيديوهات (MP4)</p>
+                </div>
+                <canvas id="mainCanvas"></canvas>
+            </div>
+
+            <div class="studio-terminal" id="terminal">
+                <p style="color: var(--primary)">[SYSTEM] Kernel-0x0 Studio Operational.</p>
+                <p style="color: #444;">[INFO] Waiting for user input payload...</p>
+            </div>
+        </main>
+    </div>
+
+    <input type="file" id="imageLoader" style="display: none;" accept="image/*,video/*">
+
+    <script>
+        const canvas = document.getElementById('mainCanvas');
+        const ctx = canvas.getContext('2d');
+        const loader = document.getElementById('imageLoader');
+        let rawImg = null;
+
+        function triggerUpload() { loader.click(); }
+
+        loader.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            if (file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        rawImg = img;
+                        initCanvas();
+                        document.getElementById('dropPrompt').style.display = 'none';
+                        canvas.style.display = 'block';
+                        addLog('IMAGE_LOADED // RESOLUTION: ' + img.width + 'x' + img.height);
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+                uploadToServer(file);
             } else {
-                updateStatus('SYNC_ERROR // CHECK_SERVER_LOGS');
+                addLog('VIDEO_DETECTED // SENDING_TO_UPLOAD_CORE');
+                uploadToServer(file);
             }
-        } catch (err) {
-            updateStatus('OFFLINE_MODE // LOCAL_RENDER');
-            console.error("Upload Error:", err);
+        });
+
+        async function uploadToServer(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            try {
+                updateStatus('SYNCING...');
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                const result = await response.json();
+                if (response.ok) {
+                    addLog('KERNEL_SYNC_SUCCESS // FILE: ' + result.filename);
+                    updateStatus('SYNC_READY');
+                }
+            } catch (err) {
+                addLog('SYNC_FAILED // LOCAL_MODE_ONLY');
+            }
         }
-    }
 
-    function initCanvas() {
-        // الحفاظ على أبعاد الصورة الأصلية مع مراعاة عرض الشاشة
-        const maxWidth = 1200;
-        let scale = 1;
-        if(rawImg.width > maxWidth) scale = maxWidth / rawImg.width;
-        
-        canvas.width = rawImg.width * scale;
-        canvas.height = rawImg.height * scale;
-        draw();
-    }
+        async function processVideo(mode) {
+            const url = document.getElementById('videoUrl').value;
+            if(!url) return alert("يرجى إدخال رابط فيديو أولاً!");
 
-    function draw() {
-        if(!rawImg) return;
-        const b = document.getElementById('br').value;
-        const c = document.getElementById('ct').value;
-        const s = document.getElementById('sat').value;
-        const h = document.getElementById('hue').value;
+            updateStatus('PROCESSING_VIDEO...');
+            addLog(`EXECUTING_AI_MODULE: ${mode.toUpperCase()}...`);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
-        ctx.drawImage(rawImg, 0, 0, canvas.width, canvas.height);
-    }
+            try {
+                const response = await fetch('/api/process', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ url: url, mode: mode })
+                });
 
-    // تطبيق الثيمات الاحترافية
-    async function applyMagic(type) {
-        if(!rawImg) return alert("خطأ: يرجى رفع صورة أولاً!");
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const downloadUrl = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = `VIP_ARM_${mode}_${Date.now()}.mp4`;
+                    document.body.appendChild(a);
+                    a.click();
+                    addLog('PROCESS_COMPLETE // FILE_SENT_TO_CLIENT');
+                    updateStatus('TASK_FINISHED');
+                } else {
+                    addLog('ERROR_IN_AI_ENGINE');
+                }
+            } catch (e) {
+                addLog('CONNECTION_INTERRUPTED');
+            }
+        }
 
-        updateStatus(`CALLING_MODULE: ${type.toUpperCase()}...`);
+        function initCanvas() {
+            const maxWidth = 1000;
+            let scale = rawImg.width > maxWidth ? maxWidth / rawImg.width : 1;
+            canvas.width = rawImg.width * scale;
+            canvas.height = rawImg.height * scale;
+            draw();
+        }
 
-        setTimeout(() => {
+        function draw() {
+            if(!rawImg) return;
+            const b = document.getElementById('br').value;
+            const c = document.getElementById('ct').value;
+            const s = document.getElementById('sat').value;
+            const h = document.getElementById('hue').value;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.filter = `brightness(${b}%) contrast(${c}%) saturate(${s}%) hue-rotate(${h}deg)`;
+            ctx.drawImage(rawImg, 0, 0, canvas.width, canvas.height);
+        }
+
+        function applyMagic(type) {
+            if(!rawImg) return;
+            addLog(`APPLYING_THEME: ${type.toUpperCase()}`);
             if(type === 'matrix') {
-                applyMatrixEffect();
+                ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#00f2ff";
+                ctx.font = `${canvas.width/30}px monospace`;
+                for(let i=0; i<100; i++) ctx.fillText(Math.random() > 0.5 ? "1" : "0", Math.random()*canvas.width, Math.random()*canvas.height);
             } else if(type === 'cyber') {
-                applyCyberOverlay();
+                ctx.strokeStyle = "#00f2ff";
+                ctx.lineWidth = 10;
+                ctx.strokeRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = "#00f2ff";
+                ctx.font = "bold 20px Arial";
+                ctx.fillText(">> VIP_ARM SECURED PAYLOAD", 30, 40);
             }
-            updateStatus(`THEME_${type.toUpperCase()} // APPLIED`);
-        }, 800);
-    }
-
-    function applyMatrixEffect() {
-        ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#00ff41";
-        ctx.font = `${canvas.width/40}px monospace`;
-        for(let i=0; i<80; i++) {
-            const txt = Math.random() > 0.5 ? "1" : "0";
-            ctx.fillText(txt, Math.random()*canvas.width, Math.random()*canvas.height);
         }
-    }
 
-    function applyCyberOverlay() {
-        ctx.strokeStyle = "#00ff41";
-        ctx.lineWidth = 4;
-        ctx.strokeRect(10, 10, canvas.width-20, canvas.height-20);
-        
-        ctx.fillStyle = "rgba(0, 255, 65, 0.1)";
-        ctx.fillRect(0, 0, canvas.width, 40);
-        
-        ctx.fillStyle = "#00ff41";
-        ctx.font = "bold 16px monospace";
-        ctx.fillText(">> VIP_ARM_OPERATIONAL_OVERLAY", 20, 25);
-    }
-
-    function updateStatus(msg) { 
-        document.getElementById('statusMsg').innerText = msg;
-        console.log(`[KERNEL-0x0] ${msg}`);
-    }
-
-    function exportArt() {
-        updateStatus('GENERATING_PNG_PACKAGE...');
-        const link = document.createElement('a');
-        link.download = `VIP_ARM_STUDIO_${Date.now()}.png`;
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        setTimeout(() => updateStatus('EXPORT_SUCCESS'), 1000);
-    }
-
-    // مستمعات الأحداث للسلايدرز
-    document.querySelectorAll('input[type="range"]').forEach(input => {
-        input.addEventListener('input', draw);
-    });
-
-    function resetStudio() { 
-        if(confirm("هل تريد تصفير بيئة العمل؟")) location.reload(); 
-    }
-
-    // منع السلوك الافتراضي للسحب والإفلات
-    const frame = document.getElementById('frame');
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-        frame.addEventListener(eventName, e => {
-            e.preventDefault();
-            e.stopPropagation();
-        }, false);
-    });
-
-    frame.addEventListener('drop', e => {
-        const dt = e.dataTransfer;
-        const files = dt.files;
-        if(files.length > 0) {
-            loader.files = files;
-            const event = new Event('change');
-            loader.dispatchEvent(event);
+        function addLog(msg) {
+            const term = document.getElementById('terminal');
+            const p = document.createElement('p');
+            p.innerHTML = `<span style="color: var(--primary)">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
+            term.appendChild(p);
+            term.scrollTop = term.scrollHeight;
         }
-    });
-</script>
+
+        function updateStatus(msg) { document.getElementById('statusMsg').innerText = `KERNEL_0x0: ${msg}`; }
+
+        function exportArt() {
+            const link = document.createElement('a');
+            link.download = `VIP_ARM_ART_${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+            addLog('ART_EXPORTED_SUCCESSFULLY');
+        }
+
+        document.querySelectorAll('input[type="range"]').forEach(i => i.addEventListener('input', draw));
+
+        function resetStudio() { if(confirm("تصفير البيئة؟")) location.reload(); }
+
+        // Drag and Drop
+        const frame = document.getElementById('dropFrame');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
+            frame.addEventListener(eName, e => { e.preventDefault(); e.stopPropagation(); });
+        });
+        frame.addEventListener('drop', e => {
+            loader.files = e.dataTransfer.files;
+            loader.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
+</html>

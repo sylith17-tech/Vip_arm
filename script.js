@@ -1,172 +1,244 @@
-// ==========================================
-// [KERNEL-0x0] - ADVANCED CENTRAL CONTROL SCRIPT
-// ==========================================
+// ==========================================================
+// [KERNEL-0x0] - MASTER CONTROL MATRIX v4.0
+// IDENTITY: VIP_ARM SYSTEM ENGINE
+// ==========================================================
 
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("VIP_ARM Secure Engine: Initiated");
+const Kernel = {
+    // 1. بروتوكول التشغيل الرئيسي
+    init() {
+        console.log("%c VIP_ARM Secure Engine: Matrix Initiated ", "background: #bc13fe; color: #fff; font-weight: bold;");
+        this.UI.typewriter();
+        this.Studio.init();
+        this.Security.initProtection();
+    },
 
-    // 1. نظام معالجة الصور (Image Injection & Studio Support)
-    // التعديل: دعم كلاً من imageInput (للموقع العام) و imageLoader (للاستوديو)
-    const imageInput = document.getElementById('imageInput') || document.getElementById('imageLoader');
-    const mainCanvas = document.getElementById('mainCanvas');
+    // 2. محرك الاستوديو ومعالجة الصور
+    Studio: {
+        init() {
+            const imageInput = document.getElementById('imageInput') || document.getElementById('imageLoader');
+            const mainCanvas = document.getElementById('mainCanvas');
+            if (!imageInput || !mainCanvas) return;
 
-    if (imageInput && mainCanvas) {
-        const ctx = mainCanvas.getContext('2d');
-        imageInput.addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
+            const ctx = mainCanvas.getContext('2d');
+            imageInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
 
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                const img = new Image();
-                img.onload = () => {
-                    mainCanvas.width = img.width;
-                    mainCanvas.height = img.height;
-                    ctx.drawImage(img, 0, 0);
-                    
-                    // تحديث بيانات الدقة إن وجدت
-                    const resDisplay = document.querySelector('.res-val');
-                    if(resDisplay) resDisplay.innerText = `${img.width}x${img.height}`;
-                    
-                    // إخفاء موجه السحب في الاستوديو إن وجد
-                    const dropPrompt = document.getElementById('dropPrompt');
-                    if(dropPrompt) dropPrompt.style.display = 'none';
-                    mainCanvas.style.display = 'block';
-                    
-                    // تحديث الحالة لبروتوكول VIP_ARM
-                    updateKernelStatus('IMAGE_LOADED // SUCCESS');
+                Kernel.UI.log(`INJECTING_DATA: ${file.name} [${(file.size / 1024).toFixed(2)} KB]`);
+
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        mainCanvas.width = img.width;
+                        mainCanvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+
+                        // تحديث بيانات الدقة
+                        const resDisplay = document.querySelector('.res-val');
+                        if (resDisplay) resDisplay.innerText = `${img.width}x${img.height}`;
+
+                        document.getElementById('dropPrompt')?.style.setProperty('display', 'none');
+                        mainCanvas.style.display = 'block';
+
+                        Kernel.UI.updateStatus('IMAGE_LOADED // SUCCESS');
+                    };
+                    img.src = event.target.result;
                 };
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
 
-            // بروتوكول الرفع التلقائي للسيرفر (Back-end Sync)
-            uploadToKernel(file);
-        });
-    }
-
-    // وظيفة الرفع الخاصة بـ Kernel-0x0
-    async function uploadToKernel(file) {
-        const formData = new FormData();
-        formData.append('image', file); 
-
-        try {
-            updateKernelStatus('UPLOADING_TO_KERNEL...');
-            const response = await fetch('/upload', {
-                method: 'POST',
-                body: formData
+                // المزامنة مع السيرفر
+                this.sync(file);
             });
-            if (response.ok) {
-                updateKernelStatus('SYNC_COMPLETED // NODE: Kernel-0x0');
-            } else {
-                updateKernelStatus('SYNC_ERROR // LOCAL_MODE');
-            }
-        } catch (err) {
-            updateKernelStatus('OFFLINE_MODE // RENDER_ONLY');
-        }
-    }
+        },
 
-    function updateKernelStatus(msg) {
-        const statusMsg = document.getElementById('statusMsg');
-        if(statusMsg) statusMsg.innerText = msg;
-    }
-
-    // 2. محرك التحميل المطور (The Fix for undefined)
-    window.startDownload = async () => {
-        const urlInput = document.getElementById('targetUrl');
-        const btn = document.getElementById('dlBtn');
-        const resultArea = document.getElementById('resultArea');
-
-        if(!urlInput || !urlInput.value) return alert("Target URL Missing!");
-
-        btn.innerText = "BYPASSING...";
-        btn.disabled = true;
-
-        try {
-            const response = await fetch('/api/download', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({url: urlInput.value})
-            });
-
-            const contentType = response.headers.get("content-type");
-
-            if (response.ok && contentType && contentType.includes("application/json")) {
-                const data = await response.json();
-                if(data.status === "success") {
-                    // التعديل: التعامل مع هيكل البيانات المرسل من app.py (data.formats أو data.title)
-                    const videoTitle = document.getElementById('videoTitle');
-                    if(videoTitle) videoTitle.innerText = data.title || "Media Found";
-                    
-                    const dlLink = document.getElementById('dlLink');
-                    if(dlLink && data.formats && data.formats[0]) dlLink.href = data.formats[0].url;
-                    
-                    if(resultArea) resultArea.style.display = 'block';
+        async sync(file) {
+            const formData = new FormData();
+            formData.append('image', file);
+            try {
+                Kernel.UI.updateStatus('UPLOADING_TO_KERNEL...');
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                if (response.ok) {
+                    Kernel.UI.updateStatus('SYNC_COMPLETED // NODE: Kernel-0x0');
+                    Kernel.UI.log("SERVER_SYNC: SUCCESSFUL");
                 } else {
-                    throw new Error(data.error || "Unknown Server Error");
+                    Kernel.UI.updateStatus('SYNC_ERROR // LOCAL_MODE');
                 }
+            } catch (err) {
+                Kernel.UI.updateStatus('OFFLINE_MODE // RENDER_ONLY');
             }
-            else if (response.ok) {
-                const blob = await response.blob();
-                const downloadUrl = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = downloadUrl;
-                a.download = `VIP_ARM_CONTENT_${Date.now()}.mp4`;
-                document.body.appendChild(a);
-                a.click();
-                a.remove();
-                alert("Download Started Successfully!");
-            }
-            else {
-                throw new Error(`HTTP Error: ${response.status}`);
+        }
+    },
+
+    // 3. محرك الاستخراج الذكي (Media Intelligence)
+    Media: {
+        async startExtraction() {
+            const urlInput = document.getElementById('targetUrl');
+            const btn = document.getElementById('extractBtn') || document.getElementById('dlBtn');
+            const results = document.getElementById('results') || document.getElementById('resultArea');
+
+            if (!urlInput || !urlInput.value) {
+                Kernel.UI.log("ERROR: TARGET_URL_NULL", "danger");
+                return alert("Target URL Missing!");
             }
 
-        } catch (err) {
-            console.error("Signal Lost:", err);
-            alert("Security Breach: " + err.message);
-        } finally {
-            if(btn) {
-                btn.innerText = "START RECON";
+            // تحديث واجهة المستخدم لبدء الاستخراج
+            btn.innerText = "BYPASSING...";
+            btn.disabled = true;
+            Kernel.UI.log(`INITIATING_RECON: ${urlInput.value}`);
+
+            try {
+                const response = await fetch('/api/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: urlInput.value })
+                });
+
+                const contentType = response.headers.get("content-type");
+
+                if (response.ok && contentType?.includes("application/json")) {
+                    const data = await response.json();
+                    if (data.status === "success") {
+                        this.renderResults(data, results);
+                        Kernel.UI.log("EXTRACTION_COMPLETE: ASSETS_READY");
+                    } else {
+                        throw new Error(data.error || "Unknown Server Error");
+                    }
+                } else if (response.ok) {
+                    // معالجة التحميل المباشر للملفات (Blob)
+                    const blob = await response.blob();
+                    this.forceDownload(blob);
+                } else {
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+            } catch (err) {
+                Kernel.UI.log(`SECURITY_BREACH: ${err.message}`, "danger");
+                alert("Security Breach: " + err.message);
+            } finally {
+                btn.innerText = "EXTRACT DATA";
                 btn.disabled = false;
             }
-        }
-    };
+        },
 
-    // 3. الماسح الأمني المحسن
-    window.runScan = async () => {
-        const scanInput = document.getElementById('scanTarget');
-        const resDiv = document.getElementById('scanResults');
-        if(!scanInput || !scanInput.value) return;
+        renderResults(data, container) {
+            if (!container) return;
+            container.style.display = 'block';
 
-        resDiv.innerHTML = "<span class='blink'>PROBING TARGET...</span>";
+            // تحديث العناصر إن وجدت (دعم downloader.html)
+            const titleEl = document.getElementById('resTitle') || document.getElementById('videoTitle');
+            const thumbEl = document.getElementById('resThumb');
+            const mainDl = document.getElementById('mainDownloadBtn') || document.getElementById('dlLink');
 
-        try {
-            const response = await fetch('/api/scan', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({url: scanInput.value})
-            });
-            const report = await response.json();
-            resDiv.innerHTML = `<pre class="scan-report">${JSON.stringify(report, null, 2)}</pre>`;
-        } catch (e) {
-            if(resDiv) resDiv.innerHTML = "Scan Failed: Connection Refused";
-        }
-    };
+            if (titleEl) titleEl.innerText = data.title;
+            if (thumbEl) thumbEl.src = data.thumbnail;
 
-    // 4. تأثيرات Typewriter (Kernel Aesthetic)
-    const titles = document.querySelectorAll('.typewriter');
-    titles.forEach(title => {
-        let text = title.innerText;
-        title.innerText = '';
-        let i = 0;
-        (function type() {
-            if (i < text.length) {
-                title.innerText += text.charAt(i++);
-                setTimeout(type, 50);
+            // تحديث قائمة الصيغ (إن وجدت)
+            const list = document.getElementById('formatList');
+            if (list && data.formats) {
+                list.innerHTML = '';
+                data.formats.forEach(f => {
+                    const tr = `<tr>
+                        <td><span class="badge">${f.ext.toUpperCase()}</span></td>
+                        <td>${f.resolution || 'N/A'}</td>
+                        <td>${f.filesize || '--'}</td>
+                        <td><a href="${f.url}" target="_blank" class="dl-icon-btn">GET</a></td>
+                    </tr>`;
+                    list.innerHTML += tr;
+                });
             }
-        }());
-    });
-});
 
-// بروتوكول الحماية
-document.addEventListener('contextmenu', e => e.preventDefault());
+            // تعيين رابط التحميل الرئيسي
+            if (mainDl && data.formats && data.formats[0]) {
+                mainDl.href = data.formats[0].url;
+            }
+        },
+
+        forceDownload(blob) {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `VIP_ARM_CONTENT_${Date.now()}.mp4`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            Kernel.UI.log("DIRECT_STREAM_CAPTURED");
+        }
+    },
+
+    // 4. الماسح الأمني المحسن
+    Security: {
+        async runScan() {
+            const scanInput = document.getElementById('scanTarget');
+            const resDiv = document.getElementById('scanResults');
+            if (!scanInput || !scanInput.value) return;
+
+            Kernel.UI.log(`PROBING_HOST: ${scanInput.value}`);
+            resDiv.innerHTML = "<span class='blink'>PROBING TARGET...</span>";
+
+            try {
+                const response = await fetch('/api/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: scanInput.value })
+                });
+                const report = await response.json();
+                resDiv.innerHTML = `<pre class="scan-report">${JSON.stringify(report, null, 2)}</pre>`;
+                Kernel.UI.log("SCAN_REPORT_GENERATED");
+            } catch (e) {
+                resDiv.innerHTML = "<span style='color:red'>Scan Failed: Connection Refused</span>";
+                Kernel.UI.log("SCAN_ABORTED: HOST_UNREACHABLE", "danger");
+            }
+        },
+
+        initProtection() {
+            document.addEventListener('contextmenu', e => e.preventDefault());
+            window.addEventListener('keydown', e => {
+                if(e.ctrlKey && (e.key === 'u' || e.key === 's')) e.preventDefault();
+            });
+        }
+    },
+
+    // 5. واجهة المستخدم والتأثيرات (Aesthetic Engine)
+    UI: {
+        log(msg, type = "info") {
+            const consoleBox = document.getElementById('consoleFeed');
+            if (consoleBox) {
+                consoleBox.style.display = 'block';
+                consoleBox.innerHTML = `> <span style="color: ${type === 'danger' ? '#ff3e3e' : '#00ff41'}">${msg}</span>`;
+            }
+            console.log(`[KERNEL-LOG]: ${msg}`);
+        },
+
+        updateStatus(msg) {
+            const statusMsg = document.getElementById('statusMsg');
+            if (statusMsg) statusMsg.innerText = msg;
+        },
+
+        typewriter() {
+            document.querySelectorAll('.typewriter').forEach(title => {
+                let text = title.innerText;
+                title.innerText = '';
+                let i = 0;
+                const type = () => {
+                    if (i < text.length) {
+                        title.innerText += text.charAt(i++);
+                        setTimeout(type, 50);
+                    }
+                };
+                type();
+            });
+        }
+    }
+};
+
+// ربط الوظائف بـ Window لضمان عمل أزرار HTML (OnClick)
+window.processExtraction = () => Kernel.Media.startExtraction();
+window.startDownload = () => Kernel.Media.startExtraction(); // دعم التسمية القديمة
+window.runScan = () => Kernel.Security.runScan();
+window.sendToCloud = () => {
+    Kernel.UI.log("UPLINKING TO TELEGRAM BOT...");
+    alert("Mastermind Sync: Uplinking to Telegram via VIP_ARM OS.");
+};
+
+// تشغيل النظام عند التحميل
+document.addEventListener('DOMContentLoaded', () => Kernel.init());
