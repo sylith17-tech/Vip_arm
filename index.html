@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kernel-0x0 | VIP_ARM OS Next-Gen</title>
+    <title>Kernel-0x0 | VIP_ARM OS Evolution</title>
 
     <!-- Assets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -15,14 +15,14 @@
             --secondary: #7000ff;
             --accent: #ff0055;
             --bg-dark: #020617;
-            --panel-bg: rgba(15, 23, 42, 0.7);
-            --border-glow: rgba(0, 242, 255, 0.4);
+            --panel-bg: rgba(15, 23, 42, 0.75);
+            --border-glow: rgba(0, 242, 255, 0.3);
             --text-main: #f1f5f9;
             --text-dim: #94a3b8;
             --transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; cursor: crosshair; }
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
 
         body {
             background-color: var(--bg-dark);
@@ -33,60 +33,57 @@
             justify-content: center;
             align-items: center;
             overflow-x: hidden;
+            perspective: 1200px;
         }
 
-        /* --- Animated Background Shapes --- */
-        .bg-shapes {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1;
-            overflow: hidden;
-        }
-
-        .shape {
-            position: absolute;
-            background: linear-gradient(45deg, var(--primary), var(--secondary));
-            filter: blur(80px);
-            border-radius: 50%;
-            opacity: 0.15;
-            animation: moveShape 20s infinite alternate;
-        }
-
-        @keyframes moveShape {
-            0% { transform: translate(0, 0) scale(1); }
-            100% { transform: translate(100px, 50px) scale(1.5); }
-        }
-
-        #canvas-particles {
+        #matrix-bg {
             position: fixed;
             top: 0; left: 0; z-index: -1;
-            background: radial-gradient(circle at center, #0f172a 0%, #020617 100%);
+            opacity: 0.15;
+            filter: hue-rotate(180deg) blur(1px);
         }
 
-        /* --- Floating Navigation --- */
+        /* --- Ambient Background Glow --- */
+        .ambient-light {
+            position: fixed;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(112, 0, 255, 0.15) 0%, rgba(0, 242, 255, 0) 70%);
+            top: -10%;
+            left: -10%;
+            z-index: -1;
+            animation: moveLight 15s infinite alternate;
+        }
+
+        @keyframes moveLight {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(200px, 100px); }
+        }
+
+        /* --- Modern Floating Navigation --- */
         .nav-capsule {
             position: fixed;
             bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
             background: var(--panel-bg);
-            backdrop-filter: blur(30px);
-            padding: 10px 35px;
-            border-radius: 50px;
+            backdrop-filter: blur(25px);
+            padding: 12px 35px;
+            border-radius: 100px;
             border: 1px solid var(--border-glow);
             display: flex;
             gap: 20px;
             z-index: 2000;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6), inset 0 0 15px var(--border-glow);
         }
 
         .nav-link {
-            width: 55px; height: 55px;
+            width: 50px; height: 50px;
             display: flex; align-items: center; justify-content: center;
             color: var(--text-dim);
             text-decoration: none;
             border-radius: 50%;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             transition: var(--transition);
             position: relative;
         }
@@ -94,343 +91,482 @@
         .nav-link:hover, .nav-link.active {
             color: var(--primary);
             background: rgba(0, 242, 255, 0.15);
-            transform: translateY(-15px);
-            text-shadow: 0 0 10px var(--primary);
+            transform: translateY(-10px) scale(1.15);
+            text-shadow: 0 0 15px var(--primary);
+            box-shadow: 0 5px 15px rgba(0, 242, 255, 0.2);
         }
 
-        /* --- Developer Social Side (Refined) --- */
+        .nav-link::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            top: -55px;
+            background: var(--primary);
+            color: #000;
+            padding: 6px 14px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 900;
+            opacity: 0;
+            pointer-events: none;
+            transition: var(--transition);
+            white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .nav-link:hover::after { opacity: 1; top: -65px; }
+
+        /* --- Developer Side Panel --- */
         .dev-side-panel {
             position: fixed;
             left: 30px;
             top: 50%;
             transform: translateY(-50%);
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
             z-index: 1000;
         }
 
-        .social-container {
+        .dev-social-card {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-glow);
+            padding: 15px;
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
         }
 
         .social-icon {
-            width: 60px; height: 60px;
+            width: 55px; height: 55px;
             display: flex; align-items: center; justify-content: center;
-            border-radius: 50%;
-            color: #fff;
+            border-radius: 18px;
+            color: var(--text-main);
             text-decoration: none;
             font-size: 1.5rem;
             transition: var(--transition);
-            background: var(--panel-bg);
-            border: 1px solid var(--border-glow);
-            backdrop-filter: blur(10px);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
         }
 
-        .social-icon:hover {
-            transform: scale(1.2) rotate(360deg);
-            border-color: var(--primary);
-            box-shadow: 0 0 30px var(--primary);
-        }
-
-        .social-icon.fb:hover { background: #1877F2; }
-        .social-icon.tg:hover { background: #26A5E4; }
-        .social-icon.wa:hover { background: #25D366; }
+        .social-icon.fb:hover { background: #1877F2; transform: scale(1.1) rotate(5deg); box-shadow: 0 0 20px #1877F2; }
+        .social-icon.tg:hover { background: #26A5E4; transform: scale(1.1) rotate(-5deg); box-shadow: 0 0 20px #26A5E4; }
+        .social-icon.wa:hover { background: #25D366; transform: scale(1.1) rotate(5deg); box-shadow: 0 0 20px #25D366; }
 
         /* --- Layout Structure --- */
         .content-container {
-            width: 90%;
-            max-width: 1400px;
+            width: 94%;
+            max-width: 1500px;
+            padding: 40px 0 120px 0;
             display: grid;
             grid-template-columns: 1fr 400px;
             gap: 40px;
-            padding: 40px 0 120px 0;
-            position: relative;
         }
 
         /* --- Hero Section Evolution --- */
         .hero-section {
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 50px;
-            padding: 80px 60px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(15px);
+            background: linear-gradient(135deg, rgba(112, 0, 255, 0.12), rgba(0, 242, 255, 0.08));
+            border-radius: 60px;
+            padding: 90px 70px;
+            border: 1px solid var(--border-glow);
             position: relative;
             overflow: hidden;
-            box-shadow: 20px 20px 50px rgba(0,0,0,0.5);
+            box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+            backdrop-filter: blur(10px);
         }
 
-        .hero-section::after {
-            content: '';
+        .hero-section::before {
+            content: 'KERNEL-0X0';
             position: absolute;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: conic-gradient(transparent, var(--primary), transparent 30%);
-            animation: rotateGlow 8s linear infinite;
-            z-index: -1;
-            opacity: 0.1;
-        }
-
-        @keyframes rotateGlow {
-            100% { transform: rotate(360deg); }
+            bottom: -40px;
+            right: 20px;
+            font-size: 10rem;
+            font-weight: 900;
+            color: var(--primary);
+            opacity: 0.03;
+            pointer-events: none;
+            font-family: 'JetBrains Mono';
         }
 
         .status-pill {
             display: inline-flex;
             align-items: center;
             gap: 12px;
-            background: #000;
-            padding: 10px 25px;
-            border-radius: 30px;
-            border: 1px solid var(--primary);
+            background: rgba(0, 242, 255, 0.1);
+            padding: 12px 28px;
+            border-radius: 100px;
             color: var(--primary);
-            font-family: 'JetBrains Mono';
-            margin-bottom: 30px;
+            font-size: 0.9rem;
+            font-weight: bold;
+            border: 1px solid var(--border-glow);
+            margin-bottom: 35px;
+            letter-spacing: 1px;
         }
 
-        /* --- Modern Tools Grid --- */
+        .pulse-dot {
+            width: 12px; height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 242, 255, 0.7); }
+            100% { box-shadow: 0 0 0 20px rgba(0, 242, 255, 0); }
+        }
+
+        /* --- Tools Grid --- */
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-            margin-top: 40px;
+            gap: 30px;
+            margin-top: 45px;
         }
 
         .neo-card {
             background: var(--panel-bg);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 35px;
-            padding: 40px 30px;
+            border: 1px solid var(--border-glow);
+            border-radius: 40px;
+            padding: 40px;
             transition: var(--transition);
+            position: relative;
             text-align: center;
+            cursor: pointer;
             overflow: hidden;
-            backdrop-filter: blur(10px);
+        }
+
+        .neo-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+            transform: translateX(-100%);
+            transition: 0.6s;
+        }
+
+        .neo-card:hover::before { transform: translateX(100%); }
+
+        .neo-card:hover {
+            transform: translateY(-20px) rotateY(10deg);
+            border-color: var(--primary);
+            box-shadow: 0 25px 50px rgba(0, 242, 255, 0.15);
+            background: rgba(15, 23, 42, 0.9);
         }
 
         .neo-card i {
-            font-size: 3rem;
-            margin-bottom: 20px;
-            color: var(--primary);
-            transition: var(--transition);
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            display: block;
+            background: linear-gradient(to bottom, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 5px 15px rgba(0, 242, 255, 0.3));
         }
 
-        .neo-card:hover {
-            transform: translateY(-15px);
-            border-color: var(--primary);
-            background: rgba(0, 242, 255, 0.05);
-        }
-
-        .neo-card:hover i {
-            transform: scale(1.3) rotate(10deg);
-            filter: drop-shadow(0 0 15px var(--primary));
-        }
-
-        /* --- Dynamic Sidebar --- */
+        /* --- Advanced Sidebar Vitals --- */
         .sidebar-vitals {
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 30px;
         }
 
         .vital-box {
             background: var(--panel-bg);
-            border-radius: 35px;
-            padding: 30px;
-            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 40px;
+            padding: 35px;
+            border: 1px solid var(--border-glow);
             backdrop-filter: blur(20px);
+            position: relative;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 80px; height: 80px;
+            background: linear-gradient(45deg, var(--primary), var(--secondary));
+            border-radius: 25px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 2rem; color: #000;
+            margin-bottom: 15px;
+            box-shadow: 0 10px 20px rgba(0, 242, 255, 0.3);
+            border: 3px solid rgba(255,255,255,0.1);
         }
 
         .terminal-modern {
-            background: #000;
-            border-radius: 20px;
-            padding: 20px;
+            background: #020617;
+            border-radius: 30px;
+            padding: 25px;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 0.8rem;
-            height: 350px;
+            font-size: 0.85rem;
+            height: 420px;
             overflow-y: auto;
-            border: 1px solid #1e293b;
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        .dev-tag {
+            background: linear-gradient(45deg, var(--secondary), var(--accent));
+            padding: 8px 20px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(112, 0, 255, 0.3);
         }
 
         .btn-modern {
             background: linear-gradient(90deg, var(--primary), var(--secondary));
-            color: #fff;
-            padding: 18px 45px;
-            border-radius: 20px;
+            color: #000;
+            padding: 20px 50px;
+            border-radius: 25px;
             text-decoration: none;
             font-weight: 900;
             display: inline-block;
-            margin-top: 30px;
+            margin-top: 35px;
             transition: var(--transition);
-            box-shadow: 0 10px 25px rgba(112, 0, 255, 0.4);
+            box-shadow: 0 15px 30px rgba(0, 242, 255, 0.25);
+            border: none;
+            font-size: 1.1rem;
         }
 
         .btn-modern:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 40px var(--primary);
+            transform: scale(1.08) translateY(-5px);
+            box-shadow: 0 0 50px var(--primary);
+            filter: brightness(1.1);
         }
 
-        /* --- Scrollbar Customization --- */
-        ::-webkit-scrollbar { width: 5px; }
-        ::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 10px; }
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 18px;
+            padding: 12px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 15px;
+            transition: 0.3s;
+            text-decoration: none;
+            color: var(--text-dim);
+        }
 
-        @media (max-width: 1100px) {
-            .content-container { grid-template-columns: 1fr; }
+        .contact-item:hover {
+            background: rgba(0, 242, 255, 0.08);
+            color: var(--primary);
+            transform: translateX(-5px);
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 1300px) {
+            .content-container { grid-template-columns: 1fr; width: 95%; }
             .dev-side-panel { display: none; }
+            .tools-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 768px) {
             .tools-grid { grid-template-columns: 1fr; }
+            .hero-section { padding: 50px 30px; }
+            .hero-section h1 { font-size: 2.5rem !important; }
         }
     </style>
 </head>
 <body>
+    <div class="ambient-light"></div>
+    <canvas id="matrix-bg"></canvas>
 
-    <canvas id="canvas-particles"></canvas>
-    <div class="bg-shapes">
-        <div class="shape" style="width: 400px; height: 400px; top: -10%; left: -10%;"></div>
-        <div class="shape" style="width: 300px; height: 300px; bottom: -5%; right: -5%; animation-delay: -5s;"></div>
-    </div>
-
-    <!-- Dev Social Panel -->
+    <!-- Developer Profile Side Panel -->
     <div class="dev-side-panel">
-        <div class="social-container">
-            <a href="https://www.facebook.com/lith.haker" target="_blank" class="social-icon fb" title="فيسبوك">
+        <div class="dev-social-card">
+            <a href="https://www.facebook.com/lith.haker" target="_blank" class="social-icon fb" title="Facebook">
                 <i class="fab fa-facebook-f"></i>
             </a>
-            <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="social-icon tg" title="تيليجرام">
+            <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="social-icon tg" title="Telegram Bot">
                 <i class="fab fa-telegram-plane"></i>
             </a>
-            <a href="https://wa.me/963996273320" target="_blank" class="social-icon wa" title="واتساب">
+            <a href="https://wa.me/963996273320" target="_blank" class="social-icon wa" title="WhatsApp">
                 <i class="fab fa-whatsapp"></i>
             </a>
         </div>
     </div>
 
-    <!-- Navigation -->
+    <!-- Floating Navigation -->
     <nav class="nav-capsule">
-        <a href="#" class="nav-link active"><i class="fas fa-ghost"></i></a>
-        <a href="#" class="nav-link"><i class="fas fa-layer-group"></i></a>
-        <a href="#" class="nav-link"><i class="fas fa-shield-cat"></i></a>
-        <a href="#" class="nav-link"><i class="fas fa-bolt"></i></a>
+        <a href="/" class="nav-link active" data-tooltip="الرئيسية"><i class="fas fa-home"></i></a>
+        <a href="/studio" class="nav-link" data-tooltip="STUDIO"><i class="fas fa-clapperboard"></i></a>
+        <a href="/downloader" class="nav-link" data-tooltip="التحميل"><i class="fas fa-arrow-down-to-bracket"></i></a>
+        <a href="/scanner" class="nav-link" data-tooltip="SECURITY"><i class="fas fa-fingerprint"></i></a>
+        <a href="/forensic" class="nav-link" data-tooltip="FORENSIC"><i class="fas fa-dna"></i></a>
     </nav>
 
+    <!-- Main Content Container -->
     <div class="content-container">
-        <main>
+        
+        <!-- Center Body -->
+        <div class="main-body">
             <section class="hero-section">
                 <div class="status-pill">
-                    <span style="color: var(--accent)">●</span> SYSTEM: VIP_ARM OS v7.2 | ONLINE
+                    <div class="pulse-dot"></div>
+                    SYSTEM: VIP_ARM OS v7.5 | Kernel-0x0 ULTIMATE ACTIVE
                 </div>
-                <h1 style="font-size: 3.5rem; font-weight: 900; margin-bottom: 20px;">
-                    المعالج السيبراني <br> <span style="color: var(--primary); text-shadow: 0 0 20px rgba(0,242,255,0.5);">Kernel-0x0 Evolution</span>
-                </h1>
-                <p style="color: var(--text-dim); font-size: 1.2rem; line-height: 1.8; max-width: 650px;">
-                    نظام إدارة العمليات الرقمية الأكثر تطوراً. دمج كامل بين الذكاء الاصطناعي وأدوات التحليل الأمني المتقدمة في بيئة عمل واحدة.
+                <h1 style="font-size: 4rem; font-weight: 900; margin-bottom: 25px; line-height: 1.2; background: linear-gradient(to left, #fff, var(--primary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">إعادة تعريف القوة الرقمية</h1>
+                <p style="font-size: 1.25rem; color: var(--text-dim); line-height: 1.8; max-width: 700px;">
+                    أهلاً بك في ذروة التطور لنظام **Kernel-0x0**. بيئة هجينة تدمج بين الذكاء الاصطناعي، الأمن السيبراني، والمعالجة السحابية المتقدمة لتقديم تجربة لا مثيل لها.
                 </p>
-                <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-                    <a href="/studio" class="btn-modern">إطلاق الاستوديو الذكي</a>
-                    <a href="https://t.me/MyVIP_2026_bot" class="btn-modern" style="background: transparent; border: 1px solid var(--primary);">تواصل عبر البوت</a>
+                <div style="display: flex; gap: 25px; align-items: center; flex-wrap: wrap;">
+                    <a href="/studio" class="btn-modern">دخول نظام الاستوديو</a>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-top: 35px; border-right: 3px solid var(--primary); padding-right: 15px;">
+                        <span style="font-family: 'JetBrains Mono'; font-weight: bold; color: var(--primary);">ID: VIP_ARM_RESEARCHER</span>
+                    </div>
                 </div>
             </section>
 
             <div class="tools-grid">
-                <div class="neo-card">
-                    <i class="fas fa-brain"></i>
-                    <h3>AI NEURAL</h3>
-                    <p style="color: var(--text-dim); font-size: 0.9rem;">معالجة لغوية وصورية متقدمة.</p>
+                <!-- Card 1 -->
+                <div class="neo-card" onclick="location.href='/studio'">
+                    <i class="fas fa-wand-magic-sparkles"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">AI Studio Pro</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 15px;">محرك MoviePy المطور لدبلجة وتحرير المحتوى بدقة 4K وتزامن ذكي.</p>
                 </div>
-                <div class="neo-card">
-                    <i class="fas fa-vault"></i>
-                    <h3>ENCRYPTION</h3>
-                    <p style="color: var(--text-dim); font-size: 0.9rem;">تشفير البيانات وحماية الخصوصية.</p>
+                <!-- Card 2 -->
+                <div class="neo-card" onclick="location.href='/scanner'">
+                    <i class="fas fa-shield-halved"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">Security Lab</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 15px;">تحليل استباقي للثغرات، فحص استجابة الخوادم، واختبار اختراق متقدم.</p>
                 </div>
-                <div class="neo-card">
-                    <i class="fas fa-satellite-dish"></i>
-                    <h3>SCANNER</h3>
-                    <p style="color: var(--text-dim); font-size: 0.9rem;">فحص الشبكات والثغرات اللحظي.</p>
+                <!-- Card 3 -->
+                <div class="neo-card" onclick="location.href='/downloader'">
+                    <i class="fas fa-bolt"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">Cloud Downloader</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 15px;">سحب الوسائط والبيانات من كافة المنصات العالمية بأقصى سرعة متاحة.</p>
                 </div>
             </div>
-        </main>
+        </div>
 
+        <!-- Sidebar Section -->
         <aside class="sidebar-vitals">
             <div class="vital-box">
-                <h3 style="margin-bottom: 20px; color: var(--primary); font-size: 0.9rem; letter-spacing: 2px;">ARCHITECT INFO</h3>
-                <div style="line-height: 2.5; font-size: 0.95rem;">
-                    <p><i class="fas fa-user-ninja" style="width: 25px; color: var(--primary);"></i> <strong>المطور:</strong> VIP_ARM</p>
-                    <p><i class="fas fa-microchip" style="width: 25px; color: var(--primary);"></i> <strong>النظام:</strong> Kernel-0x0</p>
-                    <p><i class="fas fa-map-marker-alt" style="width: 25px; color: var(--primary);"></i> <strong>الموقع:</strong> سوريا (SY)</p>
-                    <p><i class="fas fa-phone-alt" style="width: 25px; color: var(--primary);"></i> <strong>واتساب:</strong> 963996273320+</p>
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user-shield"></i>
+                    </div>
+                    <span class="dev-tag">ARCHITECT & RESEARCHER</span>
+                    <h3 style="font-family: 'JetBrains Mono'; color: var(--primary); font-size: 1.8rem; margin-top: 10px;">VIP_ARM</h3>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <a href="https://www.facebook.com/lith.haker" target="_blank" class="contact-item">
+                        <i class="fab fa-facebook" style="width: 20px;"></i>
+                        <span>facebook.com/lith.haker</span>
+                    </a>
+                    <a href="https://t.me/MyVIP_2026_bot" target="_blank" class="contact-item">
+                        <i class="fab fa-telegram" style="width: 20px;"></i>
+                        <span>t.me/MyVIP_2026_bot</span>
+                    </a>
+                    <a href="https://wa.me/963996273320" target="_blank" class="contact-item">
+                        <i class="fab fa-whatsapp" style="width: 20px;"></i>
+                        <span>+963 996 273 320</span>
+                    </a>
+                    <div class="contact-item" style="cursor: default;">
+                        <i class="fas fa-code-commit" style="width: 20px;"></i>
+                        <span>Version 5.3 Stable Build</span>
+                    </div>
                 </div>
             </div>
 
             <div class="vital-box">
-                <div style="display: flex; gap: 5px; margin-bottom: 15px;">
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #ff5f56;"></div>
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #ffbd2e;"></div>
-                    <div style="width: 10px; height: 10px; border-radius: 50%; background: #27c93f;"></div>
+                <h4 style="margin-bottom: 20px; font-size: 0.9rem; color: var(--primary); letter-spacing: 3px; font-weight: 900; display: flex; align-items: center; gap: 10px;">
+                    <i class="fas fa-terminal"></i> LIVE_SYSTEM_LOGS
+                </h4>
+                <div class="terminal-modern" id="terminal">
+                    <!-- Logs injection via JS -->
                 </div>
-                <div class="terminal-modern" id="terminal"></div>
             </div>
+
+            <p style="text-align: center; font-size: 0.7rem; color: #4b5563; letter-spacing: 4px; font-weight: bold; text-transform: uppercase;">
+                Encrypted with VIP_ARM Neural Key &copy; 2026
+            </p>
         </aside>
+
     </div>
 
     <script>
-        // Particles Logic
-        const canvas = document.getElementById('canvas-particles');
+        // Matrix Canvas Animation
+        const canvas = document.getElementById('matrix-bg');
         const ctx = canvas.getContext('2d');
-        let particles = [];
+        let width = canvas.width = window.innerWidth;
+        let height = canvas.height = window.innerHeight;
 
-        function initParticles() {
-            canvas.width = window.innerWidth;
-            canvas.height = window.innerHeight;
-            particles = [];
-            for (let i = 0; i < 80; i++) {
-                particles.push({
-                    x: Math.random() * canvas.width,
-                    y: Math.random() * canvas.height,
-                    size: Math.random() * 2 + 1,
-                    speedX: Math.random() * 1 - 0.5,
-                    speedY: Math.random() * 1 - 0.5
-                });
-            }
-        }
+        const alphabet = "VIPARM01KERNEL0x0セキュリティ";
+        const fontSize = 18;
+        const columns = width / fontSize;
+        const rainDrops = Array.from({ length: columns }).fill(1);
 
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = 'rgba(0, 242, 255, 0.3)';
-            particles.forEach(p => {
-                p.x += p.speedX;
-                p.y += p.speedY;
-                if (p.x < 0 || p.x > canvas.width) p.speedX *= -1;
-                if (p.y < 0 || p.y > canvas.height) p.speedY *= -1;
-                ctx.beginPath();
-                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-                ctx.fill();
+        const draw = () => {
+            ctx.fillStyle = 'rgba(2, 6, 23, 0.08)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#00f2ff';
+            ctx.font = fontSize + 'px monospace';
+
+            rainDrops.forEach((y, i) => {
+                const text = alphabet.charAt(Math.floor(Math.random() * alphabet.length));
+                ctx.fillText(text, i * fontSize, y * fontSize);
+                if (y * fontSize > height && Math.random() > 0.975) rainDrops[i] = 0;
+                rainDrops[i]++;
             });
-            requestAnimationFrame(animateParticles);
-        }
+        };
+        setInterval(draw, 35);
 
-        // Terminal Updates
-        const term = document.getElementById('terminal');
-        const messages = [
-            "Syncing with Kernel-0x0...",
-            "Loading VIP_ARM Security Protocol...",
-            "Accessing Telegram Intelligence API...",
-            "Neural Network: Optimized",
-            "Encryption Key: Validated",
-            "Identity Confirmed: VIP_ARM"
+        // Advanced Terminal Logs
+        const logs = [
+            "Initializing Kernel-0x0 Evolution...",
+            "Handshaking with VIP_ARM secure server...",
+            "Decrypting RSA 4096-bit protocols...",
+            "Loading Neural Engine v7.5 Stable...",
+            "Establishing Secure Tunnel via Port 443...",
+            "Identity: VIP_ARM (Authenticated)",
+            "System Check: 0 Vulnerabilities Found",
+            "WhatsApp Bridge: Active (+963...)",
+            "Module [Studio] Ready for high-res tasks.",
+            "Module [Scanner] Monitoring active targets...",
+            "System is currently in ULTIMATE mode."
         ];
-        let msgIndex = 0;
+        let logIndex = 0;
+        const terminal = document.getElementById('terminal');
 
-        function updateTerminal() {
+        function addLog() {
             const time = new Date().toLocaleTimeString([], {hour12: false});
-            const div = document.createElement('div');
-            div.style.marginBottom = "10px";
-            div.innerHTML = `<span style="color: #444;">[${time}]</span> <span style="color: var(--primary);">$</span> ${messages[msgIndex % messages.length]}`;
-            term.appendChild(div);
-            term.scrollTop = term.scrollHeight;
-            msgIndex++;
+            const p = document.createElement('p');
+            p.style.color = "#4ade80";
+            p.style.marginBottom = "12px";
+            p.style.borderRight = "3px solid var(--primary)";
+            p.style.paddingRight = "12px";
+            p.style.animation = "fadeIn 0.5s ease-out";
+            p.innerHTML = `<span style="color: #64748b;">[${time}]</span> <span style="color: var(--primary);">root@Kernel-0x0:</span> ${logs[logIndex % logs.length]}`;
+            terminal.appendChild(p);
+            terminal.scrollTop = terminal.scrollHeight;
+            logIndex++;
         }
+        setInterval(addLog, 3000);
+        addLog();
 
-        setInterval(updateTerminal, 2500);
-        window.addEventListener('resize', initParticles);
-        initParticles();
-        animateParticles();
+        window.addEventListener('resize', () => {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        });
     </script>
+
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
 </body>
 </html>
