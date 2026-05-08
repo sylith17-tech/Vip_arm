@@ -16,6 +16,7 @@
             --success: #00f2ff;
             --danger: #ff3e3e;
             --panel-border: #1e1b26;
+            --card-bg: rgba(13, 11, 18, 0.95);
         }
 
         body {
@@ -28,7 +29,7 @@
             overflow-x: hidden;
         }
 
-        /* Sidebar System (Enhanced) */
+        /* Sidebar System - Fixed Isolation */
         .sidebar {
             width: 70px;
             background: #000;
@@ -59,7 +60,7 @@
             border-right: 4px solid var(--neon-purple);
         }
 
-        /* Main Canvas */
+        /* Main Engine Canvas */
         .main-engine {
             margin-right: 70px;
             flex: 1;
@@ -69,161 +70,187 @@
         }
 
         .hero { text-align: center; margin-bottom: 40px; }
-        .hero h1 { font-family: 'Share Tech Mono'; letter-spacing: 2px; text-transform: uppercase; margin-top: 10px; }
-        .platform-icons { display: flex; justify-content: center; gap: 20px; margin-top: 15px; color: #334155; font-size: 20px; }
-        .platform-icons i:hover { color: var(--neon-purple); cursor: help; }
+        .hero h1 { font-family: 'Share Tech Mono'; letter-spacing: 2px; text-transform: uppercase; margin-top: 10px; font-size: 2.5rem; color: #fff; }
+        .platform-icons { display: flex; justify-content: center; gap: 20px; margin-top: 20px; color: #475569; font-size: 24px; }
+        .platform-icons i:hover { color: var(--neon-purple); transform: translateY(-5px); transition: 0.3s; }
 
         /* Input Terminal Area */
         .search-container {
-            max-width: 900px;
+            max-width: 850px;
             margin: 0 auto;
             position: relative;
+            background: var(--card-bg);
+            padding: 5px;
+            border-radius: 15px;
+            border: 1px solid var(--panel-border);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
         }
 
         input[type="url"] {
             width: 100%;
-            padding: 22px 25px;
-            background: rgba(0,0,0,0.8);
-            border: 1px solid var(--panel-border);
-            border-radius: 12px;
-            color: #fff;
+            padding: 20px 25px;
+            background: transparent;
+            border: none;
+            color: var(--neon-green);
             font-size: 16px;
             outline: none;
-            transition: 0.3s;
-            padding-left: 150px;
-            font-family: 'Consolas', monospace;
+            padding-left: 160px;
+            font-family: 'Share Tech Mono', monospace;
         }
-        input[type="url"]:focus { border-color: var(--neon-purple); box-shadow: 0 0 25px rgba(188, 19, 254, 0.1); }
 
         .btn-extract {
             position: absolute;
             left: 10px; top: 10px; bottom: 10px;
-            background: linear-gradient(45deg, var(--neon-purple), var(--deep-violet));
+            background: linear-gradient(45deg, var(--neon-purple), #6b21a8);
             color: #fff;
             border: none;
-            padding: 0 25px;
-            border-radius: 8px;
+            padding: 0 30px;
+            border-radius: 10px;
             font-weight: bold;
             cursor: pointer;
             transition: 0.3s;
             text-transform: uppercase;
-            font-size: 12px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(188, 19, 254, 0.3);
         }
-        .btn-extract:hover { transform: scale(1.02); filter: brightness(1.2); }
+        .btn-extract:hover { transform: translateY(-2px); filter: brightness(1.2); box-shadow: 0 6px 20px rgba(188, 19, 254, 0.5); }
+        .btn-extract:disabled { background: #334155; cursor: not-allowed; transform: none; }
 
-        /* Process Logs Console */
+        /* Console Feed */
         .console-feed {
-            max-width: 900px;
-            margin: 15px auto;
+            max-width: 850px;
+            margin: 20px auto;
             background: #000;
-            border: 1px solid #111;
-            border-radius: 6px;
-            padding: 10px 15px;
+            border: 1px solid #1e1b26;
+            border-radius: 8px;
+            padding: 12px 20px;
             font-family: 'Share Tech Mono';
-            font-size: 11px;
+            font-size: 12px;
             color: var(--neon-green);
-            height: 40px;
-            overflow: hidden;
+            min-height: 45px;
             display: none;
+            box-shadow: inset 0 0 10px rgba(0,255,65,0.1);
         }
 
         /* Results Matrix */
         .results-panel {
-            max-width: 950px;
-            margin: 30px auto;
-            background: rgba(10, 10, 10, 0.95);
+            max-width: 900px;
+            margin: 40px auto;
+            background: var(--card-bg);
             border: 1px solid var(--panel-border);
-            border-radius: 16px;
-            padding: 30px;
+            border-radius: 20px;
+            overflow: hidden;
             display: none;
-            animation: fadeIn 0.5s ease-out;
+            animation: slideUp 0.6s cubic-bezier(0.23, 1, 0.32, 1);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
 
         .media-header {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 30px;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #1a1a1a;
+            grid-template-columns: 350px 1fr;
+            gap: 0;
+        }
+
+        .preview-zone {
+            background: #000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .thumb-preview {
             width: 100%;
-            border-radius: 8px;
-            border: 1px solid var(--neon-purple);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 12px;
+            border: 1px solid rgba(188, 19, 254, 0.3);
+            transition: 0.5s;
         }
 
-        /* Video Action Buttons */
+        .info-zone {
+            padding: 40px;
+            border-right: 1px solid var(--panel-border);
+        }
+
+        /* Action Buttons */
         .action-hub {
             display: flex;
-            gap: 12px;
+            gap: 10px;
             margin-top: 20px;
         }
 
-        .btn-primary-dl {
+        .btn-direct-download {
             flex: 1;
-            background: var(--success);
+            background: var(--neon-green);
             color: #000;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: 10px;
             text-align: center;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 800;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             transition: 0.3s;
+            text-transform: uppercase;
         }
-        .btn-primary-dl:hover { box-shadow: 0 0 20px rgba(0, 242, 255, 0.4); }
-
-        .format-table {
-            width: 100%;
-            margin-top: 20px;
-            border-collapse: collapse;
-        }
-        .format-table tr { border-bottom: 1px solid #111; }
-        .format-table td { padding: 15px 10px; font-size: 13px; }
-
-        .badge {
-            padding: 3px 8px;
-            border-radius: 3px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-        .badge-video { background: #2980b9; color: white; }
-        .badge-audio { background: #27ae60; color: white; }
-
-        .dl-icon-btn {
-            background: #111;
-            color: #fff;
-            border: 1px solid #333;
-            padding: 6px 12px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 12px;
-            transition: 0.2s;
-        }
-        .dl-icon-btn:hover { border-color: var(--neon-purple); color: var(--neon-purple); }
+        .btn-direct-download:hover { transform: scale(1.03); box-shadow: 0 0 20px rgba(0, 255, 65, 0.4); }
 
         .cloud-btn {
-            background: #0088cc;
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 4px;
+            width: 55px;
+            background: rgba(0, 136, 204, 0.1);
+            color: #0088cc;
+            border: 1px solid #0088cc;
+            border-radius: 10px;
             cursor: pointer;
+            font-size: 20px;
+            transition: 0.3s;
         }
+        .cloud-btn:hover { background: #0088cc; color: #fff; }
+
+        /* Format Table */
+        .format-table {
+            width: 100%;
+            margin-top: 25px;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+        .format-table tr { background: rgba(255,255,255,0.02); }
+        .format-table td { padding: 12px 15px; font-size: 13px; border-top: 1px solid var(--panel-border); border-bottom: 1px solid var(--panel-border); }
+        .format-table td:first-child { border-radius: 8px 0 0 8px; border-left: 1px solid var(--panel-border); }
+        .format-table td:last-child { border-radius: 0 8px 8px 0; border-right: 1px solid var(--panel-border); }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 5px;
+            font-size: 10px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge-video { background: rgba(0, 242, 255, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .badge-audio { background: rgba(188, 19, 254, 0.1); color: var(--neon-purple); border: 1px solid var(--neon-purple); }
+
+        .dl-icon-btn {
+            background: var(--neon-purple);
+            color: #fff;
+            padding: 6px 15px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+        .dl-icon-btn:hover { filter: brightness(1.3); transform: scale(1.1); }
 
         @media (max-width: 768px) {
-            .main-engine { margin-right: 0; padding: 15px; }
+            .main-engine { margin-right: 0; padding: 20px; }
             .media-header { grid-template-columns: 1fr; }
             .sidebar { display: none; }
-            input[type="url"] { padding-left: 10px; padding-top: 80px; }
-            .btn-extract { width: 90%; left: 5%; top: 10px; height: 50px; }
+            .info-zone { padding: 25px; border-right: none; border-top: 1px solid var(--panel-border); }
+            input[type="url"] { padding-left: 20px; padding-top: 70px; }
+            .btn-extract { width: 94%; left: 3%; top: 10px; height: 50px; }
         }
     </style>
 </head>
@@ -231,40 +258,40 @@
 
     <nav class="sidebar">
         <div style="padding: 30px 0; text-align: center;">
-            <i class="fas fa-robot" style="font-size: 24px; color: var(--neon-purple);"></i>
+            <i class="fas fa-biohazard" style="font-size: 28px; color: var(--neon-purple);"></i>
         </div>
-        <a href="index.html"><i class="fas fa-terminal"></i> <span>DASHBOARD</span></a>
-        <a href="downloader.html" class="active"><i class="fas fa-cloud-arrow-down"></i> <span>MEDIA EXTRACTOR</span></a>
-        <a href="scanner.html"><i class="fas fa-shield-halved"></i> <span>SECURITY AUDIT</span></a>
-        <a href="exif.html"><i class="fas fa-fingerprint"></i> <span>FORENSIC LAB</span></a>
-        <a href="editor.html"><i class="fas fa-microchip"></i> <span>NEURAL EDITOR</span></a>
+        <a href="index.html"><i class="fas fa-columns"></i> <span>DASHBOARD</span></a>
+        <a href="downloader.html" class="active"><i class="fas fa-download"></i> <span>MEDIA EXTRACTOR</span></a>
+        <a href="scanner.html"><i class="fas fa-user-shield"></i> <span>SECURITY AUDIT</span></a>
+        <a href="exif.html"><i class="fas fa-search-plus"></i> <span>FORENSIC LAB</span></a>
+        <a href="editor.html"><i class="fas fa-code"></i> <span>NEURAL EDITOR</span></a>
     </nav>
 
     <main class="main-engine">
         <div class="hero">
-            <i class="fas fa-satellite-dish" style="font-size: 40px; color: var(--neon-purple); filter: drop-shadow(0 0 10px var(--neon-purple));"></i>
-            <h1>Media Intelligence Engine</h1>
-            <p style="color: var(--text-dim);">استخراج وتحليل الوسائط من الشبكات الاجتماعية العميقة</p>
+            <i class="fas fa-bolt" style="font-size: 50px; color: var(--neon-purple); text-shadow: 0 0 20px var(--neon-purple);"></i>
+            <h1>Intelligence Engine</h1>
+            <p style="color: var(--text-dim); margin-top: 10px;">نظام اعتراض وتحليل وسائط التواصل الاجتماعي - Kernel-0x0</p>
             <div class="platform-icons">
                 <i class="fab fa-youtube"></i>
                 <i class="fab fa-tiktok"></i>
                 <i class="fab fa-instagram"></i>
                 <i class="fab fa-facebook"></i>
-                <i class="fab fa-twitter"></i>
-                <i class="fas fa-globe"></i>
+                <i class="fab fa-x-twitter"></i>
+                <i class="fas fa-link"></i>
             </div>
         </div>
 
         <div class="search-container">
-            <input type="url" id="targetUrl" placeholder="ENTER TARGET URL (YT, FB, IG, TT)...">
-            <button class="btn-extract" id="extractBtn" onclick="processExtraction()">Extract Data</button>
+            <input type="url" id="targetUrl" placeholder="PASTE TARGET URL HERE (MP4, YT, IG, FB)...">
+            <button class="btn-extract" id="extractBtn" onclick="processExtraction()">Analyze Link</button>
         </div>
 
         <div id="consoleFeed" class="console-feed"></div>
 
-        <div id="loader" style="display: none; text-align: center; margin: 30px;">
-            <i class="fas fa-atom fa-spin" style="font-size: 40px; color: var(--neon-purple);"></i>
-            <p style="margin-top: 15px; font-family: 'Share Tech Mono'; color: var(--neon-purple);">INITIALIZING BYPASS PROTOCOLS...</p>
+        <div id="loader" style="display: none; text-align: center; margin: 40px;">
+            <i class="fas fa-circle-notch fa-spin" style="font-size: 50px; color: var(--neon-purple);"></i>
+            <p style="margin-top: 20px; font-family: 'Share Tech Mono'; color: var(--neon-purple); letter-spacing: 2px;">INTERCEPTING DATA STREAMS...</p>
         </div>
 
         <div class="results-panel" id="results">
@@ -272,27 +299,28 @@
                 <div class="preview-zone">
                     <img src="" id="resThumb" class="thumb-preview">
                     <div class="action-hub">
-                        <a href="#" id="mainDownloadBtn" class="btn-primary-dl" target="_blank">
-                            <i class="fas fa-download"></i> تحميل الفيديو (HD)
+                        <a href="#" id="mainDownloadBtn" class="btn-direct-download" download>
+                            <i class="fas fa-file-download"></i> تحميل مباشر
                         </a>
-                        <button class="cloud-btn" id="mastermindSync" onclick="sendToCloud()">
+                        <button class="cloud-btn" id="mastermindSync" title="Sync to VIP_ARM OS" onclick="sendToCloud()">
                             <i class="fab fa-telegram-plane"></i>
                         </button>
                     </div>
                 </div>
                 <div class="info-zone">
-                    <h2 id="resTitle" style="margin: 0; font-size: 20px;">اسم المحتوى</h2>
-                    <p id="resAuthor" style="color: var(--neon-purple); font-family: 'Share Tech Mono';">@source_origin</p>
-                    <div style="margin: 20px 0; display: flex; gap: 10px;">
-                        <span id="resDuration" class="badge" style="background: #222;">DURATION: 00:00</span>
-                        <span id="resPlatform" class="badge" style="background: #222;">PLATFORM: DETECTING</span>
-                    </div>
+                    <h2 id="resTitle" style="margin: 0; font-size: 22px; color: #fff;">Video Title</h2>
+                    <p id="resAuthor" style="color: var(--neon-purple); font-family: 'Share Tech Mono'; margin: 10px 0;">SOURCE: UNKNOWN</p>
                     
+                    <div style="margin: 25px 0; display: flex; gap: 12px;">
+                        <span id="resDuration" class="badge" style="background: rgba(255,255,255,0.05); color: #fff;">00:00</span>
+                        <span id="resPlatform" class="badge" style="background: rgba(255,255,255,0.05); color: var(--neon-green);">LIVE FEED</span>
+                    </div>
+
                     <div style="overflow-x: auto;">
                         <table class="format-table">
                             <thead>
-                                <tr style="color: var(--text-dim); font-size: 11px; text-align: right;">
-                                    <th>FORMAT</th>
+                                <tr style="color: var(--text-dim); font-size: 11px; text-align: right; opacity: 0.6;">
+                                    <th>TYPE</th>
                                     <th>QUALITY</th>
                                     <th>SIZE</th>
                                     <th>ACTION</th>
@@ -308,35 +336,36 @@
 
     <script>
         const logs = [
-            "CONNECTING TO PROXY MESH...",
-            "BYPASSING WAF RESTRICTIONS...",
-            "EXTRACTING METADATA STRINGS...",
-            "RESOLVING CDN LINKS...",
-            "DONE: ASSETS READY FOR INGESTION."
+            "ESTABLISHING HANDSHAKE...",
+            "SPOOFING USER-AGENT...",
+            "DECODING STREAM MANIFEST...",
+            "BYPASSING PAYWALLS...",
+            "SUCCESS: DATA EXTRACTED."
         ];
 
         async function processExtraction() {
             const url = document.getElementById('targetUrl').value;
             if(!url) return;
 
-            // Reset UI
+            // UI Reset
             const consoleBox = document.getElementById('consoleFeed');
             consoleBox.style.display = 'block';
+            consoleBox.innerHTML = '';
             document.getElementById('results').style.display = 'none';
             document.getElementById('loader').style.display = 'block';
             const btn = document.getElementById('extractBtn');
             btn.disabled = true;
 
-            // Simulate Terminal Logs
-            let i = 0;
+            // Terminal Emulation
+            let logIndex = 0;
             const logInterval = setInterval(() => {
-                if(i < logs.length) {
-                    consoleBox.innerText = `> ${logs[i]}`;
-                    i++;
+                if(logIndex < logs.length) {
+                    consoleBox.innerHTML = `<span style="color: #666;">[${new Date().toLocaleTimeString()}]</span> > ${logs[logIndex]}`;
+                    logIndex++;
                 } else {
                     clearInterval(logInterval);
                 }
-            }, 400);
+            }, 500);
 
             try {
                 const response = await fetch('/api/download', {
@@ -350,10 +379,10 @@
                 if(data.status === 'success') {
                     displayResults(data);
                 } else {
-                    alert("Extraction Failed: " + data.message);
+                    alert("Analysis Failed: " + data.message);
                 }
             } catch (e) {
-                alert("Mastermind Offline: Ensure app.py is running on port 5000");
+                alert("Critical Error: Connection to Kernel-0x0 Backend Lost.");
             } finally {
                 document.getElementById('loader').style.display = 'none';
                 btn.disabled = false;
@@ -366,38 +395,44 @@
 
             document.getElementById('resTitle').innerText = data.title;
             document.getElementById('resThumb').src = data.thumbnail;
-            document.getElementById('resAuthor').innerText = `ORIGIN: ${data.uploader || 'Unknown'}`;
-            document.getElementById('resDuration').innerText = `DURATION: ${data.duration_string || '--'}`;
+            document.getElementById('resAuthor').innerText = `SOURCE: ${data.uploader || 'External Stream'}`;
+            document.getElementById('resDuration').innerText = data.duration_string || '--:--';
 
-            // Set Primary Download Button (Highest Quality Video)
-            const videoFormats = data.formats.filter(f => f.vcodec !== 'none' && f.ext === 'mp4');
+            // الميزة المطلوبة: ربط أعلى جودة فيديو بزر التحميل المباشر
+            const videoFormats = data.formats.filter(f => f.vcodec !== 'none' && f.ext === 'mp4').sort((a, b) => (b.height || 0) - (a.height || 0));
+            
             if(videoFormats.length > 0) {
-                document.getElementById('mainDownloadBtn').href = videoFormats[0].url;
+                const mainBtn = document.getElementById('mainDownloadBtn');
+                mainBtn.href = videoFormats[0].url;
+                // إجبار التحميل عبر تعديل الخصائص
+                mainBtn.setAttribute('download', `${data.title}.mp4`);
             }
 
             const list = document.getElementById('formatList');
-            list.innerHTML = ''; 
+            list.innerHTML = '';
 
             data.formats.forEach(f => {
-                const tr = document.createElement('tr');
                 const isAudio = f.vcodec === 'none';
-
+                const tr = document.createElement('tr');
+                
                 tr.innerHTML = `
-                    <td><span class="badge ${isAudio ? 'badge-audio' : 'badge-video'}">${f.ext.toUpperCase()}</span></td>
-                    <td style="font-family: 'Share Tech Mono';">${f.resolution || 'HQ_AUDIO'}</td>
-                    <td style="color: var(--text-dim);">${f.filesize_approx || f.filesize || '--'}</td>
+                    <td><span class="badge ${isAudio ? 'badge-audio' : 'badge-video'}">${f.ext}</span></td>
+                    <td style="font-family: 'Share Tech Mono'; color: #fff;">${f.resolution || 'AUDIO'}</td>
+                    <td style="color: var(--text-dim);">${f.filesize_approx || f.filesize || 'Auto'}</td>
                     <td>
-                        <a href="${f.url}" target="_blank" class="dl-icon-btn">GET</a>
+                        <a href="${f.url}" download="${data.title}.${f.ext}" target="_blank" class="dl-icon-btn">GET</a>
                     </td>
                 `;
                 list.appendChild(tr);
             });
+
+            // Smooth Scroll to results
+            panel.scrollIntoView({ behavior: 'smooth' });
         }
 
         function sendToCloud() {
             const url = document.getElementById('targetUrl').value;
-            alert("Uplinking to Telegram Bot... Processing remote download via VIP_ARM OS.");
-            // Your API call to Mastermind for Telegram remote download goes here
+            alert("Uplinking to VIP_ARM OS... Check your Telegram for the file.");
             fetch('/api/telegram_sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
