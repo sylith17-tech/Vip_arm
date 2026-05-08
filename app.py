@@ -40,10 +40,12 @@ def format_size(bytes):
 
 def get_ydl_opts(custom_out=None):
     return {
+        # مدمج: سيبحث عن أفضل فيديو + أفضل صوت ويدمجهما تلقائياً
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'outtmpl': custom_out or os.path.join(DOWNLOAD_FOLDER, 'VIP_ARM_%(id)s.%(ext)s'),
         'nocheckcertificate': True,
-        'quiet': True
+        'quiet': True,
+        'merge_output_format': 'mp4'
     }
 
 # --- ميزات المعالجة المتقدمة (AI & Video Core) ---
@@ -71,19 +73,17 @@ def dub_video(input_path, lang='ar'):
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
-# --- [NEW] ميزة التحميل عبر البروكسي (حل مشكلة الفتح في تبويب جديد) ---
+# --- ميزة التحميل عبر البروكسي ---
 @app.route('/api/proxy_download')
 def proxy_download():
     target_url = request.args.get('url')
     filename = request.args.get('filename', 'VIP_ARM_Capture.mp4')
-    
+
     if not target_url:
         return "Target URL is missing", 400
 
     try:
-        # نقوم بسحب البيانات كـ Stream لتوفير موارد السيرفر
         req = requests.get(target_url, stream=True, timeout=60, verify=False)
-        
         def generate():
             for chunk in req.iter_content(chunk_size=8192):
                 yield chunk
@@ -99,7 +99,7 @@ def proxy_download():
         logger.error(f"Proxy Error: {str(e)}")
         return f"Kernel Error: {str(e)}", 500
 
-# --- ميزة الفحص الأمني المطورة (Scanner Core) ---
+# --- ميزة الفحص الأمني (Scanner Core) ---
 @app.route('/api/scan', methods=['POST'])
 def web_scanner():
     data = request.json
@@ -110,23 +110,11 @@ def web_scanner():
     try:
         if not target_url.startswith('http'):
             target_url = 'https://' + target_url
-
         response = requests.get(target_url, timeout=10, verify=True)
         headers = response.headers
-
-        security_headers = [
-            "Content-Security-Policy", "Strict-Transport-Security",
-            "X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection"
-        ]
-
+        security_headers = ["Content-Security-Policy", "Strict-Transport-Security", "X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection"]
         results = {h: {"status": "✅ Found" if h in headers else "❌ Missing", "value": headers.get(h, "N/A")} for h in security_headers}
-
-        return jsonify({
-            "target": target_url,
-            "status_code": response.status_code,
-            "server": headers.get("Server", "Hidden"),
-            "security_report": results
-        })
+        return jsonify({"target": target_url, "status_code": response.status_code, "server": headers.get("Server", "Hidden"), "security_report": results})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -143,7 +131,6 @@ def studio_page():
 def upload_file():
     file = request.files.get('image') or request.files.get('file')
     if not file: return jsonify({"error": "No Payload"}), 400
-
     filename = f"VIP_{uuid.uuid4().hex}_{file.filename}"
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
@@ -157,47 +144,51 @@ def serve_pages(page):
     if os.path.exists(target): return render_template(target)
     return render_template('index.html'), 404
 
-# --- API Endpoints ---
+# --- API Endpoints (القلب النابض) ---
 @app.route('/api/download', methods=['POST'])
 @app.route('/api/process', methods=['POST'])
 def unified_handler():
     data = request.json
     url = data.get('url')
     mode = data.get('mode')
-    
+
     if not url: return jsonify({"status": "failed", "message": "No URL provided"}), 400
 
     try:
         if not mode:
-            # وضع التحليل السريع (Extraction)
-            with yt_dlp.YoutubeDL({'quiet': True, 'nocheckcertificate': True}) as ydl:
+            # وضع التحليل (Extraction) - التركيز على الروابط التي تحتوي على صوت وفيديو مدمجين
+            ydl_opts_info = {'quiet': True, 'nocheckcertificate': True}
+            with yt_dlp.YoutubeDL(ydl_opts_info) as ydl:
                 info = ydl.extract_info(url, download=False)
-                # استخراج التنسيقات المباشرة
                 formats = []
                 for f in info.get('formats', []):
-                    if f.get('url'):
+                    # الفلتر: يجب أن يتوفر vcodec (فيديو) و acodec (صوت) في نفس التنسيق
+                    if f.get('url') and f.get('vcodec') != 'none' and f.get('acodec') != 'none':
                         formats.append({
                             "ext": f.get('ext'),
                             "resolution": f.get('resolution') or f.get('format_note'),
                             "filesize": format_size(f.get('filesize') or f.get('filesize_approx')),
-                            # نرسل الرابط كـ Proxy لضمان التحميل القسري
                             "url": f.get('url'),
                             "proxy_url": f"/api/proxy_download?url={requests.utils.quote(f.get('url'))}&filename={requests.utils.quote(info.get('title', 'video'))}.{f.get('ext')}"
                         })
-                
+
+                # إذا لم نجد فيديو وصوت مدمجين (مثل جودات 4K)، نضيف خيار "المعالجة الكاملة"
                 return jsonify({
-                    "status": "success", 
-                    "title": info.get('title'), 
-                    "thumbnail": info.get('thumbnail'), 
+                    "status": "success",
+                    "title": info.get('title'),
+                    "thumbnail": info.get('thumbnail'),
                     "uploader": info.get('uploader'),
                     "duration_string": info.get('duration_string'),
-                    "formats": formats[::-1][:15] # إرسال آخر 15 تنسيق (الأعلى جودة غالباً)
+                    "formats": formats[::-1] # عرض الجودة الأعلى في البداية
                 })
         else:
-            # وضع المعالجة (Shorts / Dubbing)
+            # وضع المعالجة (تحميل ودمج حقيقي للصوت والفيديو)
             with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
                 info = ydl.extract_info(url, download=True)
                 raw_path = ydl.prepare_filename(info)
+                # التأكد من الامتداد بعد الدمج (غالباً ما يكون mp4)
+                if not os.path.exists(raw_path):
+                    raw_path = os.path.splitext(raw_path)[0] + ".mp4"
 
             final_path = create_shorts(raw_path) if mode == 'shorts' else dub_video(raw_path) if mode == 'dub' else raw_path
 
@@ -208,9 +199,9 @@ def unified_handler():
                         if f and os.path.exists(f): os.remove(f)
                 except: pass
                 return response
-            
+
             return send_file(final_path, as_attachment=True)
-            
+
     except Exception as e:
         logger.error(f"Unified Handler Error: {str(e)}")
         return jsonify({"status": "failed", "error": str(e)}), 500
@@ -229,5 +220,4 @@ def forensic_core():
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 5000))
-    # تفعيل الـ Threaded للتعامل مع طلبات الـ Stream بفعالية
     app.run(host='0.0.0.0', port=port, threaded=True)
