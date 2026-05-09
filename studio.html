@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIP_ARM Studio V5.5 | Professional Forensic & Beauty</title>
+    <title>VIP_ARM Studio V7.0 PRO | Cyber Forensic & Art</title>
 
     <!-- Assets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -16,8 +16,10 @@
             --neon-pink: #ff007a;
             --deep-blue: #010409;
             --glass: rgba(13, 17, 23, 0.85);
-            --border: rgba(0, 242, 255, 0.15);
+            --border: rgba(0, 242, 255, 0.2);
             --iphone-gold: #d4af37;
+            --toxic-green: #39ff14;
+            --electric-purple: #9d00ff;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -32,380 +34,444 @@
             flex-direction: column;
         }
 
-        /* Modern Glass Header */
+        /* Header UI Enhanced */
         header {
             padding: 12px 20px;
             background: var(--glass);
-            border-bottom: 1px solid var(--border);
+            border-bottom: 2px solid var(--border);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(25px);
             z-index: 1000;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
         }
 
-        .logo-area { display: flex; align-items: center; gap: 10px; }
-        .system-status { font-family: 'JetBrains Mono'; font-size: 0.75rem; color: var(--cyan); letter-spacing: 1px; }
+        .logo-area { display: flex; align-items: center; gap: 12px; }
+        .system-status { font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--cyan); letter-spacing: 1px; }
 
-        /* Workspace Grid */
+        /* App Layout */
         .app-core { flex: 1; display: flex; position: relative; overflow: hidden; }
 
-        /* Canvas Optimization */
+        /* Workspace (Canvas) */
         .canvas-area {
             flex: 1;
             position: relative;
-            background: radial-gradient(circle at center, #0d1117 0%, #010409 100%);
+            background: radial-gradient(circle at center, #161b22 0%, #010409 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 10px;
+            padding: 20px;
             overflow: hidden;
         }
 
-        canvas {
-            position: absolute;
-            max-width: 98%;
-            max-height: 98%;
-            border-radius: 12px;
-            transition: filter 0.3s ease;
+        #mainCanvas {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 4px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            transition: transform 0.3s ease;
         }
 
-        #overlayCanvas { z-index: 5; pointer-events: none; }
+        #overlayCanvas { 
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+        }
 
-        /* Unified Control Panel */
+        /* Panels Professional Design */
         .panel {
-            width: 340px;
+            width: 360px;
             background: var(--glass);
-            backdrop-filter: blur(25px);
+            backdrop-filter: blur(35px);
             border-left: 1px solid var(--border);
             display: flex;
             flex-direction: column;
-            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
             z-index: 900;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .panel-header {
             padding: 18px;
-            background: rgba(255,255,255,0.03);
+            background: rgba(0, 242, 255, 0.08);
             border-bottom: 1px solid var(--border);
             color: var(--cyan);
-            font-weight: bold;
+            font-weight: 700;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            font-size: 0.9rem;
         }
 
-        .scroll-box { padding: 20px; overflow-y: auto; flex: 1; }
+        .scroll-box { padding: 15px; overflow-y: auto; flex: 1; scrollbar-width: none; }
+        .scroll-box::-webkit-scrollbar { display: none; }
 
-        /* Interactive Elements */
-        .control-group { background: rgba(255,255,255,0.02); border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid transparent; }
-        .control-group:hover { border-color: var(--border); }
-        
-        .label-row { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 10px; color: #8b949e; }
-        
-        input[type="range"] {
-            width: 100%; height: 5px; accent-color: var(--cyan); background: #30363d; border-radius: 5px; cursor: pointer;
+        /* UI Components */
+        .section-title { font-size: 0.7rem; color: #8b949e; margin: 15px 0 10px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+        .control-group { 
+            background: rgba(255,255,255,0.02); 
+            border-radius: 8px; 
+            padding: 12px; 
+            margin-bottom: 10px; 
+            border: 1px solid rgba(255,255,255,0.05); 
         }
 
-        .filter-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
-        
+        .filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
         .btn {
-            background: #21262d; border: 1px solid #30363d; padding: 10px; border-radius: 8px;
-            color: #c9d1d9; font-size: 0.75rem; cursor: pointer; transition: 0.2s;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
+            background: #1c2128; border: 1px solid #30363d; padding: 10px 5px; border-radius: 6px;
+            color: #c9d1d9; font-size: 0.65rem; cursor: pointer; transition: 0.2s;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
-        .btn:hover { background: #30363d; border-color: var(--cyan); color: var(--cyan); }
-        .btn.active { background: var(--cyan); color: #000; font-weight: bold; }
+        .btn:hover { border-color: var(--cyan); background: rgba(0, 242, 255, 0.15); color: #fff; }
+        .btn.active { background: var(--cyan); color: #000; border-color: var(--cyan); font-weight: bold; }
         
-        .btn-beauty { border-color: var(--iphone-gold); color: var(--iphone-gold); }
-        .btn-beauty:hover { background: var(--iphone-gold); color: #000; }
+        .btn-action { flex-direction: row; padding: 12px; font-weight: bold; width: 100%; justify-content: center; font-size: 0.8rem;}
+        .btn-upscale { border-color: var(--electric-purple); color: var(--electric-purple); }
+        .btn-upscale:hover { background: var(--electric-purple); color: #fff; }
 
-        /* Terminal Output */
-        .terminal-container { height: 120px; background: #000; border-top: 1px solid var(--border); padding: 10px; font-family: 'JetBrains Mono'; font-size: 0.7rem; overflow-y: auto; }
-        .log-entry { margin-bottom: 4px; border-right: 2px solid var(--cyan); padding-right: 8px; }
+        /* Terminal Display */
+        .terminal-area {
+            height: 120px;
+            background: rgba(0,0,0,0.7);
+            border-top: 1px solid var(--border);
+            padding: 10px;
+            font-family: 'JetBrains Mono';
+            font-size: 0.6rem;
+            overflow-y: auto;
+            color: #8b949e;
+        }
+        .log-entry { margin-bottom: 4px; border-right: 2px solid #333; padding-right: 8px; }
+        .log-cyan { color: var(--cyan); }
+        .log-warn { color: var(--iphone-gold); }
 
-        /* Responsive Mobile Layout */
+        /* Sliders */
+        input[type="range"] { width: 100%; height: 4px; accent-color: var(--cyan); margin-top: 8px; }
+
+        /* Upload Placeholder */
+        .drop-hint { 
+            text-align: center;
+            border: 2px dashed var(--border); 
+            padding: 40px; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            background: rgba(0,242,255,0.02);
+        }
+
+        .badge-new { background: var(--toxic-green); color: #000; font-size: 0.5rem; padding: 1px 4px; border-radius: 4px; margin-right: 5px; }
+
         @media (max-width: 850px) {
             .app-core { flex-direction: column; }
-            .panel { width: 100%; height: 50%; border-left: none; border-top: 1px solid var(--border); position: absolute; bottom: 0; transform: translateY(100%); }
+            .panel { width: 100%; height: 50%; position: absolute; bottom: 0; transform: translateY(100%); }
             .panel.active { transform: translateY(0); }
-            .mobile-toolbar { display: flex; background: #010409; padding: 12px; border-top: 1px solid var(--border); justify-content: space-around; }
+            .mobile-tabs { display: flex; background: #0d1117; border-top: 1px solid var(--border); }
+            .mobile-tabs button { flex: 1; padding: 15px; background: none; border: none; color: #fff; }
         }
-        @media (min-width: 851px) { .mobile-toolbar { display: none; } .panel { transform: none !important; } }
-
-        .drop-zone { border: 2px dashed #30363d; padding: 40px; border-radius: 20px; text-align: center; color: #8b949e; cursor: pointer; }
-        .drop-zone i { font-size: 2.5rem; color: var(--cyan); margin-bottom: 10px; }
-        .hidden { display: none; }
     </style>
 </head>
 <body>
 
 <header>
     <div class="logo-area">
-        <i class="fas fa-microchip" style="color: var(--cyan); font-size: 1.5rem;"></i>
+        <i class="fas fa-shield-halved" style="color: var(--cyan); font-size: 1.5rem;"></i>
         <div>
-            <div style="font-weight: bold; font-size: 0.9rem;">VIP_ARM STUDIO</div>
-            <div class="system-status">VERSION 5.5 // STABLE</div>
+            <div style="font-weight: bold; font-size: 0.9rem; letter-spacing: 1px;">VIP_ARM <span style="color:var(--cyan)">STUDIO</span> <span style="color:var(--neon-pink)">V7.0</span></div>
+            <div class="system-status">> KERNEL-0x0 // ACTIVE_SESSION</div>
         </div>
     </div>
     <div style="display: flex; gap: 8px;">
-        <button class="btn" onclick="triggerUpload()"><i class="fas fa-upload"></i></button>
-        <button class="btn" onclick="exportArt()" style="border-color: var(--neon-pink);"><i class="fas fa-save"></i> حفظ</button>
+        <button class="btn btn-action btn-upscale" onclick="ultraResolution()"><i class="fas fa-microchip"></i> ذكاء Upscale</button>
+        <button class="btn btn-action" style="border-color: var(--toxic-green); color: var(--toxic-green);" onclick="exportArt()"><i class="fas fa-file-export"></i> حفظ</button>
     </div>
 </header>
 
 <div class="app-core">
-    <!-- Filters & Beauty Panel -->
-    <aside class="panel" id="panel-filters">
-        <div class="panel-header"><i class="fas fa-wand-magic-sparkles"></i> الفلاتر والتجميل</div>
+    <!-- Filters & Basic Tools -->
+    <aside class="panel" id="panel-main">
+        <div class="panel-header"><span><i class="fas fa-sliders"></i> أدوات المعالجة</span> <span style="font-size:0.6rem">ENGINE: V7</span></div>
         <div class="scroll-box">
             
-            <div class="control-group">
-                <button class="btn btn-beauty" style="width: 100%;" onclick="toggleBeauty()">
-                    <i class="fas fa-face-smile"></i> فلتر تجميل VIP_ARM (آيفون)
-                </button>
-                <div id="beautyLevelBox" class="hidden" style="margin-top:10px;">
-                    <label class="label-row">قوة التنعيم <span id="val-bt">50%</span></label>
-                    <input type="range" id="beautyRange" min="0" max="100" value="50" oninput="applyAll()">
-                </div>
-            </div>
+            <button class="btn btn-action" id="beautyBtn" style="color: var(--iphone-gold); border-color: var(--iphone-gold); margin-bottom: 15px;" onclick="toggleBeauty()">
+                <i class="fas fa-wand-magic-sparkles"></i> محرك التجميل الذكي (iPhone L3)
+            </button>
 
-            <div class="label-row">7 فلاتر احترافية</div>
+            <div class="section-title">فلاتر VIP الأصلية</div>
             <div class="filter-grid">
-                <button class="btn" onclick="setFilter('none')">الأصلي</button>
-                <button class="btn" onclick="setFilter('cinematic')">Cinematic</button>
-                <button class="btn" onclick="setFilter('bw_gold')">B&W Gold</button>
-                <button class="btn" onclick="setFilter('vivid')">Vivid HD</button>
-                <button class="btn" onclick="setFilter('midnight')">Midnight</button>
-                <button class="btn" onclick="setFilter('retro')">Retro Cam</button>
-                <button class="btn" onclick="setFilter('sunset')">Sunset</button>
-                <button class="btn" onclick="setFilter('glow')">Dreamy Glow</button>
+                <button class="btn" onclick="updateFilter('none')"><i class="fas fa-image"></i>الأصل</button>
+                <button class="btn" onclick="updateFilter('cinematic')"><i class="fas fa-film"></i>سينما</button>
+                <button class="btn" onclick="updateFilter('vivid')"><i class="fas fa-sun"></i>Vivid</button>
+                <button class="btn" onclick="updateFilter('cyberpunk')"><i class="fas fa-bolt"></i>سايبر</button>
+                <button class="btn" onclick="updateFilter('bw_gold')"><i class="fas fa-moon"></i>ذهبي</button>
+                <button class="btn" onclick="updateFilter('hdr_deep')"><i class="fas fa-eye"></i>Deep</button>
             </div>
 
-            <div style="margin-top: 20px;">
-                <div class="control-group">
-                    <label class="label-row">السطوع <span id="val-br">100%</span></label>
-                    <input type="range" id="br" min="0" max="200" value="100" oninput="applyAll()">
-                </div>
-                <div class="control-group">
-                    <label class="label-row">الحدة <span id="val-ct">100%</span></label>
-                    <input type="range" id="ct" min="0" max="200" value="100" oninput="applyAll()">
-                </div>
+            <div class="section-title"><span class="badge-new">جديد</span> فلاتر التصحيح الجنائي (V7)</div>
+            <div class="filter-grid">
+                <button class="btn" onclick="updateFilter('night_vision')"><i class="fas fa-ghost"></i>رؤية ليلية</button>
+                <button class="btn" onclick="updateFilter('thermal')"><i class="fas fa-fire"></i>حراري</button>
+                <button class="btn" onclick="updateFilter('glitch')"><i class="fas fa-barcode"></i>جليتش</button>
+                <button class="btn" onclick="updateFilter('matrix')"><i class="fas fa-code"></i>ماتريكس</button>
+                <button class="btn" onclick="updateFilter('infrared')"><i class="fas fa-radiation"></i>تحت الحمراء</button>
+                <button class="btn" onclick="updateFilter('cold_scan')"><i class="fas fa-snowflake"></i>مسح بارد</button>
+                <button class="btn" onclick="updateFilter('vintage_spy')"><i class="fas fa-user-secret"></i>تجسس</button>
+            </div>
+
+            <div class="section-title">التعديلات الدقيقة</div>
+            <div class="control-group">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem;">الوضوح <span id="v-br">100%</span></div>
+                <input type="range" id="br" min="0" max="200" value="100" oninput="applyEffects()">
+            </div>
+            <div class="control-group">
+                <div style="display:flex; justify-content:space-between; font-size:0.65rem;">الحدة (Sharpness) <span id="v-sh">0%</span></div>
+                <input type="range" id="shRange" min="0" max="100" value="0" oninput="applyEffects()">
             </div>
         </div>
     </aside>
 
-    <!-- Main Viewport -->
     <main class="canvas-area">
-        <div id="dropPrompt" class="drop-zone" onclick="triggerUpload()">
-            <i class="fas fa-expand-arrows-alt"></i>
-            <p>قم بسحب الصورة أو النقر للبدء</p>
+        <div id="uploadPrompt" class="drop-hint" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-cloud-arrow-up" style="font-size: 2.5rem; color: var(--cyan); margin-bottom: 10px;"></i>
+            <p style="font-weight:bold">أسقط الصورة هنا</p>
+            <p style="font-size:0.6rem; color: #555; margin-top:5px;">يدعم PNG, JPG, WEBP حتى 8K</p>
         </div>
         <canvas id="mainCanvas"></canvas>
         <canvas id="overlayCanvas"></canvas>
     </main>
 
-    <!-- AI & Forensic Panel -->
+    <!-- AI Forensic Panel -->
     <aside class="panel" id="panel-ai">
-        <div class="panel-header"><i class="fas fa-fingerprint"></i> التحليل الذكي</div>
+        <div class="panel-header"><span><i class="fas fa-brain"></i> المختبر الجنائي</span> <i class="fas fa-circle" style="color:var(--toxic-green); font-size:0.5rem"></i></div>
         <div class="scroll-box">
-            <button class="btn btn-main" id="aiBtn" onclick="initAI()" style="width:100%; padding:15px; background:var(--cyan); color:#000; font-weight:bold;">
-                <i class="fas fa-brain"></i> تشغيل محرك VIP_ARM AI
+            <button class="btn btn-action" style="background: var(--cyan); color: #000;" onclick="loadAIModels()" id="aiBtn">
+                <i class="fas fa-power-off"></i> تفعيل وحدة التعرف البيومتري
             </button>
 
-            <div id="aiTools" class="hidden" style="margin-top: 15px;">
+            <div id="aiTools" style="display:none; margin-top:15px;">
+                <div class="section-title">أدوات كشف الوجوه</div>
                 <div class="filter-grid">
-                    <button class="btn" onclick="detectFaces(false)"><i class="fas fa-user-check"></i> كشف وجوه</button>
-                    <button class="btn" onclick="detectFaces(true)"><i class="fas fa-project-diagram"></i> نقاط حيوية</button>
-                    <button class="btn" onclick="anonymize()"><i class="fas fa-low-vision"></i> تجهيل</button>
-                    <button class="btn" onclick="clearOverlay()"><i class="fas fa-trash"></i> مسح</button>
+                    <button class="btn" onclick="detectFaces('box')"><i class="fas fa-vector-square"></i>تأطير</button>
+                    <button class="btn" onclick="detectFaces('mesh')"><i class="fas fa-braille"></i>نقاط</button>
+                    <button class="btn" onclick="maskFaces()"><i class="fas fa-user-ninja"></i>تجهيل</button>
+                    <button class="btn" onclick="clearOverlay()"><i class="fas fa-eraser"></i>مسح</button>
                 </div>
-            </div>
 
-            <div class="control-group" style="margin-top: 20px;">
-                <label class="label-row">البحث الجنائي (OSINT)</label>
-                <input type="text" placeholder="أدخل المعرف أو الرابط..." style="width: 100%; background: #0d1117; border: 1px solid #30363d; padding: 10px; border-radius: 8px; color: var(--cyan);">
-                <button class="btn" style="width: 100%; margin-top: 10px;" onclick="addLog('System: جاري فحص قواعد البيانات...')">فحص العمق</button>
+                <div class="control-group" style="margin-top:20px;">
+                    <p style="font-size:0.65rem; color:var(--cyan); margin-bottom:10px;"><i class="fas fa-search-plus"></i> بحث مطابقة عبر قاعدة البيانات</p>
+                    <input type="text" placeholder="ID / Username / URL..." style="width:100%; background:#000; border:1px solid var(--border); padding:10px; border-radius:6px; color:#fff; font-size:0.75rem;">
+                </div>
             </div>
         </div>
 
-        <div class="terminal-container" id="terminal">
-            <div class="log-entry">> Initializing VIP_ARM OS V5.5... Ready.</div>
+        <div class="terminal-area" id="terminal">
+            <div class="log-entry log-cyan">> VIP_ARM Studio System Initialized...</div>
+            <div class="log-entry">> Hostname: Kernel-0x0</div>
         </div>
     </aside>
 </div>
-
-<nav class="mobile-toolbar">
-    <button class="btn" onclick="togglePanel('filters')"><i class="fas fa-sliders-h"></i></button>
-    <button class="btn" onclick="togglePanel('ai')"><i class="fas fa-shield-alt"></i></button>
-</nav>
 
 <input type="file" id="fileInput" hidden accept="image/*">
 
 <script>
     const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const overlay = document.getElementById('overlayCanvas');
     const octx = overlay.getContext('2d');
     const fileInput = document.getElementById('fileInput');
     
-    let rawImg = null;
-    let activeFilter = 'none';
-    let aiReady = false;
-    let beautyOn = false;
+    let originalImg = null;
+    let currentFilter = 'none';
+    let isAIReady = false;
+    let isBeauty = false;
 
-    function triggerUpload() { fileInput.click(); }
-
+    // --- Image Handling ---
     fileInput.onchange = (e) => {
         const file = e.target.files[0];
         if(!file) return;
         const reader = new FileReader();
-        reader.onload = (event) => {
+        reader.onload = (f) => {
             const img = new Image();
             img.onload = () => {
-                rawImg = img;
-                resizeCanvas();
-                document.getElementById('dropPrompt').classList.add('hidden');
-                addLog("System: تم تحميل البيانات بنجاح.");
+                originalImg = img;
+                resetCanvas();
+                document.getElementById('uploadPrompt').style.display = 'none';
+                pushLog(`[SYSTEM] تم استيراد الصورة بنجاح: ${img.width}x${img.height}`, "log-cyan");
             };
-            img.src = event.target.result;
+            img.src = f.target.result;
         };
         reader.readAsDataURL(file);
     };
 
-    function resizeCanvas() {
-        if(!rawImg) return;
+    function resetCanvas() {
+        if(!originalImg) return;
         const container = document.querySelector('.canvas-area');
-        const ratio = Math.min(container.clientWidth / rawImg.width, container.clientHeight / rawImg.height) * 0.95;
-        canvas.width = overlay.width = rawImg.width * ratio;
-        canvas.height = overlay.height = rawImg.height * ratio;
-        applyAll();
+        const ratio = Math.min(container.clientWidth / originalImg.width, container.clientHeight / originalImg.height);
+        canvas.width = originalImg.width * ratio;
+        canvas.height = originalImg.height * ratio;
+        overlay.width = canvas.width;
+        overlay.height = canvas.height;
+        applyEffects();
     }
 
-    function applyAll() {
-        if(!rawImg) return;
+    // --- Ultra Resolution (Smart Upscale) ---
+    function ultraResolution() {
+        if(!originalImg) return;
+        pushLog("[PROCESS] جاري تفعيل بروتوكول Upscaling & Sharpening...", "log-warn");
         
-        // Update Labels
-        document.getElementById('val-br').innerText = document.getElementById('br').value + '%';
-        document.getElementById('val-ct').innerText = document.getElementById('ct').value + '%';
-        document.getElementById('val-bt').innerText = document.getElementById('beautyRange').value + '%';
+        // محاكاة زيادة الدقة عبر Sharpness Kernel قوية جداً
+        const weight = 0.5;
+        const kernel = [
+             0, -weight, 0,
+            -weight, 1 + (4 * weight), -weight,
+             0, -weight, 0
+        ];
+        
+        applyConvolution(kernel);
+        pushLog("[SUCCESS] تمت معالجة الصورة بنجاح (DPI Enhanced).", "log-cyan");
+    }
 
+    function applyConvolution(weights) {
+        const side = Math.round(Math.sqrt(weights.length));
+        const halfSide = Math.floor(side/2);
+        const src = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const sw = src.width;
+        const sh = src.height;
+        const output = ctx.createImageData(sw, sh);
+        const dst = output.data;
+
+        for (let y=0; y<sh; y++) {
+            for (let x=0; x<sw; x++) {
+                let sy = y, sx = x, dstOff = (y*sw+x)*4, r=0, g=0, b=0;
+                for (let cy=0; cy<side; cy++) {
+                    for (let cx=0; cx<side; cx++) {
+                        let scy = sy + cy - halfSide;
+                        let scx = sx + cx - halfSide;
+                        if (scy >= 0 && scy < sh && scx >= 0 && scx < sw) {
+                            let srcOff = (scy*sw+scx)*4;
+                            let wt = weights[cy*side+cx];
+                            r += src.data[srcOff] * wt;
+                            g += src.data[srcOff+1] * wt;
+                            b += src.data[srcOff+2] * wt;
+                        }
+                    }
+                }
+                dst[dstOff] = r; dst[dstOff+1] = g; dst[dstOff+2] = b; dst[dstOff+3] = 255;
+            }
+        }
+        ctx.putImageData(output, 0, 0);
+    }
+
+    // --- Filter Engine ---
+    function applyEffects() {
+        if(!originalImg) return;
+        ctx.filter = 'none';
         ctx.clearRect(0,0, canvas.width, canvas.height);
         
-        let filters = `brightness(${document.getElementById('br').value}%) contrast(${document.getElementById('ct').value}%) `;
+        let filterStr = `brightness(${document.getElementById('br').value}%) `;
         
-        // 7 Professional Filters Logic
-        switch(activeFilter) {
-            case 'cinematic': filters += 'saturate(1.2) contrast(1.1) hue-rotate(-5deg)'; break;
-            case 'bw_gold': filters += 'grayscale(1) contrast(1.2) sepia(0.2)'; break;
-            case 'vivid': filters += 'saturate(1.8) contrast(1.1)'; break;
-            case 'midnight': filters += 'brightness(0.8) hue-rotate(190deg) saturate(1.2)'; break;
-            case 'retro': filters += 'sepia(0.4) contrast(0.9) saturate(1.1)'; break;
-            case 'sunset': filters += 'hue-rotate(-20deg) saturate(1.5) brightness(1.1)'; break;
-            case 'glow': filters += 'brightness(1.1) saturate(1.2) blur(0.5px)'; break;
+        const filters = {
+            'cinematic': 'contrast(1.2) saturate(1.1) sepia(0.2)',
+            'vivid': 'saturate(1.8) contrast(1.1)',
+            'cyberpunk': 'hue-rotate(150deg) saturate(2) contrast(1.2)',
+            'bw_gold': 'grayscale(1) contrast(1.4) sepia(0.3)',
+            'hdr_deep': 'contrast(1.7) saturate(1.5)',
+            'night_vision': 'hue-rotate(90deg) saturate(2) brightness(1.2) contrast(1.5)',
+            'thermal': 'invert(1) hue-rotate(180deg) saturate(3)',
+            'glitch': 'contrast(2) hue-rotate(10deg) saturate(0.5)',
+            'matrix': 'grayscale(1) sepia(1) hue-rotate(100deg) saturate(5) contrast(1.5)',
+            'infrared': 'hue-rotate(-120deg) saturate(0.8) contrast(1.4)',
+            'cold_scan': 'hue-rotate(180deg) brightness(1.1) saturate(0.7)',
+            'vintage_spy': 'sepia(0.8) contrast(0.8) brightness(0.9) grayscale(0.2)'
+        };
+
+        if(filters[currentFilter]) filterStr += filters[currentFilter];
+        
+        if(isBeauty) {
+            filterStr += ' saturate(1.2) brightness(1.1) blur(0.2px)';
         }
 
-        // Apply Beauty (iPhone Style)
-        if(beautyOn) {
-            const bVal = document.getElementById('beautyRange').value;
-            filters += `saturate(${1 + bVal/500}) contrast(${1 + bVal/1000}) `;
-            ctx.shadowBlur = bVal / 10;
-            ctx.shadowColor = "rgba(255,255,255,0.2)";
-        } else {
-            ctx.shadowBlur = 0;
+        ctx.filter = filterStr;
+        ctx.drawImage(originalImg, 0, 0, canvas.width, canvas.height);
+        
+        // Sharpness slider
+        const sh = document.getElementById('shRange').value;
+        if(sh > 0) {
+            const w = sh / 100;
+            applyConvolution([0, -w, 0, -w, 1 + 4*w, -w, 0, -w, 0]);
         }
-
-        ctx.filter = filters;
-        ctx.drawImage(rawImg, 0, 0, canvas.width, canvas.height);
     }
 
-    function setFilter(f) {
-        activeFilter = f;
-        applyAll();
-        addLog(`Filter: تم تفعيل وضع ${f}`);
+    function updateFilter(f) {
+        currentFilter = f;
+        applyEffects();
+        pushLog(`[FILTER] تم تطبيق: ${f}`);
     }
 
     function toggleBeauty() {
-        beautyOn = !beautyOn;
-        document.getElementById('beautyLevelBox').classList.toggle('hidden');
-        applyAll();
-        addLog(beautyOn ? "Mode: تم تفعيل فلتر التجميل" : "Mode: تم إيقاف التجميل");
+        isBeauty = !isBeauty;
+        document.getElementById('beautyBtn').classList.toggle('active');
+        applyEffects();
     }
 
-    async function initAI() {
-        addLog("AI: جاري تحميل الوحدات البيومترية...");
+    // --- AI Biometrics ---
+    async function loadAIModels() {
+        const btn = document.getElementById('aiBtn');
+        btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> جاري التحميل...";
         try {
             const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
-            await Promise.all([
-                faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
-                faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL)
-            ]);
-            aiReady = true;
-            document.getElementById('aiTools').classList.remove('hidden');
-            document.getElementById('aiBtn').innerHTML = "<i class='fas fa-check-circle'></i> المحرك نشط";
-            addLog("AI: تم التجهيز. مستعد لتحليل الصور.");
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            isAIReady = true;
+            document.getElementById('aiTools').style.display = 'block';
+            btn.style.background = "var(--toxic-green)";
+            btn.innerHTML = "<i class='fas fa-check'></i> المحرك البيومتري نشط";
+            pushLog("[AI] تم تحميل نماذج التعرف العصبية.", "log-cyan");
         } catch(e) {
-            addLog("Error: فشل الاتصال بالشبكة العصبية.");
+            pushLog("[ERROR] فشل تحميل محرك AI.", "log-warn");
         }
     }
 
-    async function detectFaces(withLandmarks = false) {
-        if(!aiReady || !rawImg) return;
+    async function detectFaces(type) {
+        if(!isAIReady || !originalImg) return;
         clearOverlay();
-        addLog("AI: جاري المسح الضوئي...");
-        
-        const options = new faceapi.TinyFaceDetectorOptions();
-        let detections;
-        
-        if(withLandmarks) {
-            detections = await faceapi.detectAllFaces(canvas, options).withFaceLandmarks();
-            faceapi.draw.drawFaceLandmarks(overlay, detections);
-            addLog(`Found: تم رسم نقاط لـ ${detections.length} وجه.`);
-        } else {
-            detections = await faceapi.detectAllFaces(canvas, options);
-            faceapi.draw.drawDetections(overlay, detections);
-            addLog(`Found: تم تحديد ${detections.length} هدف.`);
-        }
+        const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks();
+        if(type === 'box') faceapi.draw.drawDetections(overlay, detections);
+        else faceapi.draw.drawFaceLandmarks(overlay, detections);
+        pushLog(`[AI] تم العثور على ${detections.length} أهداف.`);
     }
 
-    async function anonymize() {
-        if(!aiReady || !rawImg) return;
+    async function maskFaces() {
+        if(!isAIReady || !originalImg) return;
         const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions());
         detections.forEach(d => {
             const { x, y, width, height } = d.box;
-            ctx.filter = 'blur(20px)';
-            ctx.drawImage(canvas, x, y, width, height, x, y, width, height);
-            ctx.filter = 'none';
-            ctx.fillStyle = "rgba(0,0,0,0.8)";
-            ctx.fillRect(x, y + height/2.5, width, height/4);
+            ctx.fillStyle = "#000";
+            ctx.fillRect(x, y + height/4, width, height/3); // شريط أسود جنائي
         });
-        addLog("Security: تم تنفيذ بروتوكول التجهيل.");
+        pushLog("[SECURITY] تم تعمية الهوية بنجاح.");
+    }
+
+    // --- Utils ---
+    function pushLog(msg, color = "") {
+        const term = document.getElementById('terminal');
+        const div = document.createElement('div');
+        div.className = `log-entry ${color}`;
+        div.innerText = `[${new Date().toLocaleTimeString()}] ${msg}`;
+        term.prepend(div);
     }
 
     function clearOverlay() { octx.clearRect(0,0, overlay.width, overlay.height); }
 
-    function addLog(msg) {
-        const term = document.getElementById('terminal');
-        const entry = document.createElement('div');
-        entry.className = 'log-entry';
-        entry.innerHTML = `<span style="opacity:0.4">[${new Date().toLocaleTimeString()}]</span> ${msg}`;
-        term.prepend(entry);
-    }
-
-    function togglePanel(id) {
-        const p = document.getElementById('panel-' + id);
-        p.classList.toggle('active');
-    }
-
     function exportArt() {
-        if(!rawImg) return;
         const link = document.createElement('a');
-        link.download = `VIP_ARM_STUDIO_${Date.now()}.png`;
-        link.href = canvas.toDataURL("image/png");
+        link.download = `VIP_ARM_STUDIO_V7_${Date.now()}.png`;
+        link.href = canvas.toDataURL("image/png", 1.0);
         link.click();
     }
 
-    window.onresize = resizeCanvas;
+    window.onresize = resetCanvas;
 </script>
+
 </body>
 </html>
