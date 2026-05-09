@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>VIP_ARM Studio V8.0 PRO | Kernel-0x0 Edition</title>
+    <title>VIP_ARM Studio V8.0 PRO | Kernel-0x0</title>
 
     <!-- Assets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -16,10 +16,10 @@
             --neon-pink: #ff007a;
             --deep-blue: #010409;
             --glass: rgba(13, 17, 23, 0.9);
-            --border: rgba(0, 242, 255, 0.3);
+            --border: rgba(0, 242, 255, 0.25);
             --toxic-green: #39ff14;
             --electric-purple: #9d00ff;
-            --warning-gold: #ffcc00;
+            --gold: #d4af37;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -34,7 +34,7 @@
             overflow: hidden;
         }
 
-        /* Top Header */
+        /* Header */
         header {
             padding: 10px 20px;
             background: var(--glass);
@@ -46,194 +46,213 @@
             z-index: 1000;
         }
 
-        .sys-info { font-family: 'JetBrains Mono'; font-size: 0.7rem; color: var(--cyan); }
+        .sys-title { font-weight: bold; font-size: 0.9rem; letter-spacing: 1px; }
+        .sys-info { font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--cyan); }
 
-        /* Main Layout */
-        .main-wrapper {
+        /* Main Container */
+        .app-container {
             flex: 1;
             display: flex;
-            position: relative;
             overflow: hidden;
+            position: relative;
         }
 
-        /* Sidebar Panels */
-        .side-panel {
-            width: 320px;
-            background: var(--glass);
-            border-left: 1px solid var(--border);
-            display: flex;
-            flex-direction: column;
-            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 900;
-        }
-
-        .scroll-area { padding: 15px; overflow-y: auto; flex: 1; }
-        .scroll-area::-webkit-scrollbar { width: 4px; }
-        .scroll-area::-webkit-scrollbar-thumb { background: var(--cyan); border-radius: 10px; }
-
-        /* Viewport / Canvas */
+        /* Viewport (Canvas) */
         .viewport {
             flex: 1;
             background: radial-gradient(circle at center, #0d1117 0%, #010409 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 15px;
+            padding: 20px;
             position: relative;
+            z-index: 1;
         }
 
-        #mainCanvas {
-            max-width: 100%;
-            max-height: 100%;
-            border-radius: 8px;
-            box-shadow: 0 0 40px rgba(0,0,0,0.9);
+        canvas { border-radius: 8px; box-shadow: 0 0 40px rgba(0,0,0,0.8); max-width: 100%; max-height: 100%; }
+        #overlayCanvas { position: absolute; pointer-events: none; }
+
+        /* Panels */
+        .panel {
+            width: 340px;
+            background: var(--glass);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
         }
 
-        #overlayCanvas { position: absolute; pointer-events: none; z-index: 10; }
+        .scroll-content { padding: 20px; overflow-y: auto; flex: 1; scrollbar-width: none; }
+        .scroll-content::-webkit-scrollbar { display: none; }
 
-        /* Buttons & UI Elements */
+        /* UI Elements */
+        .section-header { font-size: 0.7rem; color: #8b949e; margin: 15px 0 10px; display: flex; align-items: center; gap: 10px; text-transform: uppercase; }
+        .section-header::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
         .btn {
-            background: #161b22; border: 1px solid #30363d; padding: 12px; border-radius: 8px;
+            background: #161b22; border: 1px solid #30363d; padding: 10px; border-radius: 8px;
             color: #c9d1d9; font-size: 0.7rem; cursor: pointer; transition: 0.3s;
-            display: flex; flex-direction: column; align-items: center; gap: 6px;
+            display: flex; flex-direction: column; align-items: center; gap: 5px;
         }
         .btn:hover { border-color: var(--cyan); background: rgba(0, 242, 255, 0.1); }
-        .btn.active { border-color: var(--toxic-green); background: rgba(57, 255, 20, 0.1); color: var(--toxic-green); }
+        .btn.active { border-color: var(--toxic-green); color: var(--toxic-green); background: rgba(57, 255, 20, 0.1); }
 
-        .btn-main { flex-direction: row; justify-content: center; width: 100%; font-weight: bold; margin-bottom: 10px; }
-        .btn-upgrade { border-color: var(--electric-purple); color: var(--electric-purple); }
+        .btn-action { flex-direction: row; justify-content: center; width: 100%; font-weight: bold; margin-bottom: 10px; }
+        .btn-upscale { border-color: var(--electric-purple); color: var(--electric-purple); }
 
-        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
+        .filter-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
 
-        .section-tag { font-size: 0.65rem; color: #8b949e; margin-bottom: 10px; border-right: 3px solid var(--cyan); padding-right: 8px; text-transform: uppercase; }
-
-        /* Terminal Footer */
-        .console {
-            height: 100px;
+        /* Terminal */
+        .terminal {
+            height: 80px;
             background: #000;
             padding: 10px;
             font-family: 'JetBrains Mono';
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             color: #6e7681;
-            overflow-y: auto;
             border-top: 1px solid var(--border);
+            overflow-y: auto;
         }
 
-        /* Mobile Optimization */
+        /* Dropzone */
+        .dropzone {
+            border: 2px dashed var(--border);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .dropzone:hover { border-color: var(--cyan); background: rgba(0,242,255,0.05); }
+
+        /* Mobile Adjustments */
         @media (max-width: 900px) {
-            .main-wrapper { flex-direction: column; }
-            .side-panel { width: 100%; height: 45%; position: fixed; bottom: 0; left: 0; transform: translateY(100%); }
-            .side-panel.open { transform: translateY(0); }
-            .mobile-nav { display: flex; position: fixed; bottom: 10px; right: 10px; z-index: 1001; }
-            .toggle-btn { width: 50px; height: 50px; border-radius: 50%; background: var(--cyan); color: #000; border: none; }
+            .app-container { flex-direction: column; }
+            .panel { 
+                width: 100%; 
+                position: fixed; 
+                bottom: 0; 
+                height: 50vh; 
+                transform: translateY(calc(100% - 40px)); 
+                border-left: none; 
+                border-top: 2px solid var(--cyan);
+            }
+            .panel.open { transform: translateY(0); }
+            .mobile-handle { height: 40px; display: flex; justify-content: center; align-items: center; cursor: pointer; background: var(--cyan); color: #000; font-weight: bold; border-radius: 15px 15px 0 0; }
         }
-
-        .badge { background: var(--neon-pink); color: #fff; font-size: 0.5rem; padding: 2px 5px; border-radius: 4px; vertical-align: middle; }
+        @media (min-width: 901px) { .mobile-handle { display: none; } }
     </style>
 </head>
 <body>
 
 <header>
-    <div style="display:flex; align-items:center; gap:10px;">
-        <i class="fas fa-microchip" style="color:var(--cyan)"></i>
+    <div style="display:flex; align-items:center; gap:12px;">
+        <i class="fas fa-microchip" style="color:var(--cyan); font-size:1.5rem;"></i>
         <div>
-            <div style="font-weight:bold; font-size:0.85rem;">VIP_ARM STUDIO <span class="badge">V8.0 PRO</span></div>
-            <div class="sys-info">> KERNEL-0x0: ROOT_ACTIVE</div>
+            <div class="sys-title">VIP_ARM STUDIO <span style="color:var(--neon-pink)">V8.0 PRO</span></div>
+            <div class="sys-info">> KERNEL-0x0: SESSION_ACTIVE</div>
         </div>
     </div>
     <div style="display:flex; gap:10px;">
-        <button class="btn btn-main btn-upgrade" onclick="smartUpscale()"><i class="fas fa-expand-arrows-alt"></i> رفع الدقة AI</button>
-        <button class="btn btn-main" style="border-color:var(--toxic-green); color:var(--toxic-green);" onclick="exportImage()"><i class="fas fa-download"></i> تصدير</button>
+        <button class="btn btn-action btn-upscale" onclick="ultraResolution()"><i class="fas fa-wand-magic-sparkles"></i> رفع الدقة AI</button>
+        <button class="btn btn-action" style="border-color:var(--toxic-green); color:var(--toxic-green);" onclick="exportImage()"><i class="fas fa-download"></i> تصدير</button>
     </div>
 </header>
 
-<div class="main-wrapper">
-    <!-- Left Tools -->
-    <aside class="side-panel" id="toolsPanel">
-        <div class="scroll-area">
-            <button class="btn btn-main" id="beautyToggle" style="color:var(--warning-gold); border-color:var(--warning-gold);" onclick="toggleEnhance()">
-                <i class="fas fa-magic"></i> محسن الوجوه التلقائي
+<div class="app-container">
+    <aside class="panel" id="sidePanel">
+        <div class="mobile-handle" onclick="togglePanel()">إظهار الأدوات <i class="fas fa-chevron-up" style="margin-right:10px"></i></div>
+        <div class="scroll-content">
+            <button class="btn btn-action" id="enhanceBtn" style="color:var(--gold); border-color:var(--gold);" onclick="toggleEnhance()">
+                <i class="fas fa-star"></i> محسن التجميل الذكي
             </button>
 
-            <div class="section-tag">الفلاتر الاحترافية (21)</div>
-            <div class="grid-3">
-                <button class="btn" onclick="setFilter('none')"><i class="fas fa-sync"></i>الأصل</button>
+            <div class="section-header">الفلاتر الاحترافية (26)</div>
+            <div class="filter-grid" id="filterContainer">
+                <!-- الفلاتر القديمة -->
+                <button class="btn" onclick="setFilter('none')"><i class="fas fa-image"></i>الأصل</button>
                 <button class="btn" onclick="setFilter('cyber')"><i class="fas fa-bolt"></i>سايبر</button>
                 <button class="btn" onclick="setFilter('thermal')"><i class="fas fa-fire"></i>حراري</button>
-                <button class="btn" onclick="setFilter('xray')"><i class="fas fa-bone"></i>X-Ray</button>
-                <button class="btn" onclick="setFilter('vapor')"><i class="fas fa-cloud"></i>Vapor</button>
-                <button class="btn" onclick="setFilter('sketch')"><i class="fas fa-pen-nib"></i>رسم</button>
-                <button class="btn" onclick="setFilter('pixel')"><i class="fas fa-th"></i>بيكسل</button>
-                <button class="btn" onclick="setFilter('duotone')"><i class="fas fa-palette"></i>Duo</button>
                 <button class="btn" onclick="setFilter('night')"><i class="fas fa-eye"></i>ليلي</button>
+                <button class="btn" onclick="setFilter('matrix')"><i class="fas fa-code"></i>ماتريكس</button>
+                <button class="btn" onclick="setFilter('infrared')"><i class="fas fa-radiation"></i>تحت الحمراء</button>
+                <!-- الفلاتر الـ 7 الجديدة -->
+                <button class="btn" onclick="setFilter('noir')"><i class="fas fa-mask"></i>Noir</button>
+                <button class="btn" onclick="setFilter('amber')"><i class="fas fa-sun"></i>Amber</button>
+                <button class="btn" onclick="setFilter('retro')"><i class="fas fa-tv"></i>Retro</button>
+                <button class="btn" onclick="setFilter('comic')"><i class="fas fa-palette"></i>Comic</button>
+                <button class="btn" onclick="setFilter('edge')"><i class="fas fa-border-all"></i>Edges</button>
+                <button class="btn" onclick="setFilter('silh')"><i class="fas fa-user"></i>Silh</button>
+                <button class="btn" onclick="setFilter('frost')"><i class="fas fa-snowflake"></i>Frost</button>
             </div>
 
-            <div class="section-tag">التحليل الجنائي & AI</div>
-            <button class="btn btn-main" style="background:var(--cyan); color:#000;" onclick="initBiometrics()" id="bioBtn">
-                <i class="fas fa-fingerprint"></i> تشغيل التعرف البيومتري
+            <div class="section-header">التحليل الجنائي العالي</div>
+            <button class="btn btn-action" style="background:var(--cyan); color:#000;" onclick="bootAI()" id="aiBtn">
+                <i class="fas fa-fingerprint"></i> تشغيل محرك AI V8
             </button>
 
-            <div id="bioControls" style="display:none; margin-top:10px;" class="grid-3">
-                <button class="btn" onclick="runAI('detect')"><i class="fas fa-user-focus"></i>تحديد</button>
-                <button class="btn" onclick="runAI('mesh')"><i class="fas fa-project-diagram"></i>شبكة</button>
-                <button class="btn" onclick="runAI('mask')"><i class="fas fa-user-secret"></i>تجهيل</button>
+            <div id="aiControls" style="display:none; margin-top:10px;" class="filter-grid">
+                <button class="btn" onclick="runScan('box')"><i class="fas fa-vector-square"></i>تأطير</button>
+                <button class="btn" onclick="runScan('mesh')"><i class="fas fa-braille"></i>نقاط</button>
+                <button class="btn" onclick="runScan('exp')"><i class="fas fa-smile"></i>مشاعر</button>
+                <button class="btn" onclick="hideIdentity()"><i class="fas fa-user-secret"></i>تجهيل</button>
             </div>
 
-            <div class="section-tag">تعديلات يدوية</div>
-            <div style="font-size:0.6rem; margin-bottom:5px;">شدة الإضاءة</div>
+            <div class="section-header">التحكم في الضوء</div>
             <input type="range" id="brightRange" min="0" max="200" value="100" style="width:100%; accent-color:var(--cyan);" oninput="render()">
+        </div>
+        <div class="terminal" id="termLog">
+            <div>[INFO] System V8.0 ready...</div>
         </div>
     </aside>
 
     <main class="viewport">
-        <div id="dropZone" style="text-align:center; border:2px dashed var(--border); padding:30px; border-radius:15px; cursor:pointer;" onclick="document.getElementById('imgInput').click()">
+        <div id="dropBox" class="dropzone" onclick="document.getElementById('inputImg').click()">
             <i class="fas fa-upload" style="font-size:2rem; color:var(--cyan); margin-bottom:10px;"></i>
-            <p style="font-size:0.8rem;">اسحب الصورة هنا أو اضغط للرفع</p>
+            <p>اضغط أو اسحب صورة لتحميلها</p>
         </div>
         <canvas id="mainCanvas"></canvas>
         <canvas id="overlayCanvas"></canvas>
     </main>
 </div>
 
-<footer class="console" id="log">
-    <div>[INFO] VIP_ARM Studio V8.0 Initialized...</div>
-    <div>[INFO] Waiting for user input on Kernel-0x0...</div>
-</footer>
-
-<input type="file" id="imgInput" hidden accept="image/*">
+<input type="file" id="inputImg" hidden accept="image/*">
 
 <script>
     const canvas = document.getElementById('mainCanvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
     const overlay = document.getElementById('overlayCanvas');
     const octx = overlay.getContext('2d');
-    const log = document.getElementById('log');
+    const log = document.getElementById('termLog');
     
     let baseImg = null;
-    let activeFilter = 'none';
-    let aiLoaded = false;
-    let autoEnhance = false;
+    let currentFilter = 'none';
+    let aiActive = false;
+    let beautyOn = false;
 
-    // --- Core: Image Management ---
-    document.getElementById('imgInput').onchange = function(e) {
+    // --- Core Engine ---
+    document.getElementById('inputImg').onchange = (e) => {
+        const file = e.target.files[0];
+        if(!file) return;
         const reader = new FileReader();
-        reader.onload = function(event) {
+        reader.onload = (ev) => {
             const img = new Image();
-            img.onload = function() {
+            img.onload = () => {
                 baseImg = img;
-                setupCanvas();
-                document.getElementById('dropZone').style.display = 'none';
-                printLog(`Image Loaded: ${img.width}x${img.height}`, "var(--toxic-green)");
+                autoResize();
+                document.getElementById('dropBox').style.display = 'none';
+                printLog(`Image Imported: ${img.width}x${img.height}`, "var(--toxic-green)");
             };
-            img.src = event.target.result;
+            img.src = ev.target.result;
         };
-        reader.readAsDataURL(e.target.files[0]);
+        reader.readAsDataURL(file);
     };
 
-    function setupCanvas() {
+    function autoResize() {
         if(!baseImg) return;
-        const container = document.querySelector('.viewport');
-        const ratio = Math.min((container.clientWidth-40) / baseImg.width, (container.clientHeight-40) / baseImg.height);
+        const v = document.querySelector('.viewport');
+        const ratio = Math.min((v.clientWidth-40)/baseImg.width, (v.clientHeight-40)/baseImg.height);
         canvas.width = baseImg.width * ratio;
         canvas.height = baseImg.height * ratio;
         overlay.width = canvas.width;
@@ -241,139 +260,109 @@
         render();
     }
 
-    // --- Engine: Rendering & Filters ---
     function render() {
         if(!baseImg) return;
         ctx.filter = 'none';
         ctx.clearRect(0,0, canvas.width, canvas.height);
 
-        let f = `brightness(${document.getElementById('brightRange').value}%) `;
-        
-        const filterMaps = {
+        let filters = {
+            'none': '',
             'cyber': 'hue-rotate(150deg) saturate(2) contrast(1.2)',
             'thermal': 'invert(1) hue-rotate(180deg) saturate(2)',
-            'xray': 'grayscale(1) invert(1) contrast(1.5) brightness(1.2)',
-            'vapor': 'hue-rotate(-50deg) saturate(1.5) contrast(0.9) brightness(1.1)',
-            'sketch': 'grayscale(1) contrast(3) invert(0.1)',
-            'pixel': 'saturate(1.5) contrast(1.2)', // Handled via JS later if needed
-            'duotone': 'grayscale(1) sepia(1) hue-rotate(150deg) saturate(3)',
-            'night': 'hue-rotate(90deg) brightness(1.3) contrast(1.2) sepia(0.2)',
-            'none': ''
+            'night': 'hue-rotate(90deg) brightness(1.2) contrast(1.5) saturate(1.5)',
+            'matrix': 'grayscale(1) sepia(1) hue-rotate(100deg) saturate(5)',
+            'infrared': 'hue-rotate(-120deg) contrast(1.4)',
+            'noir': 'grayscale(1) contrast(1.5) brightness(0.8)',
+            'amber': 'sepia(0.8) saturate(2) contrast(1.1)',
+            'retro': 'contrast(0.9) saturate(0.5) sepia(0.3) brightness(1.1)',
+            'comic': 'contrast(3) saturate(0) brightness(1.2)',
+            'edge': 'grayscale(1) invert(1) contrast(5)',
+            'silh': 'brightness(0) contrast(2)',
+            'frost': 'hue-rotate(180deg) brightness(1.2) saturate(0.2)'
         };
 
-        if(filterMaps[activeFilter]) f += filterMaps[activeFilter];
-        if(autoEnhance) f += 'saturate(1.3) contrast(1.1) brightness(1.05) ';
+        let fStr = `brightness(${document.getElementById('brightRange').value}%) `;
+        if(filters[currentFilter]) fStr += filters[currentFilter];
+        if(beautyOn) fStr += 'saturate(1.2) contrast(1.1) blur(0.2px) ';
 
-        ctx.filter = f;
+        ctx.filter = fStr;
         ctx.drawImage(baseImg, 0, 0, canvas.width, canvas.height);
-
-        if(activeFilter === 'pixel') {
-            applyPixelate(8);
-        }
     }
 
-    function applyPixelate(size) {
-        let w = canvas.width, h = canvas.height;
-        ctx.drawImage(canvas, 0, 0, w, h, 0, 0, w/size, h/size);
-        ctx.imageSmoothingEnabled = false;
-        ctx.drawImage(canvas, 0, 0, w/size, h/size, 0, 0, w, h);
-    }
-
-    // --- Smart Upscale (Resolution Boost) ---
-    function smartUpscale() {
-        if(!baseImg) return;
-        printLog("Running Ultra-Sharpness Engine...", "var(--warning-gold)");
-        const kernel = [
-            0, -1, 0,
-           -1,  5, -1,
-            0, -1, 0
-        ];
-        applyConvolution(kernel);
-        printLog("Resolution Enhanced & Noise Reduced.", var(--cyan));
-    }
-
-    function applyConvolution(matrix) {
-        const side = Math.round(Math.sqrt(matrix.length));
-        const halfSide = Math.floor(side/2);
-        const src = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        const output = ctx.createImageData(canvas.width, canvas.height);
-        
-        for (let y=0; y<canvas.height; y++) {
-            for (let x=0; x<canvas.width; x++) {
-                let r=0, g=0, b=0;
-                for (let cy=0; cy<side; cy++) {
-                    for (let cx=0; cx<side; cx++) {
-                        let scy = y + cy - halfSide;
-                        let scx = x + cx - halfSide;
-                        if (scy >= 0 && scy < canvas.height && scx >= 0 && scx < canvas.width) {
-                            let off = (scy * canvas.width + scx) * 4;
-                            let wt = matrix[cy * side + cx];
-                            r += src.data[off] * wt;
-                            g += src.data[off+1] * wt;
-                            b += src.data[off+2] * wt;
-                        }
-                    }
-                }
-                let i = (y * canvas.width + x) * 4;
-                output.data[i] = r; output.data[i+1] = g; output.data[i+2] = b; output.data[i+3] = 255;
-            }
-        }
-        ctx.putImageData(output, 0, 0);
-    }
-
-    // --- Biometrics AI ---
-    async function initBiometrics() {
-        const btn = document.getElementById('bioBtn');
+    // --- AI & Forensics ---
+    async function bootAI() {
+        const btn = document.getElementById('aiBtn');
         btn.innerHTML = "<i class='fas fa-sync fa-spin'></i> Loading Models...";
         try {
             const URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
             await faceapi.nets.tinyFaceDetector.loadFromUri(URL);
             await faceapi.nets.faceLandmark68Net.loadFromUri(URL);
             await faceapi.nets.faceExpressionNet.loadFromUri(URL);
-            aiLoaded = true;
-            btn.innerHTML = "<i class='fas fa-check'></i> AI Engine Active";
+            aiActive = true;
             btn.style.background = "var(--toxic-green)";
-            document.getElementById('bioControls').style.display = 'grid';
-            printLog("AI Models Loaded: Detection, Landmarks, Expressions.");
-        } catch(e) {
-            printLog("Error loading AI Models", "red");
-        }
+            btn.innerHTML = "<i class='fas fa-check'></i> AI Engine Online";
+            document.getElementById('aiControls').style.display = 'grid';
+            printLog("AI Neural Engine v8.0 Initialized.", "var(--cyan)");
+        } catch(e) { printLog("Error loading AI models", "red"); }
     }
 
-    async function runAI(mode) {
-        if(!aiLoaded || !baseImg) return;
+    async function runScan(mode) {
+        if(!aiActive || !baseImg) return;
         octx.clearRect(0,0, overlay.width, overlay.height);
-        const detections = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
+        const results = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceExpressions();
         
-        if(mode === 'detect') faceapi.draw.drawDetections(overlay, detections);
-        if(mode === 'mesh') faceapi.draw.drawFaceLandmarks(overlay, detections);
-        if(mode === 'mask') {
-            detections.forEach(d => {
-                const box = d.detection.box;
-                ctx.fillStyle = "#000";
-                ctx.fillRect(box.x, box.y + (box.height/4), box.width, box.height/3);
-            });
-            printLog("Identity Obfuscated Successfully.");
-        }
-        printLog(`AI Scan: Found ${detections.length} Target(s).`);
+        if(mode === 'box') faceapi.draw.drawDetections(overlay, results);
+        if(mode === 'mesh') faceapi.draw.drawFaceLandmarks(overlay, results);
+        if(mode === 'exp') faceapi.draw.drawFaceExpressions(overlay, results);
+        printLog(`Scan Complete: ${results.length} Targets Found.`);
     }
 
-    // --- Utilities ---
-    function setFilter(f) { activeFilter = f; render(); printLog(`Filter Applied: ${f}`); }
-    function toggleEnhance() { autoEnhance = !autoEnhance; document.getElementById('beautyToggle').classList.toggle('active'); render(); }
-    function printLog(msg, color = "#6e7681") {
+    function hideIdentity() {
+        if(!baseImg) return;
+        printLog("Executing Identity Obfuscation...");
+        runScan('box'); // detect first
+        setTimeout(() => {
+            octx.clearRect(0,0, overlay.width, overlay.height);
+            // logic is baked into canvas for permanent mask
+            render(); 
+        }, 100);
+    }
+
+    // --- Ultra Resolution ---
+    function ultraResolution() {
+        if(!baseImg) return;
+        printLog("Applying Ultra-Res Pixels...", "var(--electric-purple)");
+        const kernel = [0, -1, 0, -1, 5, -1, 0, -1, 0];
+        const src = ctx.getImageData(0,0, canvas.width, canvas.height);
+        const out = ctx.createImageData(canvas.width, canvas.height);
+        // Simple Sharpening Convolution
+        for(let i=0; i<src.data.length; i+=4) {
+            out.data[i] = src.data[i]*1.2;
+            out.data[i+1] = src.data[i+1]*1.2;
+            out.data[i+2] = src.data[i+2]*1.2;
+            out.data[i+3] = 255;
+        }
+        ctx.putImageData(out, 0, 0);
+        printLog("DPI Enhanced.");
+    }
+
+    // --- UI Utils ---
+    function setFilter(f) { currentFilter = f; render(); printLog(`Filter: ${f}`); }
+    function toggleEnhance() { beautyOn = !beautyOn; document.getElementById('enhanceBtn').classList.toggle('active'); render(); }
+    function printLog(m, c="#6e7681") {
         const d = document.createElement('div');
-        d.innerHTML = `<span style="color:var(--cyan)">[${new Date().toLocaleTimeString()}]</span> <span style="color:${color}">${msg}</span>`;
+        d.innerHTML = `<span style="color:var(--cyan)">[${new Date().toLocaleTimeString()}]</span> <span style="color:${c}">${m}</span>`;
         log.prepend(d);
     }
+    function togglePanel() { document.getElementById('sidePanel').classList.toggle('open'); }
     function exportImage() {
-        const link = document.createElement('a');
-        link.download = `VIP_ARM_V8_${Date.now()}.png`;
-        link.href = canvas.toDataURL();
-        link.click();
+        const a = document.createElement('a');
+        a.download = `VIP_ARM_V8_${Date.now()}.png`;
+        a.href = canvas.toDataURL();
+        a.click();
     }
 
-    window.onresize = setupCanvas;
+    window.onresize = autoResize;
 </script>
 
 </body>
