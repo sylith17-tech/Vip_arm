@@ -3,7 +3,6 @@ import yt_dlp
 import logging
 import uuid
 import requests
-# إضافة استيراد eventlet و SocketIO للإصلاح
 import eventlet
 eventlet.monkey_patch()
 from flask_socketio import SocketIO
@@ -12,7 +11,6 @@ from flask import Flask, render_template, request, jsonify, send_file, after_thi
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-# التوافق مع MoviePy 2.x
 from moviepy import VideoFileClip
 from moviepy.video import fx as vfx
 from gtts import gTTS
@@ -26,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='.', static_folder='.')
 CORS(app)
-# تهيئة SocketIO للإصلاح
 socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 # إعداد المجلدات
@@ -38,7 +35,6 @@ for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-# --- وظائف مساعدة ---
 def format_size(bytes):
     if not bytes: return "--"
     for unit in ['B', 'KB', 'MB', 'GB']:
@@ -54,7 +50,6 @@ def get_ydl_opts(custom_out=None):
         'merge_output_format': 'mp4'
     }
 
-# --- ميزات المعالجة المتقدمة (AI & Video Core) ---
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
@@ -79,7 +74,6 @@ def dub_video(input_path, lang='ar'):
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
-# --- ميزة التحميل عبر البروكسي ---
 @app.route('/api/proxy_download')
 def proxy_download():
     target_url = request.args.get('url')
@@ -101,7 +95,6 @@ def proxy_download():
         logger.error(f"Proxy Error: {str(e)}")
         return f"Kernel Error: {str(e)}", 500
 
-# --- ميزة الفحص الأمني (Scanner Core) ---
 @app.route('/api/scan', methods=['POST'])
 def web_scanner():
     data = request.json
@@ -116,7 +109,6 @@ def web_scanner():
         return jsonify({"target": target_url, "status_code": response.status_code, "server": headers.get("Server", "Hidden"), "security_report": results})
     except Exception as e: return jsonify({"error": str(e)}), 500
 
-# --- إدارة المسارات والرفع ---
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -125,7 +117,6 @@ def index():
 def studio_page():
     return render_template('studio.html')
 
-# المسار الجديد لصفحة الدردشة (VIP Chat)
 @app.route('/chat')
 def chat_page():
     return render_template('chat.html')
@@ -147,7 +138,6 @@ def serve_pages(page):
     if os.path.exists(target): return render_template(target)
     return render_template('index.html'), 404
 
-# --- API Endpoints ---
 @app.route('/api/download', methods=['POST'])
 @app.route('/api/process', methods=['POST'])
 def unified_handler():
@@ -169,7 +159,8 @@ def unified_handler():
                             "filesize": format_size(f.get('filesize') or f.get('filesize_approx')),
                             "url": f.get('url'),
                             "proxy_url": f"/api/proxy_download?url={requests.utils.quote(f.get('url'))}&filename={requests.utils.quote(info.get('title', 'video'))}.{f.get('ext')}"
-                        })                                                                                                                                                             return jsonify({
+                        })
+                return jsonify({
                     "status": "success",
                     "title": info.get('title'),
                     "thumbnail": info.get('thumbnail'),
@@ -206,6 +197,7 @@ def forensic_core():
         report = {TAGS.get(tid, tid): str(val) for tid, val in raw_exif.items() if not isinstance(val, bytes)}
         return jsonify({"status": "extracted", "forensic_data": report})
     except Exception as e: return jsonify({"error": str(e)}), 500                       
+
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     socketio.run(app, host='0.0.0.0', port=port)
