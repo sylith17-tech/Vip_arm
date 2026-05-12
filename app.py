@@ -1,7 +1,3 @@
-import eventlet
-# [CRITICAL] Monkey patch must be at the top to prevent recursion errors
-eventlet.monkey_patch()
-
 import os
 import yt_dlp
 import logging
@@ -28,17 +24,17 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# إعداد SocketIO مع محرك احتياطي لضمان العمل على بايثون 3.14
+# إعداد SocketIO بمحرك threading لضمان الاستقرار على Render ومنع تعارضات SSL
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='eventlet', # المحرك المفضل لبيئة Kernel-0x0
+    async_mode='threading', 
     ping_timeout=60,
     ping_interval=25,
     engineio_logger=False
 )
 
-# إعداد المسارات الأساسية
+# إعداد المسارات الأساسية في بيئة Kernel-0x0
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
 STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports')
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -221,7 +217,6 @@ def serve_pages(page):
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
-    # التشغيل باستخدام socketio لضمان استقرار قنوات الـ Chat
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
 
 # [SYSTEM_READY] - VIP_ARM Final Deployment: Kernel-0x0 Stable
