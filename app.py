@@ -24,17 +24,17 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# إعداد SocketIO بمحرك threading لضمان الاستقرار على Render ومنع تعارضات SSL
+# إعداد SocketIO مع دعم eventlet لضمان التوافق مع Gunicorn و Render
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='threading',
+    async_mode='eventlet', # تم التغيير لضمان استقرار قنوات الاتصال
     ping_timeout=60,
     ping_interval=25,
     engineio_logger=False
 )
 
-# إعداد المسارات الأساسية في بيئة Kernel-0x0
+# إعداد المسارات الأساسية
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
 STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports')
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -43,7 +43,7 @@ for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-# --- وظائف المساعدة المعالجة ---
+# --- وظائف المساعدة ---
 def format_size(bytes_num):
     if not bytes_num: 
         return "--"
@@ -61,7 +61,7 @@ def get_ydl_opts(custom_out=None):
         'merge_output_format': 'mp4'
     }
 
-# --- ميزات المعالجة المتقدمة (AI & Video) ---
+# --- ميزات المعالجة المتقدمة ---
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
@@ -231,8 +231,10 @@ def serve_pages(page):
         return render_template(target)
     return render_template('index.html'), 404
 
+# [SYSTEM_READY] - VIP_ARM Final Deployment: Kernel-0x0 Stable
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
-
-# [SYSTEM_READY] - VIP_ARM Final Deployment: Kernel-0x0 Stable
+else:
+    # لضمان عمل التطبيق تحت Gunicorn في Render
+    application = app
