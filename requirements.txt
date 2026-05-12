@@ -9,3 +9,6 @@ yt-dlp==2026.3.17
 Flask-Cors==6.0.2
 Pillow==11.3.0
 requests==2.33.1
+proglog==0.1.10
+imageio==2.25.1
+imageio-ffmpeg==0.4.8
