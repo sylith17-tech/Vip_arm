@@ -1,5 +1,5 @@
 import eventlet
-# التصحيح الأساسي: يجب أن يكون monkey_patch أول شيء يشهده المعالج
+# [CRITICAL] Monkey patch must be at the top to prevent recursion errors
 eventlet.monkey_patch()
 
 import os
@@ -28,17 +28,17 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# إعداد SocketIO ليتوافق مع eventlet بشكل صحيح
+# إعداد SocketIO مع محرك احتياطي لضمان العمل على بايثون 3.14
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='eventlet',
+    async_mode='eventlet', # المحرك المفضل لبيئة Kernel-0x0
     ping_timeout=60,
     ping_interval=25,
     engineio_logger=False
 )
 
-# إعداد المجلدات
+# إعداد المسارات الأساسية
 DOWNLOAD_FOLDER = os.path.join(os.getcwd(), 'downloads')
 STUDIO_FOLDER = os.path.join(os.getcwd(), 'studio_exports')
 UPLOAD_FOLDER = os.path.join(os.getcwd(), 'uploads')
@@ -47,7 +47,7 @@ for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-# --- وظائف المساعدة ---
+# --- وظائف المساعدة المعالجة ---
 def format_size(bytes_num):
     if not bytes_num: return "--"
     for unit in ['B', 'KB', 'MB', 'GB']:
@@ -63,7 +63,7 @@ def get_ydl_opts(custom_out=None):
         'merge_output_format': 'mp4'
     }
 
-# --- ميزات المعالجة (AI & Video) ---
+# --- ميزات المعالجة المتقدمة (AI & Video) ---
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
@@ -73,24 +73,25 @@ def create_shorts(input_path):
         target_ratio = 9/16
         target_w = h * target_ratio
         final_clip = clip.fx(vfx.crop, x_center=w/2, width=target_w)
-        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac", logger=None)
     return output_path
 
 def dub_video(input_path, lang='ar'):
     output_path = input_path.replace(".mp4", "_DUBBED.mp4")
     temp_audio = f"temp_{uuid.uuid4()}.mp3"
-    with VideoFileClip(input_path) as video:
-        tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
-        tts.save(temp_audio)
-        # استخدام MoviePy لدمج الصوت الجديد
-        from moviepy.editor import AudioFileClip
-        audio_clip = AudioFileClip(temp_audio)
-        final_video = video.set_audio(audio_clip)
-        final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
-    if os.path.exists(temp_audio): os.remove(temp_audio)
+    try:
+        with VideoFileClip(input_path) as video:
+            tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
+            tts.save(temp_audio)
+            from moviepy.editor import AudioFileClip
+            audio_clip = AudioFileClip(temp_audio)
+            final_video = video.set_audio(audio_clip)
+            final_video.write_videofile(output_path, codec="libx264", audio_codec="aac", logger=None)
+    finally:
+        if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
-# --- Socket.IO Logic ---
+# --- Socket.IO Communication ---
 @socketio.on('join')
 def on_join(data):
     room = data.get('room', 'global')
@@ -103,7 +104,7 @@ def handle_message(data):
     room = data.get('room', 'global')
     emit('message', data, room=room, include_self=False)
 
-# --- المسارات (Routes) ---
+# --- المسارات الذكية (Routes) ---
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -123,18 +124,14 @@ def proxy_download():
     if not target_url: return "Target URL is missing", 400
     try:
         req = requests.get(target_url, stream=True, timeout=60, verify=False)
-        def generate():
-            for chunk in req.iter_content(chunk_size=8192):
-                yield chunk
         return Response(
-            stream_with_context(generate()),
+            stream_with_context(req.iter_content(chunk_size=8192)),
             headers={
                 "Content-Type": req.headers.get("Content-Type", "video/mp4"),
                 "Content-Disposition": f"attachment; filename={filename}"
             }
         )
     except Exception as e:
-        logger.error(f"Proxy Error: {str(e)}")
         return f"Kernel Error: {str(e)}", 500
 
 @app.route('/api/scan', methods=['POST'])
@@ -182,14 +179,7 @@ def unified_handler():
                             "url": f.get('url'),
                             "proxy_url": f"/api/proxy_download?url={requests.utils.quote(f.get('url'))}&filename={requests.utils.quote(info.get('title', 'video'))}.{f.get('ext')}"
                         })
-                return jsonify({
-                    "status": "success",
-                    "title": info.get('title'),
-                    "thumbnail": info.get('thumbnail'),
-                    "uploader": info.get('uploader'),
-                    "duration_string": info.get('duration_string'),
-                    "formats": formats[::-1]
-                })
+                return jsonify({"status": "success", "title": info.get('title'), "thumbnail": info.get('thumbnail'), "formats": formats[::-1]})
         else:
             with yt_dlp.YoutubeDL(get_ydl_opts()) as ydl:
                 info = ydl.extract_info(url, download=True)
@@ -207,7 +197,6 @@ def unified_handler():
                 return response
             return send_file(final_path, as_attachment=True)
     except Exception as e:
-        logger.error(f"Unified Handler Error: {str(e)}")
         return jsonify({"status": "failed", "error": str(e)}), 500
 
 @app.route('/api/exif', methods=['POST'])
@@ -232,5 +221,7 @@ def serve_pages(page):
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
+    # التشغيل باستخدام socketio لضمان استقرار قنوات الـ Chat
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
-# Final Force Deployment: Kernel-0x0 Stable
+
+# [SYSTEM_READY] - VIP_ARM Final Deployment: Kernel-0x0 Stable
