@@ -220,7 +220,7 @@
         /* --- Tools Grid --- */
         .tools-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 30px;
             margin-top: 45px;
         }
@@ -400,6 +400,7 @@
     <nav class="nav-capsule">
         <a href="/" class="nav-link active" data-tooltip="الرئيسية"><i class="fas fa-home"></i></a>
         <a href="/studio" class="nav-link" data-tooltip="STUDIO"><i class="fas fa-clapperboard"></i></a>
+        <a href="/chat" class="nav-link" data-tooltip="الدردشة"><i class="fas fa-comments"></i></a> <!-- تم الإضافة هنا -->
         <a href="/downloader" class="nav-link" data-tooltip="التحميل"><i class="fas fa-arrow-down-to-bracket"></i></a>
         <a href="/scanner" class="nav-link" data-tooltip="SECURITY"><i class="fas fa-fingerprint"></i></a>
         <a href="/forensic" class="nav-link" data-tooltip="FORENSIC"><i class="fas fa-dna"></i></a>
@@ -407,7 +408,7 @@
 
     <!-- Main Content Container -->
     <div class="content-container">
-        
+
         <!-- Center Body -->
         <div class="main-body">
             <section class="hero-section">
@@ -420,7 +421,7 @@
                     أهلاً بك في ذروة التطور لنظام **Kernel-0x0**. بيئة هجينة تدمج بين الذكاء الاصطناعي، الأمن السيبراني، والمعالجة السحابية المتقدمة لتقديم تجربة لا مثيل لها.
                 </p>
                 <div style="display: flex; gap: 25px; align-items: center; flex-wrap: wrap;">
-                    <a href="/studio" class="btn-modern">دخول نظام الاستوديو</a>
+                    <a href="/chat" class="btn-modern">دخول نظام الدردشة</a> <!-- تم التغيير للدردشة كأولوية -->
                     <div style="display: flex; align-items: center; gap: 10px; margin-top: 35px; border-right: 3px solid var(--primary); padding-right: 15px;">
                         <span style="font-family: 'JetBrains Mono'; font-weight: bold; color: var(--primary);">ID: VIP_ARM_RESEARCHER</span>
                     </div>
@@ -428,19 +429,25 @@
             </section>
 
             <div class="tools-grid">
-                <!-- Card 1 -->
+                <!-- Card 1 (Chat) -->
+                <div class="neo-card" onclick="location.href='/chat'" style="border-color: var(--accent);">
+                    <i class="fas fa-comments" style="background: linear-gradient(to bottom, var(--accent), var(--secondary)); -webkit-text-fill-color: transparent;"></i>
+                    <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">VIP Chat Global</h3>
+                    <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 15px;">نظام تواصل مشفر وفوري يربط كافة مستخدمي النواة حول العالم.</p>
+                </div>
+                <!-- Card 2 (Studio) -->
                 <div class="neo-card" onclick="location.href='/studio'">
                     <i class="fas fa-wand-magic-sparkles"></i>
                     <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">AI Studio Pro</h3>
                     <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 15px;">محرك MoviePy المطور لدبلجة وتحرير المحتوى بدقة 4K وتزامن ذكي.</p>
                 </div>
-                <!-- Card 2 -->
+                <!-- Card 3 (Scanner) -->
                 <div class="neo-card" onclick="location.href='/scanner'">
                     <i class="fas fa-shield-halved"></i>
                     <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">Security Lab</h3>
                     <p style="color: var(--text-dim); font-size: 0.95rem; margin-top: 15px;">تحليل استباقي للثغرات، فحص استجابة الخوادم، واختبار اختراق متقدم.</p>
                 </div>
-                <!-- Card 3 -->
+                <!-- Card 4 (Downloader) -->
                 <div class="neo-card" onclick="location.href='/downloader'">
                     <i class="fas fa-bolt"></i>
                     <h3 style="font-weight: 900; letter-spacing: 1px; font-size: 1.5rem;">Cloud Downloader</h3>
@@ -459,7 +466,7 @@
                     <span class="dev-tag">ARCHITECT & RESEARCHER</span>
                     <h3 style="font-family: 'JetBrains Mono'; color: var(--primary); font-size: 1.8rem; margin-top: 10px;">VIP_ARM</h3>
                 </div>
-                
+
                 <div style="margin-top: 20px;">
                     <a href="https://www.facebook.com/lith.haker" target="_blank" class="contact-item">
                         <i class="fab fa-facebook" style="width: 20px;"></i>
@@ -534,6 +541,7 @@
             "System Check: 0 Vulnerabilities Found",
             "WhatsApp Bridge: Active (+963...)",
             "Module [Studio] Ready for high-res tasks.",
+            "Module [Chat] Peer-to-Peer node online.",
             "Module [Scanner] Monitoring active targets...",
             "System is currently in ULTIMATE mode."
         ];
