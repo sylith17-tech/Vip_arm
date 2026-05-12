@@ -1,5 +1,5 @@
 import eventlet
-# التصحيح الأول: تأكد من أن monkey_patch تعمل قبل أي استيراد آخر
+# التصحيح الأساسي: يجب أن يكون monkey_patch أول شيء يشهده المعالج
 eventlet.monkey_patch()
 
 import os
@@ -7,13 +7,13 @@ import yt_dlp
 import logging
 import uuid
 import requests
-import asyncio # تم إضافته لضمان التوافق مع النسخ الجديدة من بايثون
+import asyncio
 from flask_socketio import SocketIO, emit, join_room
 from flask import Flask, render_template, request, jsonify, send_file, after_this_request, Response, stream_with_context
 from flask_cors import CORS
 from PIL import Image
 from PIL.ExifTags import TAGS
-from moviepy import VideoFileClip
+from moviepy.editor import VideoFileClip
 from moviepy.video import fx as vfx
 from gtts import gTTS
 
@@ -25,15 +25,15 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__, template_folder='.', static_folder='.')
-app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0' # إضافة مفتاح أمان
+app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# التصحيح الثاني: إعداد SocketIO ليتوافق مع eventlet بشكل صحيح على الاستضافات السحابية
+# إعداد SocketIO ليتوافق مع eventlet بشكل صحيح
 socketio = SocketIO(
-    app, 
-    cors_allowed_origins="*", 
-    async_mode='eventlet', 
-    ping_timeout=60, 
+    app,
+    cors_allowed_origins="*",
+    async_mode='eventlet',
+    ping_timeout=60,
     ping_interval=25,
     engineio_logger=False
 )
@@ -48,11 +48,11 @@ for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
         os.makedirs(folder)
 
 # --- وظائف المساعدة ---
-def format_size(bytes):
-    if not bytes: return "--"
+def format_size(bytes_num):
+    if not bytes_num: return "--"
     for unit in ['B', 'KB', 'MB', 'GB']:
-        if bytes < 1024: return f"{bytes:.1f} {unit}"
-        bytes /= 1024
+        if bytes_num < 1024: return f"{bytes_num:.1f} {unit}"
+        bytes_num /= 1024
 
 def get_ydl_opts(custom_out=None):
     return {
@@ -82,13 +82,15 @@ def dub_video(input_path, lang='ar'):
     with VideoFileClip(input_path) as video:
         tts = gTTS(text="تمت المعالجة بواسطة محرك VIP_ARM", lang=lang)
         tts.save(temp_audio)
-        audio_clip = VideoFileClip(temp_audio).audio
-        final_video = video.with_audio(audio_clip)
+        # استخدام MoviePy لدمج الصوت الجديد
+        from moviepy.editor import AudioFileClip
+        audio_clip = AudioFileClip(temp_audio)
+        final_video = video.set_audio(audio_clip)
         final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
 
-# --- Socket.IO Logic (نظام الدردشة المشفرة) ---
+# --- Socket.IO Logic ---
 @socketio.on('join')
 def on_join(data):
     room = data.get('room', 'global')
@@ -99,11 +101,9 @@ def on_join(data):
 @socketio.on('message')
 def handle_message(data):
     room = data.get('room', 'global')
-    # إرسال الرسالة للغرفة المحددة فقط وتجنب التكرار
     emit('message', data, room=room, include_self=False)
 
 # --- المسارات (Routes) ---
-
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -195,9 +195,9 @@ def unified_handler():
                 info = ydl.extract_info(url, download=True)
                 raw_path = ydl.prepare_filename(info)
                 if not os.path.exists(raw_path): raw_path = os.path.splitext(raw_path)[0] + ".mp4"
-            
+
             final_path = create_shorts(raw_path) if mode == 'shorts' else dub_video(raw_path) if mode == 'dub' else raw_path
-            
+
             @after_this_request
             def cleanup(response):
                 try:
@@ -230,8 +230,7 @@ def serve_pages(page):
     if os.path.exists(target): return render_template(target)
     return render_template('index.html'), 404
 
-# التصحيح الثالث: استخدام socketio.run مباشرة وتجنب asyncio.run() يدوياً
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
-# Final Force Deployment
+# Final Force Deployment: Kernel-0x0 Stable
