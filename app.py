@@ -1,12 +1,12 @@
+import eventlet
+eventlet.monkey_patch()
+
 import os
 import yt_dlp
 import logging
 import uuid
 import requests
-import eventlet
-eventlet.monkey_patch()
 from flask_socketio import SocketIO
-
 from flask import Flask, render_template, request, jsonify, send_file, after_this_request, Response, stream_with_context
 from flask_cors import CORS
 from PIL import Image
@@ -35,6 +35,7 @@ for folder in [DOWNLOAD_FOLDER, STUDIO_FOLDER, UPLOAD_FOLDER]:
     if not os.path.exists(folder):
         os.makedirs(folder)
 
+# --- وظائف المساعدة ---
 def format_size(bytes):
     if not bytes: return "--"
     for unit in ['B', 'KB', 'MB', 'GB']:
@@ -50,6 +51,7 @@ def get_ydl_opts(custom_out=None):
         'merge_output_format': 'mp4'
     }
 
+# --- ميزات المعالجة (AI & Video) ---
 def create_shorts(input_path):
     output_path = input_path.replace(".mp4", "_SHORTS.mp4")
     with VideoFileClip(input_path) as video:
@@ -73,6 +75,20 @@ def dub_video(input_path, lang='ar'):
         final_video.write_videofile(output_path, codec="libx264", audio_codec="aac")
     if os.path.exists(temp_audio): os.remove(temp_audio)
     return output_path
+
+# --- المسارات (Routes) ---
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@app.route('/studio')
+def studio_page():
+    return render_template('studio.html')
+
+@app.route('/chat')
+def chat_page():
+    return render_template('chat.html')
 
 @app.route('/api/proxy_download')
 def proxy_download():
@@ -109,18 +125,6 @@ def web_scanner():
         return jsonify({"target": target_url, "status_code": response.status_code, "server": headers.get("Server", "Hidden"), "security_report": results})
     except Exception as e: return jsonify({"error": str(e)}), 500
 
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/studio')
-def studio_page():
-    return render_template('studio.html')
-
-@app.route('/chat')
-def chat_page():
-    return render_template('chat.html')
-
 @app.route('/upload', methods=['POST'])
 def upload_file():
     file = request.files.get('image') or request.files.get('file')
@@ -129,14 +133,6 @@ def upload_file():
     filepath = os.path.join(UPLOAD_FOLDER, filename)
     file.save(filepath)
     return jsonify({"status": "success", "url": f"/uploads/{filename}", "filename": filename})
-
-@app.route('/<page>')
-def serve_pages(page):
-    if os.path.exists(page) and not page.endswith('.html'):
-        return send_file(page)
-    target = page if page.endswith('.html') else f"{page}.html"
-    if os.path.exists(target): return render_template(target)
-    return render_template('index.html'), 404
 
 @app.route('/api/download', methods=['POST'])
 @app.route('/api/process', methods=['POST'])
@@ -196,7 +192,15 @@ def forensic_core():
         if not raw_exif: return jsonify({"status": "clear", "message": "Zero Metadata"})
         report = {TAGS.get(tid, tid): str(val) for tid, val in raw_exif.items() if not isinstance(val, bytes)}
         return jsonify({"status": "extracted", "forensic_data": report})
-    except Exception as e: return jsonify({"error": str(e)}), 500                       
+    except Exception as e: return jsonify({"error": str(e)}), 500
+
+@app.route('/<page>')
+def serve_pages(page):
+    if os.path.exists(page) and not page.endswith('.html'):
+        return send_file(page)
+    target = page if page.endswith('.html') else f"{page}.html"
+    if os.path.exists(target): return render_template(target)
+    return render_template('index.html'), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))

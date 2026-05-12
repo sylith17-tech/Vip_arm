@@ -10,3 +10,4 @@ eventlet
 Pillow<12.0.0
 numpy
 yt-dlp
+gTTS
