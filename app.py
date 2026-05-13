@@ -1,5 +1,6 @@
-import eventlet
-eventlet.monkey_patch()
+# --- [KERNEL_INIT] ---
+from gevent import monkey
+monkey.patch_all()  # السطر الأهم: يجب أن يسبق كافة الاستيرادات
 
 import os
 import yt_dlp
@@ -43,18 +44,18 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# إعداد SocketIO المحدث لزيادة استقرار الجلسات ومنع الانقطاع
+# إعداد SocketIO المحدث باستخدام gevent لضمان استقرار الجلسات ومنع [Errno 9]
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='eventlet',
-    ping_timeout=120,    # زيادة وقت الانتظار
-    ping_interval=5,     # تقليل المدة بين نبضات التأكد من الاتصال
+    async_mode='gevent', # تم التغيير من eventlet لضمان التوافقية
+    ping_timeout=120,    
+    ping_interval=5,     
     manage_session=False,
     engineio_logger=False
 )
 
-# إعداد المسارات الأساسية
+# إعداد المسارات الأساسية للنظام
 BASE_DIR = os.getcwd()
 DOWNLOAD_FOLDER = os.path.join(BASE_DIR, 'downloads')
 STUDIO_FOLDER = os.path.join(BASE_DIR, 'studio_exports')
@@ -127,6 +128,7 @@ def on_join(data):
 
 @socketio.on('message')
 def handle_message(data):
+    # تمرير الرسائل المشفرة بين الأطراف داخل الغرفة البرمجية
     room = data.get('room', 'global')
     emit('message', data, room=room, include_self=False)
 
@@ -262,6 +264,8 @@ def serve_pages(page):
 # --- [START_SERVER] ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
+    # التشغيل باستخدام gevent عبر socketio
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
 else:
+    # لتوافق Gunicorn في بيئة Render
     application = app
