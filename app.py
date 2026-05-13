@@ -39,6 +39,17 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] [NODE_ID: Kernel-0x0] - %(message)s'
 )
 logger = logging.getLogger(__name__)
+import sqlite3
+
+def init_db():
+    conn = sqlite3.connect("chat.db")
+    c = conn.cursor()
+    c.execute("CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, room TEXT, user TEXT, msg TEXT, timestamp DATETIME DEFAULT CURRENT_TIMESTAMP)")
+    conn.commit()
+    conn.close()
+
+init_db()
+
 
 app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
@@ -123,6 +134,16 @@ def dub_video(input_path, lang='ar'):
 # --- [SOCKET_IO_COMMUNICATION - FIXED FOR MULTIPLAYER] ---
 @socketio.on('join')
 def on_join(data):
+    try:
+        conn = sqlite3.connect("chat.db")
+        c = conn.cursor()
+        c.execute("SELECT user, msg FROM messages WHERE room = ? ORDER BY timestamp DESC LIMIT 50", (data.get("room"),))
+        history = c.fetchall()[::-1]
+        conn.close()
+        for user, msg in history:
+            emit("message", {"user": user, "msg": msg}, room=request.sid)
+    except Exception as e:
+        print(f"History Error: {e}")
     room = data.get('room', 'global')
     user = data.get('user', 'Unknown')
     join_room(room)
@@ -131,6 +152,14 @@ def on_join(data):
 
 @socketio.on('message')
 def handle_message(data):
+    try:
+        conn = sqlite3.connect("chat.db")
+        c = conn.cursor()
+        c.execute("INSERT INTO messages (room, user, msg) VALUES (?, ?, ?)", (data.get("room"), data.get("user"), data.get("msg")))
+        conn.commit()
+        conn.close()
+    except Exception as e:
+        print(f"DB Error: {e}")
     # تم دمج إصلاح البث لضمان وصول الرسالة لجميع الأطراف في الغرفة
     room = data.get('room', 'global')
     logger.info(f"ROUTING: Encrypted signal received in Tunnel {room}")
