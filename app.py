@@ -1,6 +1,6 @@
 # --- [KERNEL_INIT] ---
 from gevent import monkey
-monkey.patch_all()  # السطر الأهم: يجب أن يسبق كافة الاستيرادات
+monkey.patch_all()  # السطر الأهم: يجب أن يسبق كافة الاستيرادات لضمان عمل الـ WebSockets
 
 import os
 import yt_dlp
@@ -44,15 +44,16 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# إعداد SocketIO المحدث باستخدام gevent لضمان استقرار الجلسات ومنع [Errno 9]
+# إعداد SocketIO المطور لضمان وصول الرسائل للطرفين في بيئة Render
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
-    async_mode='gevent', # تم التغيير من eventlet لضمان التوافقية
-    ping_timeout=120,    
-    ping_interval=5,     
+    async_mode='gevent', 
+    ping_timeout=600,      # زيادة المهلة لضمان استقرار النفق
+    ping_interval=25,
     manage_session=False,
-    engineio_logger=False
+    logger=True,           # تفعيل السجلات لتتبع تدفق الرسائل
+    engineio_logger=True
 )
 
 # إعداد المسارات الأساسية للنظام
@@ -72,7 +73,8 @@ def format_size(bytes_num):
     for unit in ['B', 'KB', 'MB', 'GB']:
         if bytes_num < 1024:
             return f"{bytes_num:.1f} {unit}"
-        bytes_num /= 1024
+    if bytes_num > 0: bytes_num /= 1024
+    return "0 B"
 
 def get_ydl_opts(custom_out=None):
     return {
@@ -118,19 +120,21 @@ def dub_video(input_path, lang='ar'):
         if os.path.exists(temp_audio):
             os.remove(temp_audio)
 
-# --- [SOCKET_IO_COMMUNICATION] ---
+# --- [SOCKET_IO_COMMUNICATION - FIXED FOR MULTIPLAYER] ---
 @socketio.on('join')
 def on_join(data):
     room = data.get('room', 'global')
     user = data.get('user', 'Unknown')
     join_room(room)
-    logger.info(f"User {user} joined Tunnel: {room}")
+    logger.info(f"SIGNAL: Node {user} synchronized with Tunnel {room}")
+    emit('status', {'msg': f'Node {user} is online'}, room=room)
 
 @socketio.on('message')
 def handle_message(data):
-    # تمرير الرسائل المشفرة بين الأطراف داخل الغرفة البرمجية
+    # تم دمج إصلاح البث لضمان وصول الرسالة لجميع الأطراف في الغرفة
     room = data.get('room', 'global')
-    emit('message', data, room=room, include_self=False)
+    logger.info(f"ROUTING: Encrypted signal received in Tunnel {room}")
+    emit('message', data, room=room, broadcast=True, include_self=False)
 
 # --- [ROUTES] ---
 @app.route('/')
@@ -264,8 +268,7 @@ def serve_pages(page):
 # --- [START_SERVER] ---
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
-    # التشغيل باستخدام gevent عبر socketio
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
 else:
-    # لتوافق Gunicorn في بيئة Render
+    # لضمان توافق خادم Gunicorn في بيئة Render السحابية
     application = app
