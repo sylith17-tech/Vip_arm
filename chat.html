@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>KERNEL-0X0 | OMEGA V17.1</title>
+    <title>KERNEL-0X0 | OMEGA V17.2</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
@@ -19,162 +19,164 @@
             --sent-bg: rgba(0, 242, 255, 0.1);
             --recv-bg: rgba(255, 255, 255, 0.05);
             --border: rgba(48, 54, 61, 0.8);
-            --sidebar-w: 320px;
+            --sidebar-w: 300px;
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none !important; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
         
         body, html { 
-            height: 100%; margin: 0; padding: 0; overflow: hidden; 
+            height: 100dvh; overflow: hidden; 
             background: var(--bg-dark); font-family: 'Cairo', sans-serif; 
             color: var(--text-main); width: 100%; 
         }
 
-        /* Fixed background stability */
-        .bg-stable {
-            position: fixed; inset: 0; background: var(--bg-dark); z-index: -1;
+        /* Container Fix for Mobile Layout */
+        .app-container { 
+            display: flex; 
+            height: 100dvh; 
+            width: 100vw; 
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Secure Overlay - Fixed Logic */
-        #vault-lock { 
-            position: fixed; inset: 0; background: var(--bg-dark); 
-            z-index: 10000; display: flex; align-items: center; justify-content: center; 
-            backdrop-filter: blur(25px); transition: opacity 0.4s ease, visibility 0.4s;
-        }
-        
-        .lock-box { 
-            background: var(--panel-dark); padding: 40px; border-radius: 30px; 
-            border: 1px solid var(--accent); text-align: center; width: 90%; 
-            max-width: 400px; box-shadow: 0 0 50px rgba(0, 242, 255, 0.2); 
-        }
-
-        .app-container { display: flex; height: 100vh; width: 100vw; position: relative; }
-        
-        /* Sidebar - Optimized for Speed */
+        /* Sidebar Improvement */
         .chat-nav { 
             width: var(--sidebar-w); background: var(--panel-dark); 
             border-left: 1px solid var(--border); display: flex; 
-            flex-direction: column; z-index: 5000; height: 100%;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform;
+            flex-direction: column; z-index: 2000; height: 100%;
+            transition: transform 0.3s ease;
+            position: relative;
         }
 
-        .tunnel-list { flex: 1; overflow-y: auto; padding: 15px; }
-        .tunnel-item { 
-            padding: 15px; background: rgba(255,255,255,0.02); 
-            border: 1px solid var(--border); border-radius: 15px; 
-            margin-bottom: 10px; cursor: pointer; transition: 0.2s; 
+        .chat-main { 
+            flex: 1; 
+            display: flex; 
+            flex-direction: column; 
+            min-width: 0; 
+            height: 100%;
+            position: relative;
+            background: var(--bg-dark);
         }
-        .tunnel-item:hover { border-color: var(--accent); background: rgba(0, 242, 255, 0.05); }
-        .tunnel-item.active { border-right: 4px solid var(--accent); background: rgba(0, 242, 255, 0.1); }
 
-        .chat-main { flex: 1; display: flex; flex-direction: column; min-width: 0; position: relative; z-index: 100; }
-
-        /* Header */
         header { 
-            padding: 15px 20px; background: rgba(1, 4, 9, 0.9); 
+            padding: 10px 15px; 
+            background: rgba(1, 4, 9, 0.95); 
             display: flex; justify-content: space-between; align-items: center; 
-            border-bottom: 1px solid var(--border); backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            z-index: 100;
         }
 
-        /* Messages area */
+        /* Sync Button Animation */
+        .btn-sync.syncing i { animation: spin 1s linear infinite; color: var(--success); }
+        @keyframes spin { 100% { transform: rotate(-360deg); } }
+
+        /* Dynamic Message Box */
         .messages { 
-            flex: 1; overflow-y: auto; padding: 20px; 
-            display: flex; flex-direction: column; gap: 12px; 
-            scroll-behavior: smooth; background: transparent;
+            flex: 1; 
+            overflow-y: auto; 
+            padding: 15px; 
+            display: flex; 
+            flex-direction: column; 
+            gap: 10px;
+            background: radial-gradient(circle at center, #0d1117 0%, #010409 100%);
         }
         
         .msg { 
-            max-width: 85%; padding: 12px 16px; border-radius: 18px; 
-            font-size: 0.95rem; border: 1px solid var(--border); 
-            position: relative; animation: fadeIn 0.2s ease-out;
+            max-width: 85%; padding: 10px 14px; border-radius: 15px; 
+            font-size: 0.9rem; border: 1px solid var(--border); 
+            position: relative; animation: slideIn 0.2s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideIn { from { opacity: 0; transform: scale(0.95); } }
         
-        .msg.sent { align-self: flex-start; background: var(--sent-bg); border-bottom-left-radius: 4px; border-color: var(--accent); }
-        .msg.received { align-self: flex-end; background: var(--recv-bg); border-bottom-right-radius: 4px; }
-        .msg-info { display: flex; justify-content: space-between; font-size: 0.65rem; color: var(--accent); margin-bottom: 5px; font-family: 'Fira Code'; }
+        .msg.sent { align-self: flex-start; background: var(--sent-bg); border-bottom-left-radius: 2px; border-color: var(--accent); }
+        .msg.received { align-self: flex-end; background: var(--recv-bg); border-bottom-right-radius: 2px; }
 
-        /* Input area */
-        .input-area { padding: 20px; background: var(--bg-dark); border-top: 1px solid var(--border); }
-        .input-wrapper { 
-            display: flex; gap: 10px; background: rgba(255,255,255,0.03); 
-            padding: 5px 15px; border-radius: 20px; border: 1px solid var(--border); 
+        /* Floating Input Bar - Fixed at bottom */
+        .input-area { 
+            padding: 12px 15px; 
+            background: var(--panel-dark); 
+            border-top: 1px solid var(--border);
+            padding-bottom: max(12px, env(safe-area-inset-bottom));
         }
-        .input-wrapper input { flex: 1; background: transparent; border: none; color: #fff; padding: 12px; font-size: 1rem; }
+
+        .input-wrapper { 
+            display: flex; gap: 8px; background: rgba(255,255,255,0.05); 
+            padding: 5px 12px; border-radius: 25px; border: 1px solid var(--border); 
+            align-items: center;
+        }
+
+        .input-wrapper input { 
+            flex: 1; background: transparent; border: none; color: #fff; 
+            padding: 10px 5px; font-size: 0.95rem; 
+        }
 
         .btn-icon { 
-            width: 42px; height: 42px; border-radius: 12px; 
+            width: 38px; height: 38px; border-radius: 50%; 
             display: flex; align-items: center; justify-content: center; 
-            background: rgba(255,255,255,0.05); color: var(--accent); 
-            border: 1px solid var(--border); cursor: pointer; transition: 0.2s; 
+            background: transparent; color: var(--accent); 
+            border: 1px solid transparent; cursor: pointer;
         }
-        .btn-icon:hover { background: var(--accent); color: #000; }
-        .btn-send { background: var(--accent); color: #000; border: none; border-radius: 50%; }
 
-        /* Responsive */
+        .btn-send { background: var(--accent); color: #000; }
+
+        /* Overlay Fix */
+        #vault-lock { 
+            position: fixed; inset: 0; background: var(--bg-dark); 
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+        }
+
         @media (max-width: 768px) {
-            .chat-nav { 
-                position: fixed; right: 0; top: 0; bottom: 0; 
-                transform: translateX(100%); width: 85%; 
-            }
-            .chat-nav.open { transform: translateX(0); box-shadow: -15px 0 50px #000; }
+            .chat-nav { position: fixed; right: 0; transform: translateX(100%); width: 80%; }
+            .chat-nav.open { transform: translateX(0); box-shadow: -10px 0 30px #000; }
         }
 
-        .status-dot { width: 10px; height: 10px; background: var(--success); border-radius: 50%; display: inline-block; margin-left: 8px; box-shadow: 0 0 10px var(--success); }
-        .status-offline { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
-        
-        /* Theme Section */
-        .theme-section { padding: 15px; border-top: 1px solid var(--border); }
-        .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 10px; }
-        .theme-dot { height: 28px; border-radius: 6px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); }
+        .tunnel-item { padding: 12px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 8px; cursor: pointer; }
+        .tunnel-item.active { border-right: 4px solid var(--accent); background: rgba(0, 242, 255, 0.05); }
     </style>
 </head>
-<body oncontextmenu="return false;">
-
-<div class="bg-stable"></div>
+<body>
 
 <div id="vault-lock">
-    <div class="lock-box">
-        <i class="fas fa-user-secret" style="font-size: 3.5rem; color: var(--accent); margin-bottom: 20px;"></i>
-        <h2 style="font-family: 'Fira Code'; margin: 0;">KERNEL-0X0</h2>
-        <p style="color: #666; font-size: 0.7rem; margin-bottom: 25px;">LEVEL 17.1 SECURE ACCESS</p>
-        <input type="password" id="vault-pass" placeholder="مفتاح التشفير..." style="width: 100%; padding: 15px; background: #000; border: 1px solid var(--border); border-radius: 12px; color: var(--accent); text-align: center; margin-bottom: 20px;">
-        <button onclick="attemptAccess()" style="width: 100%; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 12px; font-weight: bold; cursor: pointer;">فتح النفق</button>
+    <div style="text-align:center; background:var(--panel-dark); padding:30px; border-radius:20px; border:1px solid var(--accent); width:85%; max-width:350px;">
+        <i class="fas fa-shield-halved" style="font-size: 3rem; color: var(--accent); margin-bottom: 15px;"></i>
+        <h3 style="margin-bottom:20px; font-family:'Fira Code'">DECRYPT ACCESS</h3>
+        <input type="password" id="vault-pass" placeholder="PASSWORD" style="width:100%; padding:12px; background:#000; border:1px solid var(--border); border-radius:8px; color:var(--accent); text-align:center;">
+        <button onclick="attemptAccess()" style="width:100%; margin-top:15px; padding:12px; background:var(--accent); border:none; border-radius:8px; font-weight:bold;">ENTER TUNNEL</button>
     </div>
 </div>
 
 <div class="app-container">
     <aside class="chat-nav" id="sidebar">
-        <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
-            <span style="font-family: 'Fira Code'; color: var(--accent); font-weight: bold;">TUNNEL_OS</span>
-            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; color:var(--accent)"></i>
+        <div style="padding: 15px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between;">
+            <span style="color:var(--accent); font-weight:bold;">KERNEL-0X0</span>
+            <i class="fas fa-chevron-right" onclick="toggleSidebar()"></i>
         </div>
-        <div class="tunnel-list" id="tunnels-container"></div>
-        <div class="theme-section">
-            <span style="font-size: 0.7rem; color: var(--accent);">مصفوفة الألوان</span>
-            <div class="theme-grid" id="theme-grid"></div>
-        </div>
-        <div style="padding: 20px; display: flex; flex-direction: column; gap: 10px;">
-            <button onclick="createNewTunnel()" class="btn-icon" style="width:100%; border-radius:10px;">+ نفق جديد</button>
-            <button onclick="panicDestruct()" style="width:100%; padding:10px; background:rgba(255,0,60,0.1); color:var(--danger); border:1px solid var(--danger); border-radius:10px; cursor:pointer;">تدمير البيانات</button>
+        <div id="tunnels-container" style="flex:1; overflow-y:auto; padding:15px;"></div>
+        <div style="padding: 15px; border-top: 1px solid var(--border);">
+            <button onclick="createNewTunnel()" style="width:100%; padding:10px; background:transparent; border:1px dashed var(--accent); color:var(--accent); border-radius:10px;">+ نفق جديد</button>
+            <button onclick="panicDestruct()" style="width:100%; margin-top:10px; padding:10px; background:rgba(255,0,0,0.1); border:1px solid var(--danger); color:var(--danger); border-radius:10px;">حذف البيانات</button>
         </div>
     </aside>
 
     <main class="chat-main">
         <header>
-            <div style="display: flex; align-items: center; gap: 15px;">
+            <div style="display:flex; align-items:center; gap:10px;">
                 <button onclick="toggleSidebar()" class="btn-icon"><i class="fas fa-bars"></i></button>
                 <div>
-                    <div id="current-tunnel-name" style="font-weight: bold; font-size: 0.9rem;">LOADING...</div>
-                    <div style="font-size: 0.55rem; color: var(--accent); font-family: 'Fira Code';">
-                        <span id="conn-status" class="status-dot"></span> <span id="protocol-info">SECURE_LINK</span>
+                    <div id="current-tunnel-name" style="font-weight:bold; font-size:0.85rem;">CONNECTING...</div>
+                    <div style="font-size:0.5rem; display:flex; align-items:center;">
+                        <span id="conn-status" class="status-dot" style="width:8px; height:8px; border-radius:50%; background:var(--danger); margin-left:5px;"></span>
+                        <span id="protocol-info">OFFLINE</span>
                     </div>
                 </div>
             </div>
-            <div style="display: flex; gap: 8px;">
-                <button onclick="copyTunnelURL()" class="btn-icon"><i class="fas fa-link"></i></button>
-                <button onclick="clearCurrentChat()" class="btn-icon" style="color:var(--danger)"><i class="fas fa-eraser"></i></button>
+            <div style="display:flex; gap:5px;">
+                <!-- زر تحديث المزامنة الجديد -->
+                <button onclick="forceSync()" class="btn-icon btn-sync" id="syncBtn" title="تحديث المزامنة">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+                <button onclick="copyTunnelURL()" class="btn-icon"><i class="fas fa-share-nodes"></i></button>
+                <button onclick="clearCurrentChat()" class="btn-icon" style="color:var(--danger)"><i class="fas fa-trash-can"></i></button>
             </div>
         </header>
 
@@ -182,7 +184,7 @@
 
         <div class="input-area">
             <div class="input-wrapper">
-                <input type="text" id="userInput" placeholder="أرسل إشارة مشفرة..." autocomplete="off">
+                <input type="text" id="userInput" placeholder="رسالة مشفرة..." autocomplete="off">
                 <button onclick="sendSignal()" class="btn-icon btn-send"><i class="fas fa-paper-plane"></i></button>
             </div>
         </div>
@@ -190,20 +192,6 @@
 </div>
 
 <script>
-    // --- Configuration & Initialization ---
-    const themes = [
-        { bg: '#010409', acc: '#00f2ff', pnl: 'rgba(13, 17, 23, 0.98)' },
-        { bg: '#0d0000', acc: '#ff4d4d', pnl: 'rgba(30, 5, 5, 0.98)' },
-        { bg: '#030803', acc: '#39ff14', pnl: 'rgba(10, 25, 10, 0.98)' },
-        { bg: '#0d001a', acc: '#ff00ff', pnl: 'rgba(30, 0, 50, 0.98)' },
-        { bg: '#000814', acc: '#00b4d8', pnl: 'rgba(0, 20, 40, 0.98)' },
-        { bg: '#0f0f0f', acc: '#ffbe0b', pnl: 'rgba(30, 30, 30, 0.98)' },
-        { bg: '#1a1a2e', acc: '#e94560', pnl: 'rgba(22, 33, 62, 0.98)' },
-        { bg: '#011627', acc: '#4cc9f0', pnl: 'rgba(1, 30, 50, 0.98)' },
-        { bg: '#121212', acc: '#f8f9fa', pnl: 'rgba(30, 30, 30, 0.98)' },
-        { bg: '#2e3440', acc: '#88c0d0', pnl: 'rgba(59, 66, 82, 0.98)' }
-    ];
-
     let currentTunnelID = new URLSearchParams(window.location.search).get('room') || 'Global_Node';
     let tunnels = JSON.parse(localStorage.getItem('k0x0_tunnels')) || [{id: 'Global_Node', name: 'القناة العامة', key: 'KERNEL_DEFAULT'}];
     const myUID = localStorage.getItem('k0x0_uid') || "NODE-" + Math.random().toString(16).slice(2, 6).toUpperCase();
@@ -212,14 +200,13 @@
     const socketURL = "wss://vip-arm-fixed.onrender.com/chat";
     let socket;
 
-    // --- Core Functions ---
     function initWebSocket() {
         if (socket) socket.close();
         socket = new WebSocket(`${socketURL}?room=${currentTunnelID}`);
         
         socket.onopen = () => {
-            document.getElementById('conn-status').classList.remove('status-offline');
-            document.getElementById('protocol-info').innerText = "AES_256_ACTIVE";
+            document.getElementById('conn-status').style.background = 'var(--success)';
+            document.getElementById('protocol-info').innerText = "SECURE_LINK_ACTIVE";
         };
         
         socket.onmessage = (e) => {
@@ -228,9 +215,25 @@
         };
 
         socket.onclose = () => {
-            document.getElementById('conn-status').classList.add('status-offline');
-            setTimeout(initWebSocket, 3000);
+            document.getElementById('conn-status').style.background = 'var(--danger)';
+            document.getElementById('protocol-info').innerText = "LINK_BROKEN";
+            setTimeout(initWebSocket, 5000);
         };
+    }
+
+    // ميزة المزامنة القسرية الجديدة
+    function forceSync() {
+        const btn = document.getElementById('syncBtn');
+        btn.classList.add('syncing');
+        
+        // إعادة تهيئة الاتصال
+        initWebSocket();
+        
+        // محاكاة جلب البيانات
+        setTimeout(() => {
+            loadHistory();
+            btn.classList.remove('syncing');
+        }, 1500);
     }
 
     function attemptAccess() {
@@ -238,14 +241,11 @@
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
         if (tunnel && (tunnel.id === 'Global_Node' || tunnel.key === pass)) {
             sessionStorage.setItem('unlock_' + currentTunnelID, '1');
-            document.getElementById('vault-lock').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('vault-lock').style.visibility = 'hidden';
-                initWebSocket();
-                loadHistory();
-            }, 400);
+            document.getElementById('vault-lock').style.display = 'none';
+            initWebSocket();
+            loadHistory();
         } else {
-            alert("مفتاح خاطئ!");
+            alert("WRONG KEY");
         }
     }
 
@@ -265,6 +265,8 @@
             pushUI(txt, myUID, time, true);
             saveMsg(payload);
             inp.value = "";
+        } else {
+            alert("لا يوجد اتصال! حاول الضغط على زر المزامنة.");
         }
     }
 
@@ -277,14 +279,14 @@
                 pushUI(dec, data.sender, data.time, false);
                 saveMsg(data);
             }
-        } catch(e) { console.log("Decryption error"); }
+        } catch(e) {}
     }
 
     function pushUI(text, sender, time, isMe) {
         const box = document.getElementById('chat-box');
         const d = document.createElement('div');
         d.className = `msg ${isMe ? 'sent' : 'received'}`;
-        d.innerHTML = `<div class="msg-info"><span>${sender}</span><span>${time}</span></div><div>${text}</div>`;
+        d.innerHTML = `<div style="font-size:0.6rem; color:var(--accent); margin-bottom:4px;">${sender} • ${time}</div><div>${text}</div>`;
         box.appendChild(d);
         box.scrollTop = box.scrollHeight;
     }
@@ -309,7 +311,6 @@
         });
     }
 
-    // --- UI Helpers ---
     function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
 
     function createNewTunnel() {
@@ -323,17 +324,9 @@
         }
     }
 
-    function applyTheme(t) {
-        const r = document.documentElement;
-        r.style.setProperty('--bg-dark', t.bg);
-        r.style.setProperty('--accent', t.acc);
-        r.style.setProperty('--panel-dark', t.pnl);
-        localStorage.setItem('k0x0_theme', JSON.stringify(t));
-    }
-
     function copyTunnelURL() {
         navigator.clipboard.writeText(location.href);
-        alert("تم نسخ الرابط!");
+        alert("تم نسخ رابط النفق المشفر");
     }
 
     function clearCurrentChat() {
@@ -341,29 +334,15 @@
     }
 
     function panicDestruct() {
-        if(confirm("سيتم حذف كل شيء! هل أنت متأكد؟")) { localStorage.clear(); location.href = location.pathname; }
+        if(confirm("تدمير شامل لجميع البيانات؟")) { localStorage.clear(); location.href = location.pathname; }
     }
 
-    // --- Init ---
     window.onload = () => {
-        // Theme init
-        const grid = document.getElementById('theme-grid');
-        themes.forEach(t => {
-            const d = document.createElement('div');
-            d.className = 'theme-dot';
-            d.style.background = t.acc;
-            d.onclick = () => applyTheme(t);
-            grid.appendChild(d);
-        });
-        const savedTheme = localStorage.getItem('k0x0_theme');
-        if(savedTheme) applyTheme(JSON.parse(savedTheme));
-
-        // Tunnels init
         const container = document.getElementById('tunnels-container');
         tunnels.forEach(t => {
             const d = document.createElement('div');
             d.className = `tunnel-item ${t.id === currentTunnelID ? 'active' : ''}`;
-            d.innerHTML = `<div style="font-size:0.6rem; color:var(--accent)">${t.id}</div><div style="font-weight:bold">${t.name}</div>`;
+            d.innerHTML = `<div style="font-size:0.5rem; color:var(--accent)">${t.id}</div><div>${t.name}</div>`;
             d.onclick = () => location.href = "?room=" + t.id;
             container.appendChild(d);
         });
@@ -371,7 +350,6 @@
         const activeT = tunnels.find(t => t.id === currentTunnelID);
         document.getElementById('current-tunnel-name').innerText = activeT ? activeT.name : "UNKNOWN";
 
-        // Access Logic
         if (currentTunnelID === 'Global_Node' || sessionStorage.getItem('unlock_' + currentTunnelID)) {
             document.getElementById('vault-lock').style.display = 'none';
             initWebSocket();
