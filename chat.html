@@ -159,8 +159,20 @@
 </div>
 
 <script>
-    let currentTunnelID = new URLSearchParams(window.location.search).get('room') || 'Global_Node';
+    // الحصول على المعطيات من الرابط
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentTunnelID = urlParams.get('room') || 'Global_Node';
+    let sharedKey = urlParams.get('k'); // مفتاح مشفر ممرر في الرابط
+    let sharedName = urlParams.get('n'); // اسم الغرفة ممرر في الرابط
+
     let tunnels = JSON.parse(localStorage.getItem('k0x0_tunnels')) || [{id: 'Global_Node', name: 'قناة الاختراق العامة', key: 'KERNEL_DEFAULT'}];
+    
+    // فحص إذا كان النفق موجوداً، وإذا لم يكن، نقوم بإضافته (للمستقبل)
+    if (sharedKey && !tunnels.find(t => t.id === currentTunnelID)) {
+        tunnels.push({id: currentTunnelID, name: sharedName || "نفق مشترك", key: sharedKey});
+        localStorage.setItem('k0x0_tunnels', JSON.stringify(tunnels));
+    }
+
     const myUID = localStorage.getItem('k0x0_uid') || "OP-" + Math.random().toString(16).slice(2, 6).toUpperCase();
     localStorage.setItem('k0x0_uid', myUID);
 
@@ -272,6 +284,7 @@
         const box = document.getElementById('chat-box');
         box.innerHTML = "";
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
+        if (!tunnel) return;
         const h = JSON.parse(localStorage.getItem('hist_' + currentTunnelID)) || [];
         h.forEach(m => {
             try {
@@ -284,13 +297,25 @@
     function attemptAccess() {
         const pass = document.getElementById('vault-pass').value;
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
-        if (tunnel && (tunnel.id === 'Global_Node' || tunnel.key === pass)) {
+        
+        // تعديل منطق التحقق: إذا كان النفق غير موجود في التخزين، نعتبر الباسورد هو الكي الجديد
+        if (tunnel) {
+            if (tunnel.id === 'Global_Node' || tunnel.key === pass) {
+                sessionStorage.setItem('unlocked_' + currentTunnelID, 'true');
+                document.getElementById('vault-lock').style.display = 'none';
+                initWebSocket();
+                loadHistory();
+            } else {
+                alert("ACCESS DENIED: INVALID KEY");
+            }
+        } else if (currentTunnelID !== 'Global_Node') {
+            // حالة الدخول لأول مرة عبر الرابط
+            tunnels.push({id: currentTunnelID, name: sharedName || "نفق خارجي", key: pass});
+            localStorage.setItem('k0x0_tunnels', JSON.stringify(tunnels));
             sessionStorage.setItem('unlocked_' + currentTunnelID, 'true');
             document.getElementById('vault-lock').style.display = 'none';
             initWebSocket();
-            loadHistory();
-        } else {
-            alert("ACCESS DENIED: INVALID KEY");
+            renderTunnels();
         }
     }
 
@@ -310,8 +335,20 @@
             const id = "NODE_" + Math.random().toString(36).slice(2, 7).toUpperCase();
             tunnels.push({id, name: n, key: k});
             localStorage.setItem('k0x0_tunnels', JSON.stringify(tunnels));
-            location.href = "?room=" + id;
+            location.href = `?room=${id}&k=${encodeURIComponent(k)}&n=${encodeURIComponent(n)}`;
         }
+    }
+
+    function renderTunnels() {
+        const container = document.getElementById('tunnels-container');
+        container.innerHTML = "";
+        tunnels.forEach(t => {
+            const d = document.createElement('div');
+            d.className = `tunnel-item ${t.id === currentTunnelID ? 'active' : ''}`;
+            d.innerHTML = `<div style="font-size:0.55rem; color:var(--accent); font-family:'Fira Code'">${t.id}</div><div style="font-weight:bold">${t.name}</div>`;
+            d.onclick = () => location.href = `?room=${t.id}&k=${encodeURIComponent(t.key)}&n=${encodeURIComponent(t.name)}`;
+            container.appendChild(d);
+        });
     }
 
     function clearCurrentChat() { if(confirm("هل تريد مسح السجل المحلي لهذا النفق؟")) { localStorage.removeItem('hist_' + currentTunnelID); location.reload(); } }
@@ -319,22 +356,16 @@
     function panicDestruct() { if(confirm("سيتم تدمير جميع الأنفاق والسجلات والمفاتيح فوراً. هل أنت متأكد؟")) { localStorage.clear(); location.href = window.location.pathname; } }
 
     function copyTunnelURL() {
-        const url = window.location.href;
-        navigator.clipboard.writeText(url).then(() => alert("تم نسخ رابط النفق المشفر بنجاح."));
+        const tunnel = tunnels.find(t => t.id === currentTunnelID);
+        const url = `${window.location.origin}${window.location.pathname}?room=${currentTunnelID}&k=${encodeURIComponent(tunnel.key)}&n=${encodeURIComponent(tunnel.name)}`;
+        navigator.clipboard.writeText(url).then(() => alert("تم نسخ الرابط المشفر (يحتوي على إحداثيات النفق)."));
     }
 
     window.onload = () => {
         const savedTheme = localStorage.getItem('k0x0_theme');
         if (savedTheme) setTheme(savedTheme);
 
-        const container = document.getElementById('tunnels-container');
-        tunnels.forEach(t => {
-            const d = document.createElement('div');
-            d.className = `tunnel-item ${t.id === currentTunnelID ? 'active' : ''}`;
-            d.innerHTML = `<div style="font-size:0.55rem; color:var(--accent); font-family:'Fira Code'">${t.id}</div><div style="font-weight:bold">${t.name}</div>`;
-            d.onclick = () => location.href = "?room=" + t.id;
-            container.appendChild(d);
-        });
+        renderTunnels();
 
         const activeT = tunnels.find(t => t.id === currentTunnelID);
         document.getElementById('current-tunnel-name').innerText = activeT ? activeT.name : "UNKNOWN_NODE";
