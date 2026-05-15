@@ -137,12 +137,12 @@ def handle_join(data):
         history = c.fetchall()[::-1]
         conn.close()
         for h_user, h_msg in history:
-            emit("message", {"user": h_user, "msg": h_msg, "room": room}, room=request.sid)
+            emit("message", {"user": h_user, "msg": h_msg, "room": room})
     except Exception as e:
         print(f"History Sync Error: {e}")
 
     # بث إشعار الحالة داخل النفق
-    emit('status', {'msg': f'Node {user} is online'}, to=room)
+    emit('status', {'msg': f'Node {user} is online'}, to=room, include_self=False)
 
 @socketio.on('message')
 def handle_message(data):
