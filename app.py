@@ -176,7 +176,7 @@ def handle_message(data):
             'room': room,
             'msg': msg_encrypted,
             'user': user_encrypted
-        }, to=room, include_self=False)
+        }, to=room)
 
 @socketio.on('typing')
 def handle_typing(data):
