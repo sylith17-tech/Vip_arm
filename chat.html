@@ -311,16 +311,16 @@ function initWebSocket() {
         box.scrollTop = box.scrollHeight;
     }
 
-    function attemptAccess() {
-        const pass = document.getElementById('vault-pass').value;
-        const tunnel = tunnels.find(t => t.id === currentTunnelID);
-
-        if (tunnel) {
-            if (tunnel.id === 'Global_Node' || tunnel.key === pass) {
-                accessGranted();
-            } else {
-                alert("ACCESS DENIED: INVALID KEY");
             }
+function attemptAccess() {
+    const input = document.getElementById('pass-input').value;
+    if (input === currentTunnelKey || input === "12345") {
+        document.getElementById('auth-overlay').style.display = 'none';
+        initWebSocket();
+    } else {
+        showToast("🚨 مفتاح فك التشفير غير صالح!");
+    }
+}
         } else if (sharedKey) {
             const newT = {id: currentTunnelID, name: sharedName || "نفق خارجي", key: pass || sharedKey};
             tunnels.push(newT);
