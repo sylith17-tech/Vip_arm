@@ -228,7 +228,17 @@
         socket.onmessage = (e) => {
             try {
                 const data = JSON.parse(e.data);
-                if (data.type === 'ping' || data.type === 'pong') return;
+                if (data.type === "ping") return;
+                if (data.type === "pong") {
+                    const statusIndicator = document.getElementById("conn-status");
+                    if (statusIndicator) {
+                        statusIndicator.style.background = "#00ff66";
+                        statusIndicator.style.boxShadow = "0 0 8px #00ff66";
+                    }
+                    const protocolInfo = document.getElementById("protocol-info");
+                    if (protocolInfo) protocolInfo.innerText = "SECURE_TUNNEL_ACTIVE";
+                    return;
+                }
                 if (data.room && data.room !== currentTunnelID) return;
 
                 if (data.type === 'like') {

@@ -143,6 +143,9 @@ def on_join(data):
 
 @socketio.on('message')
 def handle_message(data):
+    if isinstance(data, dict) and data.get("type") == "ping":
+        emit("message", {"type": "pong"}, room=data.get("room", "global"))
+        return
     try:
         conn = sqlite3.connect("chat.db")
         c = conn.cursor()
