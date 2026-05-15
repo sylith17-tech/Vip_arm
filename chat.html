@@ -14,7 +14,6 @@
             --text: #e6edf3; --border: rgba(48, 54, 61, 0.8); --sent: rgba(0, 242, 255, 0.1);
             --send-icon: "\f1d8"; --grad: radial-gradient(circle at center, #0d1117 0%, #010409 100%);
         }
-
         body.theme-orange { --bg: #0a0500; --accent: #ff8c00; --sent: rgba(255, 140, 0, 0.1); --send-icon: "\f14d"; }
         body.theme-purple { --bg: #05000a; --accent: #bc13fe; --sent: rgba(188, 19, 254, 0.1); --send-icon: "\f093"; }
         body.theme-stealth { --bg: #0e0e0e; --accent: #ffffff; --sent: rgba(255, 255, 255, 0.1); --send-icon: "\f303"; }
@@ -25,28 +24,27 @@
 
         .app-container { display: flex; height: 100dvh; width: 100vw; position: relative; }
 
-        .chat-nav { 
-            width: 300px; background: var(--panel); border-left: 1px solid var(--border); 
+        .chat-nav {
+            width: 300px; background: var(--panel); border-left: 1px solid var(--border);
             display: flex; flex-direction: column; z-index: 2000; height: 100%;
             transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .chat-main { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; background: var(--grad); }
 
-        header { 
+        header {
             padding: 12px 15px; background: rgba(0,0,0,0.4); backdrop-filter: blur(10px);
             display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border);
         }
 
         .messages { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 12px; scroll-behavior: smooth; }
-        
-        .msg { 
-            max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 0.95rem; 
+        .msg {
+            max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 0.95rem;
             border: 1px solid var(--border); position: relative; animation: msgPop 0.3s ease;
             cursor: pointer; word-wrap: break-word;
         }
         @keyframes msgPop { from { opacity: 0; transform: translateY(10px) scale(0.9); } }
-        
+
         .msg.sent { align-self: flex-start; background: var(--sent); border-color: var(--accent); border-bottom-left-radius: 4px; }
         .msg.received { align-self: flex-end; background: rgba(255,255,255,0.03); border-bottom-right-radius: 4px; }
 
@@ -59,12 +57,12 @@
         @keyframes bounce { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.3); } }
 
         .input-area { padding: 15px; background: var(--panel); border-top: 1px solid var(--border); padding-bottom: max(15px, env(safe-area-inset-bottom)); }
-        .input-wrapper { 
-            display: flex; gap: 10px; background: rgba(0,0,0,0.3); 
+        .input-wrapper {
+            display: flex; gap: 10px; background: rgba(0,0,0,0.3);
             padding: 6px 15px; border-radius: 30px; border: 1px solid var(--border); align-items: center;
         }
         .input-wrapper input { flex: 1; background: transparent; border: none; color: #fff; padding: 10px 0; outline: none; font-size: 1rem; }
-
+        
         .btn-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--accent); cursor: pointer; border: none; background: transparent; transition: 0.2s; }
         .btn-icon:active { transform: scale(0.9); background: rgba(255,255,255,0.1); }
         .btn-send { background: var(--accent); color: #000; }
@@ -83,8 +81,20 @@
         .tunnel-item { padding: 15px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
         .tunnel-item:hover { background: rgba(255,255,255,0.05); }
         .tunnel-item.active { border-right: 5px solid var(--accent); background: var(--sent); }
-        
+
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        /* Toast Notification Styling */
+        .toast-notification {
+            position: fixed; top: 20px; left: 50%;
+            transform: translateX(-50%) translateY(-20px);
+            background: rgba(13, 17, 23, 0.95); color: var(--accent);
+            border: 1px solid var(--accent); padding: 10px 20px; border-radius: 8px;
+            font-size: 0.85rem; z-index: 10000;
+            box-shadow: 0 4px 15px rgba(0,242,255,0.2); opacity: 0;
+            transition: all 0.3s ease; pointer-events: none;
+        }
+        .toast-notification.show { opacity: 1; transform: translateX(-50%) translateY(0); }
     </style>
 </head>
 <body>
@@ -115,10 +125,10 @@
         </div>
 
         <div id="tunnels-container" style="flex:1; overflow-y:auto; padding:15px;"></div>
-        
+
         <div style="padding: 20px; border-top: 1px solid var(--border);">
             <button onclick="createNewTunnel()" style="width:100%; padding:12px; background:transparent; border:1px dashed var(--accent); color:var(--accent); border-radius:12px; margin-bottom:10px; cursor:pointer; transition: 0.3s;">+ نفق تشفير جديد</button>
-            <button onclick="panicDestruct()" style="width:100%; padding:12px; background:rgba(255,0,0,0.1); border:1px solid #ff003c; color:#ff003c; border-radius:12px; cursor:pointer; transition: 0.3s;">تدمير البيانات (Panic)</button>
+            <button onclick="panicDestruct(true)" style="width:100%; padding:12px; background:rgba(255,0,0,0.1); border:1px solid #ff003c; color:#ff003c; border-radius:12px; cursor:pointer; transition: 0.3s;">تدمير البيانات للجميع (Panic)</button>
         </div>
     </aside>
 
@@ -136,8 +146,8 @@
             </div>
             <div style="display:flex; gap:8px;">
                 <button onclick="forceSync()" class="btn-icon" id="syncBtn" title="مزامنة الاتصال"><i class="fas fa-sync-alt"></i></button>
-                <button onclick="copyTunnelURL()" class="btn-icon" title="نسخ رابط النفق"><i class="fas fa-fingerprint"></i></button>
-                <button onclick="clearCurrentChat()" class="btn-icon" style="color:#ff003c" title="مسح المحادثة"><i class="fas fa-trash-alt"></i></button>
+                <button onclick="copyTunnelURL()" class="btn-icon" title="نسخ رابط النفق للطرف الآخر"><i class="fas fa-fingerprint"></i></button>
+                <button onclick="clearCurrentChat(true)" class="btn-icon" style="color:#ff003c" title="مسح المحادثة لدى الطرفين"><i class="fas fa-trash-alt"></i></button>
             </div>
         </header>
 
@@ -145,7 +155,7 @@
 
         <div class="input-area">
             <div class="input-wrapper">
-                <button class="btn-icon" onclick="alert('Encryption: AES-256-GCM Active')"><i class="fas fa-lock"></i></button>
+                <button class="btn-icon" onclick="alert('Encryption: AES-256-CBC Active via CryptoJS')"><i class="fas fa-lock"></i></button>
                 <input type="text" id="userInput" placeholder="أرسل إشارة مشفرة..." autocomplete="off">
                 <button id="sendBtn" onclick="sendSignal()" class="btn-icon btn-send"></button>
             </div>
@@ -154,15 +164,13 @@
 </div>
 
 <script>
-    // Configuration & State
     const urlParams = new URLSearchParams(window.location.search);
     let currentTunnelID = urlParams.get('room') || 'Global_Node';
     let sharedKey = urlParams.get('k');
     let sharedName = urlParams.get('n');
 
     let tunnels = JSON.parse(localStorage.getItem('k0x0_tunnels')) || [{id: 'Global_Node', name: 'قناة الاختراق العامة', key: 'KERNEL_DEFAULT'}];
-    
-    // Auto-import from URL
+
     if (sharedKey && !tunnels.find(t => t.id === currentTunnelID)) {
         tunnels.push({id: currentTunnelID, name: sharedName || "نفق خارجي", key: sharedKey});
         localStorage.setItem('k0x0_tunnels', JSON.stringify(tunnels));
@@ -170,12 +178,10 @@
 
     const myUID = localStorage.getItem('k0x0_uid') || "OP-" + Math.random().toString(16).slice(2, 6).toUpperCase();
     localStorage.setItem('k0x0_uid', myUID);
-
+    
     const socketURL = "wss://vip-arm-fixed.onrender.com/chat";
     let socket;
-    let reconnectAttempts = 0;
-    let isReconnecting = false;
-    let pingInterval; // متغير نبض الحياة
+    let pingInterval;
 
     function setTheme(name) {
         document.body.className = name;
@@ -193,21 +199,14 @@
         socket = new WebSocket(`${socketURL}?room=${currentTunnelID}`);
 
         socket.onopen = () => {
-            reconnectAttempts = 0;
-            isReconnecting = false;
-
             const statusIndicator = document.getElementById('conn-status');
             if (statusIndicator) {
                 statusIndicator.style.background = '#00ff88';
                 statusIndicator.style.boxShadow = '0 0 8px #00ff88';
             }
             const protocolInfo = document.getElementById('protocol-info');
-            if (protocolInfo) {
-                protocolInfo.innerText = "SECURE_TUNNEL_ESTABLISHED";
-            }
-            console.log("Connected to tunnel:", currentTunnelID);
+            if (protocolInfo) protocolInfo.innerText = "SECURE_TUNNEL_ESTABLISHED";
 
-            // إرسال طلب الانضمام للغرفة فوراً
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'join',
@@ -216,31 +215,37 @@
                 }));
             }
 
-            // إعداد "نبض الحياة" للحفاظ على الاتصال مفتوحاً عبر الـ VPN (Ping كل 20 ثانية)
             clearInterval(pingInterval);
             pingInterval = setInterval(() => {
                 if (socket && socket.readyState === WebSocket.OPEN) {
                     try {
                         socket.send(JSON.stringify({ type: 'ping', sender: myUID, room: currentTunnelID }));
-                    } catch (e) {
-                        console.error("Ping failed", e);
-                    }
+                    } catch (e) {}
                 }
-            }, 20000);
+            }, 10000);
         };
 
         socket.onmessage = (e) => {
             try {
                 const data = JSON.parse(e.data);
-
-                // تجاهل إشارات النبض القادمة من السيرفر حتى لا تظهر كرسائل
                 if (data.type === 'ping' || data.type === 'pong') return;
-
-                // التحقق من الغرفة
                 if (data.room && data.room !== currentTunnelID) return;
 
                 if (data.type === 'like') {
                     handleLikeUpdate(data.msgId);
+                } else if (data.type === 'clear_chat') {
+                    // تنفيذ مسح المحادثة فورا عند استقبال إشارة الحذف من الطرف الآخر
+                    localStorage.removeItem('hist_' + currentTunnelID);
+                    document.getElementById('chat-box').innerHTML = "";
+                    showToast("🧹 تم مسح سجل النفق بواسطة الطرف الآخر.");
+                } else if (data.type === 'panic_destruct') {
+                    // تنفيذ التدمير الذاتي الشامل فورا عند إرساله من الطرف الآخر
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    showToast("🚨 تم إطلاق بروتوكول التدمير الذاتي من العقدة البعيدة!");
+                    setTimeout(() => {
+                        location.href = window.location.origin + window.location.pathname;
+                    }, 1000);
                 } else if (data.sender !== myUID && data.type === 'chat') {
                     processIncoming(data);
                 }
@@ -250,29 +255,19 @@
         };
 
         socket.onclose = (e) => {
-            console.log("VPN or Server Dropped Tunnel. Reason:", e.reason);
             clearInterval(pingInterval);
-
             const statusIndicator = document.getElementById('conn-status');
             if (statusIndicator) {
                 statusIndicator.style.background = '#ff003c';
                 statusIndicator.style.boxShadow = '0 0 8px #ff003c';
             }
             const protocolInfo = document.getElementById('protocol-info');
-            if (protocolInfo) {
-                protocolInfo.innerText = "CONNECTION_LOST - RECONNECTING...";
-            }
+            if (protocolInfo) protocolInfo.innerText = "CONNECTION_LOST - RECONNECTING...";
 
-            // محرك إعادة الاتصال تلقائياً كل ثانيتين دون الحاجة لعمل Refresh
-            setTimeout(() => {
-                initWebSocket();
-            }, 2000);
+            setTimeout(() => { initWebSocket(); }, 2000);
         };
 
-        socket.onerror = (err) => {
-            console.error("Socket Exception caught:", err);
-            socket.close();
-        };
+        socket.onerror = (err) => { socket.close(); };
     }
 
     function sendSignal() {
@@ -288,11 +283,11 @@
             const msgId = "MSG-" + Date.now() + "-" + Math.floor(Math.random()*1000);
             const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
             
-            const payload = { 
-                id: msgId, 
-                encText: encrypted, 
-                sender: myUID, 
-                time: time, 
+            const payload = {
+                id: msgId,
+                encText: encrypted,
+                sender: myUID,
+                time: time,
                 room: currentTunnelID,
                 type: 'chat'
             };
@@ -303,10 +298,7 @@
                 saveMsg(payload);
                 inp.value = "";
             } else {
-                // إذا كان الاتصال مقطوعاً، نحاول إعادة الاتصال ونرسل الرسالة محلياً فوراً
-                console.warn("Signal weak. Re-establishing secure handshake...");
                 initWebSocket();
-                
                 setTimeout(() => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify(payload));
@@ -314,23 +306,22 @@
                         saveMsg(payload);
                         inp.value = "";
                     } else {
-                        // حفظها محلياً حتى لو فشل الاتصال مؤقتاً
                         pushUI(txt, myUID, time, true, msgId);
                         saveMsg(payload);
                         inp.value = "";
-                        alert("إشارة ضعيفة... تم حفظ الرسالة محلياً وجاري الربط بالعقدة.");
+                        showToast("⚠️ اتصال ضعيف، تم حفظ الرسالة محلياً.");
                     }
-                }, 400);
+                }, 500);
             }
         } catch(e) {
-            console.error("Encryption Failure:", e);
+            console.error(e);
         }
     }
 
     function processIncoming(data) {
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
         if(!tunnel || !data.encText) return;
-        
+
         try {
             const bytes = CryptoJS.AES.decrypt(data.encText, tunnel.key);
             const dec = bytes.toString(CryptoJS.enc.Utf8);
@@ -339,44 +330,43 @@
                 saveMsg(data);
             }
         } catch(e) {
-            console.warn("Incoming message used a different key or is corrupted.");
+            console.warn("Incoming message decryption failed.");
         }
     }
 
     function pushUI(text, sender, time, isMe, msgId) {
         if (document.getElementById(msgId)) return;
-        
+
         const box = document.getElementById('chat-box');
         const d = document.createElement('div');
         d.className = `msg ${isMe ? 'sent' : 'received'}`;
         d.id = msgId;
         d.ondblclick = () => sendLike(msgId);
-        
+
         d.innerHTML = `
             <div style="font-size:0.65rem; color:var(--accent); font-weight:bold; margin-bottom:5px;">${sender} • ${time}</div>
             <div class="text-content">${escapeHTML(text)}</div>
             <div class="reaction"><i class="fas fa-heart" style="color:#ff003c"></i></div>
         `;
-        
+
         box.appendChild(d);
-        box.scrollTop = box.scrollHeight; // التمرير التلقائي لأسفل
+        box.scrollTop = box.scrollHeight;
     }
 
     function escapeHTML(str) {
-        const p = document.createElement('p');
-        p.textContent = str;
+        const p = document.createElement('p'); p.textContent = str;
         return p.innerHTML;
     }
 
     function sendLike(msgId) {
         const msgEl = document.getElementById(msgId);
         if (!msgEl || msgEl.classList.contains('liked')) return;
-        
+
         msgEl.classList.add('liked');
         if (socket && socket.readyState === WebSocket.OPEN) {
             try {
                 socket.send(JSON.stringify({ type: 'like', msgId: msgId, room: currentTunnelID }));
-            } catch(e) { console.error(e); }
+            } catch(e) {}
         }
     }
 
@@ -390,7 +380,7 @@
         let h = JSON.parse(localStorage.getItem(storageKey)) || [];
         if (!h.find(m => m.id === data.id)) {
             h.push(data);
-            if (h.length > 150) h.shift(); // زيادة السجل المحلي إلى 150 رسالة
+            if (h.length > 150) h.shift();
             localStorage.setItem(storageKey, JSON.stringify(h));
         }
     }
@@ -400,7 +390,7 @@
         box.innerHTML = "";
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
         if (!tunnel) return;
-        
+
         const h = JSON.parse(localStorage.getItem('hist_' + currentTunnelID)) || [];
         h.forEach(m => {
             try {
@@ -415,7 +405,7 @@
     function attemptAccess() {
         const pass = document.getElementById('vault-pass').value;
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
-        
+
         if (tunnel) {
             if (tunnel.id === 'Global_Node' || tunnel.key === pass) {
                 accessGranted();
@@ -429,7 +419,7 @@
             accessGranted();
         }
     }
-
+                    
     function accessGranted() {
         sessionStorage.setItem('unlocked_' + currentTunnelID, 'true');
         document.getElementById('vault-lock').style.display = 'none';
@@ -444,9 +434,9 @@
         const btn = document.getElementById('syncBtn');
         btn.style.animation = "spin 1s infinite linear";
         initWebSocket();
-        setTimeout(() => { 
-            btn.style.animation = ""; 
-            loadHistory(); 
+        setTimeout(() => {
+            btn.style.animation = "";
+            loadHistory();
         }, 1500);
     }
 
@@ -470,7 +460,6 @@
             d.innerHTML = `<div style="font-size:0.55rem; color:var(--accent); font-family:'Fira Code'">${t.id}</div><div style="font-weight:bold">${t.name}</div>`;
             d.onclick = () => {
                 if (t.id !== currentTunnelID) {
-                    // تفريغ المقبس الحالي بأمان قبل الانتقال
                     if(socket) socket.close();
                     location.href = `?room=${t.id}&k=${encodeURIComponent(t.key)}&n=${encodeURIComponent(t.name)}`;
                 }
@@ -479,39 +468,59 @@
         });
     }
 
-    function clearCurrentChat() { 
-        if(confirm("سيتم مسح السجل المحلي لهذا النفق فقط. هل أنت متأكد؟")) { 
-            localStorage.removeItem('hist_' + currentTunnelID); 
+    // تعديل لمسح المحادثة من الطرفين بالتزامن وبكبسة زر واحدة
+    function clearCurrentChat(broadcast = true) {
+        if(confirm("سيتم مسح السجل من عندك ومن عند صديقك في هذا النفق نهائياً. هل أنت متأكد؟")) {
+            localStorage.removeItem('hist_' + currentTunnelID);
             document.getElementById('chat-box').innerHTML = "";
-        } 
+            
+            if (broadcast && socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'clear_chat',
+                    room: currentTunnelID,
+                    sender: myUID
+                }));
+            }
+            showToast("🧹 تم مسح المحادثة محلياً وإرسال أمر الحذف للطرف الآخر.");
+        }
     }
-    
-    function panicDestruct() { 
-        if(confirm("تحذير أمني: سيتم حذف كل شيء (الأنفاق، المفاتيح، السجلات، المعرفات) من المتصفح فوراً!")) { 
-            localStorage.clear(); 
+
+    // تعديل دالة تدمير البيانات لتدميرها لدى الطرف الآخر المتصل أيضاً
+    function panicDestruct(broadcast = true) {
+        if(confirm("تحذير أمني خطير: سيتم حذف وتدمير كافة البيانات والأنفاق والمفاتيح من متصفحك ومن عند الطرف الآخر المتصل فوراً! هل تود التنفيذ؟")) {
+            if (broadcast && socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({
+                    type: 'panic_destruct',
+                    room: currentTunnelID,
+                    sender: myUID
+                }));
+            }
+            
+            localStorage.clear();
             sessionStorage.clear();
-            location.href = window.location.origin + window.location.pathname; 
-        } 
+            showToast("🚨 تم تدمير بياناتك وإرسال إشارة الإبادة للطرف الآخر.");
+            setTimeout(() => {
+                location.href = window.location.origin + window.location.pathname;
+            }, 1000);
+        }
     }
 
     function copyTunnelURL() {
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
         const url = `${window.location.origin}${window.location.pathname}?room=${currentTunnelID}&k=${encodeURIComponent(tunnel.key)}&n=${encodeURIComponent(tunnel.name)}`;
-        
-        navigator.clipboard.writeText(url).then(() => alert("تم نسخ رابط النفق المشفر بنجاح.")).catch(() => alert("فشل في نسخ الرابط."));
+        navigator.clipboard.writeText(url).then(() => showToast("🔒 تم نسخ رابط النفق المباشر.. أرسله لصديقك الآن.")).catch(() => showToast("❌ فشل نسخ الرابط."));
     }
 
     window.onload = () => {
         const savedTheme = localStorage.getItem('k0x0_theme');
         if (savedTheme) setTheme(savedTheme);
-
         renderTunnels();
 
         const activeT = tunnels.find(t => t.id === currentTunnelID);
         if (activeT) {
             document.getElementById('current-tunnel-name').innerText = activeT.name;
         }
-
+        
         if (currentTunnelID === 'Global_Node' || sessionStorage.getItem('unlocked_' + currentTunnelID)) {
             document.getElementById('vault-lock').style.display = 'none';
             initWebSocket();
@@ -519,9 +528,22 @@
         }
     };
 
-    document.getElementById('userInput').addEventListener('keypress', (e) => { 
-        if (e.key === 'Enter') sendSignal(); 
+    document.getElementById('userInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendSignal();
     });
+                    
+    function showToast(message) {
+        let toast = document.getElementById('k0x0-toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'k0x0-toast';
+            toast.className = 'toast-notification';
+            document.body.appendChild(toast);
+        }
+        toast.innerText = message;
+        toast.classList.add('show');
+        setTimeout(() => { toast.classList.remove('show'); }, 3500);
+    }
 </script>
 
 </body>
