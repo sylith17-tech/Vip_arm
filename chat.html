@@ -188,20 +188,26 @@
             socket.onerror = null;
             try { socket.close(); } catch(e) {}
         }
-        
+
+        console.log("Attempting secure uplink stabilization...");
         socket = new WebSocket(`${socketURL}?room=${currentTunnelID}`);
-        
+
         socket.onopen = () => {
             reconnectAttempts = 0;
             isReconnecting = false;
-            
+
             const statusIndicator = document.getElementById('conn-status');
-            statusIndicator.style.background = '#00ff88';
-            statusIndicator.style.boxShadow = '0 0 8px #00ff88';
-            document.getElementById('protocol-info').innerText = "SECURE_TUNNEL_ESTABLISHED";
+            if (statusIndicator) {
+                statusIndicator.style.background = '#00ff88';
+                statusIndicator.style.boxShadow = '0 0 8px #00ff88';
+            }
+            const protocolInfo = document.getElementById('protocol-info');
+            if (protocolInfo) {
+                protocolInfo.innerText = "SECURE_TUNNEL_ESTABLISHED";
+            }
             console.log("Connected to tunnel:", currentTunnelID);
-            
-            // إرسال إشارة تهيئة فورية للسيرفر
+
+            // إرسال طلب الانضمام للغرفة فوراً
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'join',
@@ -210,7 +216,7 @@
                 }));
             }
 
-            // إعداد "نبض الحياة" للحفاظ على الاتصال مفتوحاً (Ping كل 20 ثانية)
+            // إعداد "نبض الحياة" للحفاظ على الاتصال مفتوحاً عبر الـ VPN (Ping كل 20 ثانية)
             clearInterval(pingInterval);
             pingInterval = setInterval(() => {
                 if (socket && socket.readyState === WebSocket.OPEN) {
@@ -222,14 +228,14 @@
                 }
             }, 20000);
         };
-        
+
         socket.onmessage = (e) => {
             try {
                 const data = JSON.parse(e.data);
-                
+
                 // تجاهل إشارات النبض القادمة من السيرفر حتى لا تظهر كرسائل
                 if (data.type === 'ping' || data.type === 'pong') return;
-                
+
                 // التحقق من الغرفة
                 if (data.room && data.room !== currentTunnelID) return;
 
@@ -239,31 +245,33 @@
                     processIncoming(data);
                 }
             } catch(err) {
-                console.error("Payload Error:", err);
+                console.error("Payload Parse Error:", err);
             }
         };
 
-        socket.onclose = () => {
-            clearInterval(pingInterval); // إيقاف النبض عند انقطاع الاتصال
+        socket.onclose = (e) => {
+            console.log("VPN or Server Dropped Tunnel. Reason:", e.reason);
+            clearInterval(pingInterval);
+
             const statusIndicator = document.getElementById('conn-status');
-            statusIndicator.style.background = '#ff003c';
-            statusIndicator.style.boxShadow = '0 0 8px #ff003c';
-            document.getElementById('protocol-info').innerText = "CONNECTION_LOST";
-            
-            if (!isReconnecting) {
-                isReconnecting = true;
-                // محاولة إعادة الاتصال تصاعدياً بحد أقصى 5 ثواني لضمان سرعة العودة
-                let timeout = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 5000); 
-                setTimeout(() => {
-                    reconnectAttempts++;
-                    initWebSocket();
-                }, timeout);
+            if (statusIndicator) {
+                statusIndicator.style.background = '#ff003c';
+                statusIndicator.style.boxShadow = '0 0 8px #ff003c';
             }
+            const protocolInfo = document.getElementById('protocol-info');
+            if (protocolInfo) {
+                protocolInfo.innerText = "CONNECTION_LOST - RECONNECTING...";
+            }
+
+            // محرك إعادة الاتصال تلقائياً كل ثانيتين دون الحاجة لعمل Refresh
+            setTimeout(() => {
+                initWebSocket();
+            }, 2000);
         };
 
         socket.onerror = (err) => {
-            console.error("Socket Protocol Error", err);
-            socket.close(); // استدعاء onclose تلقائياً
+            console.error("Socket Exception caught:", err);
+            socket.close();
         };
     }
 
