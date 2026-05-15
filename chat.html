@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>KERNEL-0X0 | OMEGA V20.0</title>
@@ -178,205 +179,101 @@
 
     const myUID = localStorage.getItem('k0x0_uid') || "OP-" + Math.random().toString(16).slice(2, 6).toUpperCase();
     localStorage.setItem('k0x0_uid', myUID);
+            try {
+const socketURL = "wss://vip-arm-fixed.onrender.com/chat";
+let socket;
+let pingInterval;
+let reconnectDelay = 1000; // يبدأ بـ ثانية واحدة
+
+function initWebSocket() {
+    if (socket) {
+        socket.onopen = null;
+        socket.onmessage = null;
+        socket.onclose = null;
+        socket.onerror = null;
+        try { socket.close(); } catch(e) {}
+        socket = null;
+    }
+
+    console.log("Attempting secure uplink stabilization...");
+    socket = new WebSocket(`${socketURL}?room=${currentTunnelID}`);
     
-    const socketURL = "wss://vip-arm-fixed.onrender.com/chat";
-    let socket;
-    let pingInterval;
-
-    function setTheme(name) {
-        document.body.className = name;
-        localStorage.setItem('k0x0_theme', name);
-    }
-
-    function initWebSocket() {
-        if (socket) {
-            socket.onclose = null;
-            socket.onerror = null;
-            try { socket.close(); } catch(e) {}
+    socket.onopen = () => {
+        reconnectDelay = 1000; // تصغير المهلة فور نجاح الاتصال
+        const statusIndicator = document.getElementById('conn-status');
+        if (statusIndicator) {
+            statusIndicator.style.background = '#00ff88';
+            statusIndicator.style.boxShadow = '0 0 8px #00ff88';
         }
-
-        console.log("Attempting secure uplink stabilization...");
-        socket = new WebSocket(`${socketURL}?room=${currentTunnelID}`);
-
-        socket.onopen = () => {
-            const statusIndicator = document.getElementById('conn-status');
-            if (statusIndicator) {
-                statusIndicator.style.background = '#00ff88';
-                statusIndicator.style.boxShadow = '0 0 8px #00ff88';
-            }
-            const protocolInfo = document.getElementById('protocol-info');
-            if (protocolInfo) protocolInfo.innerText = "SECURE_TUNNEL_ESTABLISHED";
-
-            if (socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify({
-                    type: 'join',
-                    room: currentTunnelID,
-                    sender: myUID
-                }));
-            }
-
-            clearInterval(pingInterval);
-            pingInterval = setInterval(() => {
-                if (socket && socket.readyState === WebSocket.OPEN) {
-                    try {
-                        socket.send(JSON.stringify({ type: 'ping', sender: myUID, room: currentTunnelID }));
-                    } catch (e) {}
-                }
-            }, 10000);
-        };
-
-        socket.onmessage = (e) => {
-            try {
-                const data = JSON.parse(e.data);
-                if (data.type === "ping") return;
-                if (data.type === "pong") {
-                    const statusIndicator = document.getElementById("conn-status");
-                    if (statusIndicator) {
-                        statusIndicator.style.background = "#00ff66";
-                        statusIndicator.style.boxShadow = "0 0 8px #00ff66";
-                    }
-                    const protocolInfo = document.getElementById("protocol-info");
-                    if (protocolInfo) protocolInfo.innerText = "SECURE_TUNNEL_ACTIVE";
-                    return;
-                }
-                if (data.room && data.room !== currentTunnelID) return;
-
-                if (data.type === 'like') {
-                    handleLikeUpdate(data.msgId);
-                } else if (data.type === 'clear_chat') {
-                    // تنفيذ مسح المحادثة فورا عند استقبال إشارة الحذف من الطرف الآخر
-                    localStorage.removeItem('hist_' + currentTunnelID);
-                    document.getElementById('chat-box').innerHTML = "";
-                    showToast("🧹 تم مسح سجل النفق بواسطة الطرف الآخر.");
-                } else if (data.type === 'panic_destruct') {
-                    // تنفيذ التدمير الذاتي الشامل فورا عند إرساله من الطرف الآخر
-                    localStorage.clear();
-                    sessionStorage.clear();
-                    showToast("🚨 تم إطلاق بروتوكول التدمير الذاتي من العقدة البعيدة!");
-                    setTimeout(() => {
-                        location.href = window.location.origin + window.location.pathname;
-                    }, 1000);
-                } else if (data.sender !== myUID && data.type === 'chat') {
-                    processIncoming(data);
-                }
-            } catch(err) {
-                console.error("Payload Parse Error:", err);
-            }
-        };
-
-        socket.onclose = (e) => {
-            console.log("WebSocket connection closed. Reconnecting...");
-            socket = null;
-            clearInterval(pingInterval);
-            const statusIndicator = document.getElementById("conn-status");
-            if (statusIndicator) {
-                statusIndicator.style.background = "#ff003c";
-                statusIndicator.style.boxShadow = "0 0 8px #ff003c";
-            }
-            const protocolInfo = document.getElementById("protocol-info");
-            if (protocolInfo) protocolInfo.innerText = "CONNECTION_LOST - RECONNECTING...";
-            
-            setTimeout(() => { initWebSocket(); }, 2000);
-        };
-
-        socket.onerror = (err) => { socket.close(); };
-    }
-
-    function sendSignal() {
-        const inp = document.getElementById('userInput');
-        const txt = inp.value.trim();
-        if (!txt) return;
-
-        const tunnel = tunnels.find(t => t.id === currentTunnelID);
-        if (!tunnel) return;
-
-        try {
-            const encrypted = CryptoJS.AES.encrypt(txt, tunnel.key).toString();
-            const msgId = "MSG-" + Date.now() + "-" + Math.floor(Math.random()*1000);
-            const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute: '2-digit'});
-            
-            const payload = {
-                id: msgId,
-                encText: encrypted,
-                sender: myUID,
-                time: time,
+        const protocolInfo = document.getElementById('protocol-info');
+        if (protocolInfo) protocolInfo.innerText = "SECURE_TUNNEL_ACTIVE";
+        
+        if (socket.readyState === WebSocket.OPEN) {
+            socket.send(JSON.stringify({
+                type: 'join',
                 room: currentTunnelID,
-                type: 'chat'
-            };
+                sender: myUID
+            }));
+        }
 
+        clearInterval(pingInterval);
+        pingInterval = setInterval(() => {
             if (socket && socket.readyState === WebSocket.OPEN) {
-                socket.send(JSON.stringify(payload));
-                pushUI(txt, myUID, time, true, msgId);
-                saveMsg(payload);
-                inp.value = "";
-            } else {
-                initWebSocket();
-                setTimeout(() => {
-                    if (socket && socket.readyState === WebSocket.OPEN) {
-                        socket.send(JSON.stringify(payload));
-                        pushUI(txt, myUID, time, true, msgId);
-                        saveMsg(payload);
-                        inp.value = "";
-                    } else {
-                        pushUI(txt, myUID, time, true, msgId);
-                        saveMsg(payload);
-                        inp.value = "";
-                        showToast("⚠️ اتصال ضعيف، تم حفظ الرسالة محلياً.");
-                    }
-                }, 500);
+                try {
+                    socket.send(JSON.stringify({ type: 'ping', sender: myUID, room: currentTunnelID }));
+                } catch (e) {}
             }
-        } catch(e) {
-            console.error(e);
-        }
-    }
+        }, 10000);
+    };
 
-    function processIncoming(data) {
-        const tunnel = tunnels.find(t => t.id === currentTunnelID);
-        if(!tunnel || !data.encText) return;
-
+    socket.onmessage = (e) => {
         try {
-            const bytes = CryptoJS.AES.decrypt(data.encText, tunnel.key);
-            const dec = bytes.toString(CryptoJS.enc.Utf8);
-            if (dec) {
-                pushUI(dec, data.sender, data.time, false, data.id);
-                saveMsg(data);
+            const data = JSON.parse(e.data);
+            if (data.type === "ping") return;
+            if (data.type === "pong") return;
+            if (data.room && data.room !== currentTunnelID) return;
+            
+            if (data.type === 'like') {
+                handleLikeUpdate(data.msgId);
+            } else if (data.type === 'clear_chat') {
+                localStorage.removeItem('hist_' + currentTunnelID);
+                document.getElementById('chat-box').innerHTML = "";
+                showToast("🧹 تم مسح سجل النفق بواسطة الطرف الآخر.");
+            } else if (data.type === 'panic_destruct') {
+                localStorage.clear();
+                sessionStorage.clear();
+                showToast("🚨 تم إطلاق بروتوكول التدمير الذاتي من العقدة البعيدة!");
+                setTimeout(() => {
+                    location.href = window.location.origin + window.location.pathname;
+                }, 1000);
+            } else if (data.sender !== myUID && data.type === 'chat') {
+                processIncoming(data);
             }
-        } catch(e) {
-            console.warn("Incoming message decryption failed.");
+        } catch(err) {
+            console.error("Payload Parse Error:", err);
         }
-    }
+    };
 
-    function pushUI(text, sender, time, isMe, msgId) {
-        if (document.getElementById(msgId)) return;
+    socket.onclose = () => {
+        socket = null;
+        clearInterval(pingInterval);
+        const statusIndicator = document.getElementById("conn-status");
+        if (statusIndicator) {
+            statusIndicator.style.background = "#ff003c";
+            statusIndicator.style.boxShadow = "0 0 8px #ff003c";
+        }
+        const protocolInfo = document.getElementById("protocol-info");
+        if (protocolInfo) protocolInfo.innerText = "TUNNEL_HEALING...";
+        
+        // إعادة المحاولة الذكية المتدرجة لمنع تجميد المتصفح
+        setTimeout(() => {
+            reconnectDelay = Math.min(reconnectDelay * 2, 10000); // يضاعف الوقت بحد أقصى 10 ثواني
+            initWebSocket();
+        }, reconnectDelay);
+    };
 
-        const box = document.getElementById('chat-box');
-        const d = document.createElement('div');
-        d.className = `msg ${isMe ? 'sent' : 'received'}`;
-        d.id = msgId;
-        d.ondblclick = () => sendLike(msgId);
-
-        d.innerHTML = `
-            <div style="font-size:0.65rem; color:var(--accent); font-weight:bold; margin-bottom:5px;">${sender} • ${time}</div>
-            <div class="text-content">${escapeHTML(text)}</div>
-            <div class="reaction"><i class="fas fa-heart" style="color:#ff003c"></i></div>
-        `;
-
-        box.appendChild(d);
-        box.scrollTop = box.scrollHeight;
-    }
-
-    function escapeHTML(str) {
-        const p = document.createElement('p'); p.textContent = str;
-        return p.innerHTML;
-    }
-
-    function sendLike(msgId) {
-        const msgEl = document.getElementById(msgId);
-        if (!msgEl || msgEl.classList.contains('liked')) return;
-
-        msgEl.classList.add('liked');
-        if (socket && socket.readyState === WebSocket.OPEN) {
-            try {
+    socket.onerror = () => { if(socket) socket.close(); };
+}
                 socket.send(JSON.stringify({ type: 'like', msgId: msgId, room: currentTunnelID }));
             } catch(e) {}
         }
