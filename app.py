@@ -8,6 +8,7 @@ import logging
 import uuid
 import requests
 import asyncio
+import sqlite3
 from flask_socketio import SocketIO, emit, join_room
 from flask import Flask, render_template, request, jsonify, send_file, after_this_request, Response, stream_with_context
 from flask_cors import CORS
@@ -39,7 +40,6 @@ logging.basicConfig(
     format='%(asctime)s [%(levelname)s] [NODE_ID: Kernel-0x0] - %(message)s'
 )
 logger = logging.getLogger(__name__)
-import sqlite3
 
 def init_db():
     conn = sqlite3.connect("chat.db")
@@ -54,8 +54,8 @@ app = Flask(__name__, template_folder='.', static_folder='.')
 app.config['SECRET_KEY'] = 'VIP_ARM_SECURE_KEY_0x0'
 CORS(app)
 
-# إعداد SocketIO المطور لضمان وصول الرسائل للطرفين في بيئة Render
-socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60, ping_interval=15)
+# إعداد SocketIO المطور والمعزز بـ manage_session=False لمنع انهيار الـ RequestContext على Render
+socketio = SocketIO(app, cors_allowed_origins="*", ping_timeout=60, ping_interval=15, async_mode='gevent', manage_session=False)
 
 # إعداد المسارات الأساسية للنظام
 BASE_DIR = os.getcwd()
@@ -121,12 +121,34 @@ def dub_video(input_path, lang='ar'):
         if os.path.exists(temp_audio):
             os.remove(temp_audio)
 
-# --- [SOCKET_IO_COMMUNICATION - UPDATED & RESTRUCTURED] ---
+# --- [SOCKET_IO_COMMUNICATION - RESTRUCTURED FOR CLOUD STABILITY] ---
+@socketio.on('join')
+def handle_join_fixed(data):
+    if not isinstance(data, dict):
+        return
+    room = data.get("room", "global")
+    user = data.get("user", "UNKNOWN_NODE")
+    join_room(room)
+    logger.info(f"SYNC: Node {user} synchronized with Tunnel {room}")
+
+    try:
+        conn = sqlite3.connect("chat.db")
+        c = conn.cursor()
+        c.execute("SELECT user, msg FROM messages WHERE room = ? ORDER BY timestamp DESC LIMIT 50", (room,))
+        history = c.fetchall()[::-1]
+        conn.close()
+        for h_user, h_msg in history:
+            emit("message", {"user": h_user, "msg": h_msg, "room": room})
+    except Exception as e:
+        logger.error(f"History Injection Error: {e}")
+
+    emit("status", {"msg": f"Node {user} is online"}, to=room)
+
 @socketio.on('message')
 def handle_message(data):
     if not isinstance(data, dict):
         return
-        
+
     # الحفاظ على ميزة الـ Ping/Pong الحالية
     if data.get("type") == "ping":
         emit("message", {"type": "pong"}, room=data.get("room", "global"))
@@ -145,11 +167,11 @@ def handle_message(data):
             conn.commit()
             conn.close()
         except Exception as e:
-            print(f"DB Encryption Injection Error: {e}")
+            logger.error(f"DB Encryption Injection Error: {e}")
 
         logger.info(f"ROUTING: Encrypted signal received in Tunnel {room}")
-        
-        # إعادة بث الرسالة المشفرة إلى كافة العقد المتصلة بالنفق (ما عدا المرسل لضمان عدم التكرار البصري)
+
+        # إعادة بث الرسالة المشفرة بأمان إلى كافة العقد المتصلة بالنفق
         emit('message', {
             'room': room,
             'msg': msg_encrypted,
@@ -162,13 +184,13 @@ def handle_typing(data):
         room = data.get('room', 'global')
         user = data.get('user')
         is_typing = data.get('isTyping', False)
-        
-        # تمرير حالة الكتابة للطرف الآخر داخل النفق
+
+        # تمرير حالة الكتابة للطرف الآخر داخل النفق بدون كسر الجلسة
         emit('typing', {
             'room': room,
             'user': user,
             'isTyping': is_typing
-        }, to=room, include_self=False)
+        }, to=room)
 
 # --- [ROUTES] ---
 @app.route('/')
@@ -304,26 +326,5 @@ if __name__ == '__main__':
     port = int(os.environ.get("PORT", 10000))
     socketio.run(app, host='0.0.0.0', port=port, debug=False)
 else:
-    # لضمان توافق خادم Gunicorn في بيئة Render السحابية
+    # لضمان توافق خادم Gunicorn في بيئة Render السحابية ورؤية جميع أحداث السوكت
     application = app
-
-
-@socketio.on("join")
-def handle_join_fixed(data):
-    room = data.get("room", "global")
-    user = data.get("user", "UNKNOWN_NODE")
-    join_room(room)
-    
-    try:
-        import sqlite3
-        conn = sqlite3.connect("chat.db")
-        c = conn.cursor()
-        c.execute("SELECT user, msg FROM messages WHERE room = ? ORDER BY timestamp DESC LIMIT 50", (room,))
-        history = c.fetchall()[::-1]
-        conn.close()
-        for h_user, h_msg in history:
-            emit("message", {"user": h_user, "msg": h_msg, "room": room})
-    except Exception as e:
-        print(f"History Error: {e}")
-
-    emit("status", {"msg": f"Node {user} is online"}, to=room)
