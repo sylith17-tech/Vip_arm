@@ -80,7 +80,8 @@
         }
 
         #vault-lock { position: fixed; inset: 0; background: #000; z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .tunnel-item { padding: 15px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; cursor: pointer; }
+        .tunnel-item { padding: 15px; border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; cursor: pointer; transition: 0.2s; }
+        .tunnel-item:hover { background: rgba(255,255,255,0.05); }
         .tunnel-item.active { border-right: 5px solid var(--accent); background: var(--sent); }
         
         @keyframes spin { 100% { transform: rotate(360deg); } }
@@ -102,7 +103,7 @@
     <aside class="chat-nav" id="sidebar">
         <div style="padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center;">
             <span style="color:var(--accent); font-weight:bold; font-family:'Fira Code';">OMEGA_v20</span>
-            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer"></i>
+            <i class="fas fa-times" onclick="toggleSidebar()" style="cursor:pointer; font-size: 1.2rem;"></i>
         </div>
         
         <div class="theme-grid">
@@ -116,8 +117,8 @@
         <div id="tunnels-container" style="flex:1; overflow-y:auto; padding:15px;"></div>
         
         <div style="padding: 20px; border-top: 1px solid var(--border);">
-            <button onclick="createNewTunnel()" style="width:100%; padding:12px; background:transparent; border:1px dashed var(--accent); color:var(--accent); border-radius:12px; margin-bottom:10px; cursor:pointer;">+ نفق تشفير جديد</button>
-            <button onclick="panicDestruct()" style="width:100%; padding:12px; background:rgba(255,0,0,0.1); border:1px solid #ff003c; color:#ff003c; border-radius:12px; cursor:pointer;">تدمير البيانات (Panic)</button>
+            <button onclick="createNewTunnel()" style="width:100%; padding:12px; background:transparent; border:1px dashed var(--accent); color:var(--accent); border-radius:12px; margin-bottom:10px; cursor:pointer; transition: 0.3s;">+ نفق تشفير جديد</button>
+            <button onclick="panicDestruct()" style="width:100%; padding:12px; background:rgba(255,0,0,0.1); border:1px solid #ff003c; color:#ff003c; border-radius:12px; cursor:pointer; transition: 0.3s;">تدمير البيانات (Panic)</button>
         </div>
     </aside>
 
@@ -128,15 +129,15 @@
                 <div>
                     <div id="current-tunnel-name" style="font-weight:bold; font-size:0.9rem;">CONNECTING...</div>
                     <div style="font-size:0.6rem; display:flex; align-items:center; opacity:0.8;">
-                        <span id="conn-status" style="width:7px; height:7px; border-radius:50%; background:#ff003c; margin-left:6px;"></span>
+                        <span id="conn-status" style="width:7px; height:7px; border-radius:50%; background:#ff003c; margin-left:6px; box-shadow: 0 0 5px #ff003c;"></span>
                         <span id="protocol-info">OFFLINE_NODE</span>
                     </div>
                 </div>
             </div>
             <div style="display:flex; gap:8px;">
-                <button onclick="forceSync()" class="btn-icon" id="syncBtn"><i class="fas fa-sync-alt"></i></button>
-                <button onclick="copyTunnelURL()" class="btn-icon"><i class="fas fa-fingerprint"></i></button>
-                <button onclick="clearCurrentChat()" class="btn-icon" style="color:#ff003c"><i class="fas fa-trash-alt"></i></button>
+                <button onclick="forceSync()" class="btn-icon" id="syncBtn" title="مزامنة الاتصال"><i class="fas fa-sync-alt"></i></button>
+                <button onclick="copyTunnelURL()" class="btn-icon" title="نسخ رابط النفق"><i class="fas fa-fingerprint"></i></button>
+                <button onclick="clearCurrentChat()" class="btn-icon" style="color:#ff003c" title="مسح المحادثة"><i class="fas fa-trash-alt"></i></button>
             </div>
         </header>
 
@@ -174,6 +175,7 @@
     let socket;
     let reconnectAttempts = 0;
     let isReconnecting = false;
+    let pingInterval; // متغير نبض الحياة
 
     function setTheme(name) {
         document.body.className = name;
@@ -187,17 +189,19 @@
             try { socket.close(); } catch(e) {}
         }
         
-        // تم الإبقاء على معطيات الرابط بالكامل لضمان التوافق المطلق
         socket = new WebSocket(`${socketURL}?room=${currentTunnelID}`);
         
         socket.onopen = () => {
             reconnectAttempts = 0;
             isReconnecting = false;
-            document.getElementById('conn-status').style.background = '#00ff88';
+            
+            const statusIndicator = document.getElementById('conn-status');
+            statusIndicator.style.background = '#00ff88';
+            statusIndicator.style.boxShadow = '0 0 8px #00ff88';
             document.getElementById('protocol-info').innerText = "SECURE_TUNNEL_ESTABLISHED";
             console.log("Connected to tunnel:", currentTunnelID);
             
-            // إرسال إشارة تهيئة فورية للسيرفر لربط الجلسة بالغرفة من جهة الـ Backend
+            // إرسال إشارة تهيئة فورية للسيرفر
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify({
                     type: 'join',
@@ -205,13 +209,28 @@
                     sender: myUID
                 }));
             }
+
+            // إعداد "نبض الحياة" للحفاظ على الاتصال مفتوحاً (Ping كل 20 ثانية)
+            clearInterval(pingInterval);
+            pingInterval = setInterval(() => {
+                if (socket && socket.readyState === WebSocket.OPEN) {
+                    try {
+                        socket.send(JSON.stringify({ type: 'ping', sender: myUID, room: currentTunnelID }));
+                    } catch (e) {
+                        console.error("Ping failed", e);
+                    }
+                }
+            }, 20000);
         };
         
         socket.onmessage = (e) => {
             try {
                 const data = JSON.parse(e.data);
                 
-                // في حال غياب حقل الـ room من السيرفر لا نقوم بحجب الرسالة بل نمررها، وإذا وجد نتحقق منه
+                // تجاهل إشارات النبض القادمة من السيرفر حتى لا تظهر كرسائل
+                if (data.type === 'ping' || data.type === 'pong') return;
+                
+                // التحقق من الغرفة
                 if (data.room && data.room !== currentTunnelID) return;
 
                 if (data.type === 'like') {
@@ -225,12 +244,16 @@
         };
 
         socket.onclose = () => {
-            document.getElementById('conn-status').style.background = '#ff003c';
+            clearInterval(pingInterval); // إيقاف النبض عند انقطاع الاتصال
+            const statusIndicator = document.getElementById('conn-status');
+            statusIndicator.style.background = '#ff003c';
+            statusIndicator.style.boxShadow = '0 0 8px #ff003c';
             document.getElementById('protocol-info').innerText = "CONNECTION_LOST";
             
             if (!isReconnecting) {
                 isReconnecting = true;
-                let timeout = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000); // تسريع وقت المحاولة ليكون 10 ثواني كحد أقصى
+                // محاولة إعادة الاتصال تصاعدياً بحد أقصى 5 ثواني لضمان سرعة العودة
+                let timeout = Math.min(1000 * Math.pow(1.5, reconnectAttempts), 5000); 
                 setTimeout(() => {
                     reconnectAttempts++;
                     initWebSocket();
@@ -240,7 +263,7 @@
 
         socket.onerror = (err) => {
             console.error("Socket Protocol Error", err);
-            socket.close();
+            socket.close(); // استدعاء onclose تلقائياً
         };
     }
 
@@ -266,18 +289,16 @@
                 type: 'chat'
             };
 
-            // معالجة ذكية: التحقق الفعلي من حالة الاتصال لتفادي انهيار عمال ريندر قبل الإرسال
             if (socket && socket.readyState === WebSocket.OPEN) {
                 socket.send(JSON.stringify(payload));
                 pushUI(txt, myUID, time, true, msgId);
                 saveMsg(payload);
                 inp.value = "";
             } else {
-                // بدلاً من إظهار تنبيه يقطع تجربة المستخدم، نقوم بإعادة الربط فوراً وإرسال الرسالة محلياً مع تجميد مؤقت
+                // إذا كان الاتصال مقطوعاً، نحاول إعادة الاتصال ونرسل الرسالة محلياً فوراً
                 console.warn("Signal weak. Re-establishing secure handshake...");
                 initWebSocket();
                 
-                // محاولة إرسال ثانية بعد ربع ثانية من استعادة فتح المقبس تلقائياً
                 setTimeout(() => {
                     if (socket && socket.readyState === WebSocket.OPEN) {
                         socket.send(JSON.stringify(payload));
@@ -285,9 +306,13 @@
                         saveMsg(payload);
                         inp.value = "";
                     } else {
-                        alert("إشارة ضعيفة... جاري محاولة إعادة الربط بالعقدة");
+                        // حفظها محلياً حتى لو فشل الاتصال مؤقتاً
+                        pushUI(txt, myUID, time, true, msgId);
+                        saveMsg(payload);
+                        inp.value = "";
+                        alert("إشارة ضعيفة... تم حفظ الرسالة محلياً وجاري الربط بالعقدة.");
                     }
-                }, 350);
+                }, 400);
             }
         } catch(e) {
             console.error("Encryption Failure:", e);
@@ -326,7 +351,7 @@
         `;
         
         box.appendChild(d);
-        box.scrollTop = box.scrollHeight;
+        box.scrollTop = box.scrollHeight; // التمرير التلقائي لأسفل
     }
 
     function escapeHTML(str) {
@@ -341,7 +366,9 @@
         
         msgEl.classList.add('liked');
         if (socket && socket.readyState === WebSocket.OPEN) {
-            socket.send(JSON.stringify({ type: 'like', msgId: msgId, room: currentTunnelID }));
+            try {
+                socket.send(JSON.stringify({ type: 'like', msgId: msgId, room: currentTunnelID }));
+            } catch(e) { console.error(e); }
         }
     }
 
@@ -355,7 +382,7 @@
         let h = JSON.parse(localStorage.getItem(storageKey)) || [];
         if (!h.find(m => m.id === data.id)) {
             h.push(data);
-            if (h.length > 100) h.shift();
+            if (h.length > 150) h.shift(); // زيادة السجل المحلي إلى 150 رسالة
             localStorage.setItem(storageKey, JSON.stringify(h));
         }
     }
@@ -374,6 +401,7 @@
                 if(dec) pushUI(dec, m.sender, m.time, m.sender === myUID, m.id);
             } catch(e) {}
         });
+        box.scrollTop = box.scrollHeight;
     }
 
     function attemptAccess() {
@@ -433,23 +461,27 @@
             d.className = `tunnel-item ${t.id === currentTunnelID ? 'active' : ''}`;
             d.innerHTML = `<div style="font-size:0.55rem; color:var(--accent); font-family:'Fira Code'">${t.id}</div><div style="font-weight:bold">${t.name}</div>`;
             d.onclick = () => {
-                if (t.id !== currentTunnelID)
+                if (t.id !== currentTunnelID) {
+                    // تفريغ المقبس الحالي بأمان قبل الانتقال
+                    if(socket) socket.close();
                     location.href = `?room=${t.id}&k=${encodeURIComponent(t.key)}&n=${encodeURIComponent(t.name)}`;
+                }
             };
             container.appendChild(d);
         });
     }
 
     function clearCurrentChat() { 
-        if(confirm("سيتم مسح السجل المحلي فقط. هل أنت متأكد؟")) { 
+        if(confirm("سيتم مسح السجل المحلي لهذا النفق فقط. هل أنت متأكد؟")) { 
             localStorage.removeItem('hist_' + currentTunnelID); 
             document.getElementById('chat-box').innerHTML = "";
         } 
     }
     
     function panicDestruct() { 
-        if(confirm("سيتم حذف كل شيء (أنفاق، مفاتيح، سجلات) فوراً!")) { 
+        if(confirm("تحذير أمني: سيتم حذف كل شيء (الأنفاق، المفاتيح، السجلات، المعرفات) من المتصفح فوراً!")) { 
             localStorage.clear(); 
+            sessionStorage.clear();
             location.href = window.location.origin + window.location.pathname; 
         } 
     }
@@ -458,7 +490,7 @@
         const tunnel = tunnels.find(t => t.id === currentTunnelID);
         const url = `${window.location.origin}${window.location.pathname}?room=${currentTunnelID}&k=${encodeURIComponent(tunnel.key)}&n=${encodeURIComponent(tunnel.name)}`;
         
-        navigator.clipboard.writeText(url).then(() => alert("تم نسخ رابط النفق المشفر بنجاح."));
+        navigator.clipboard.writeText(url).then(() => alert("تم نسخ رابط النفق المشفر بنجاح.")).catch(() => alert("فشل في نسخ الرابط."));
     }
 
     window.onload = () => {
